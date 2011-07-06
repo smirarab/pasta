@@ -1,0 +1,7 @@
+We would like to thank everyone who contributed suggestions and bug reports, especially:
+	J. S. Denton, Elizabeth Kim, Haiwei Luo, Nam Nguyen, Jay R. Reichman,
+	Siavash Mirarab
+
+
+Code for OptionParsing was taken from Tim Chase's post on:
+    http://groups.google.com/group/comp.lang.python/msg/09f28e26af0699b1

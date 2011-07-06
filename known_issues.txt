@@ -1,0 +1,32 @@
+Roadmap (Known issues/feature requests/planned work)
+    -- Poor error reporting when tools crash
+    
+    -- GUI should save standard output on exit
+    
+    -- Zombie process if we kill mafft.py (typically short running, but can be long on initial alignment).
+    
+    -- Open tempdir in Finder/Explorer if you are keeping temporaries.
+    
+    -- GARLI wrapper
+    
+    -- FastTree wrapper
+    
+    -- ProbAlign wrapper
+    
+    -- Read data first and tweak datatype (and maybe settings) for data at hand.
+    
+    -- js GUI and phyloplumber
+    
+    -- UI for partitioned model
+    
+    -- refactor code to separate code from built dependencies
+    
+    -- star
+    
+    -- cobalt (NIH blast aligner, but only works on small datasets)
+    
+    -- input aa/dna align aa tree infer from dna
+    
+    -- notes to developers on web page
+    
+    -- output to NEXUS

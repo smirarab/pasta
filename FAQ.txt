@@ -1,0 +1,29 @@
+###################################
+Frequently Asked Questions for SATe
+###################################
+
+Q: What does "SATe" mean?
+A: Simultaneous Alignment and Tree Estimation.
+
+Q: Where can I find the description of SATe algorithm?
+A: Please refer to Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and Phylogenetic Trees, 2009, Science, 324, 1561-1564
+
+Q: Which alignment programs are included with SATe distribution?
+A: CLUSTALW 2.0.12
+   MAFFT 6.240
+   MUSCLE 3.7
+   OPAL 1.0.3
+   PRANK 100311
+
+Q: Which phylogenetic tree reconstruction programs are in SATe distribution?
+   RAxML 7.2.6
+
+Q: How to cite SATe software?
+A: The primary reference for SATe is the paper <a href="http://www.sciencemag.org/cgi/content/short/324/5934/1561"> Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and Phylogenetic Trees, 2009, Science, 324, 1561-1564</a>
+
+this version of the software was written by Jiaye Yu, with some code contributions from Mark Holder.  Kevin Liu and Tandy Warnow also contributed bug reports, feature requests, and ideas about the design of the software.
+In addition to the paper reference, you can cite the software as:
+
+Yu, J and M. T. Holder, SATe 1.0, University of Kansas,
+http://phylo.bio.ku.edu/software/sate/sate.html
+

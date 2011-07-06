@@ -126,7 +126,7 @@ if sys.argv[1] == 'py2exe':
 # I know this is ugly. Trust me, I hate it as much as you do.
 if platform.system() != "Windows":
 
-    DEST_DIR_ROOT = sate.sate_tools_deploy_dir()
+    DEST_DIR_ROOT = sate.sate_tools_deploy_dir(default_to_dev_dir=False)
     def create_symlink(src_path, subdir=None):
         if subdir:
             dest_dir = os.path.join(DEST_DIR_ROOT, subdir)
@@ -137,12 +137,12 @@ if platform.system() != "Windows":
         if os.path.exists(dest_path) and os.path.islink(dest_path):
             real_dest = os.path.abspath(os.path.realpath(dest_path))
             if real_dest != os.path.abspath(os.path.realpath(src_path)):
-                msg = "Symbolic link '%s' already exists, but points to different source: '%s'\n" % (dest_path, real_path)
+                msg = "ERROR: Symbolic link '%s' already exists, but points to different source: '%s'\n[Aborting]\n" % (dest_path, real_path)
                 sys.exit(msg)
             else:
                 sys.stderr.write("Path already exists and is linked correctly.\n")
         elif os.path.exists(dest_path):
-            msg = "Path already exists: '%s'\n" % dest_path
+            msg = "ERROR: Path already exists: '%s'\n[Aborting]\n" % dest_path
             sys.exit(msg)
         else:
             if not os.path.exists(dest_dir):
@@ -160,7 +160,7 @@ if platform.system() != "Windows":
         if subdir:
             tdir = os.path.join(tools_bin_srcdir, subdir)
         else:
-            tdir = DEST_DIR_ROOT
+            tdir = tools_bin_srcdir
         for fpath in os.listdir(tdir):
             src_path = os.path.join(tdir, fpath)
             if os.path.isfile(src_path):

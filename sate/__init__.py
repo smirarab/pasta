@@ -234,7 +234,7 @@ def sate_home_dir():
 def sate_tools_deploy_subpath():
     return "bin"
 
-def sate_tools_deploy_dir(default_to_dev_dir=True):
+def sate_tools_deploy_dir(default_to_dev_dir=False):
     """
     If the environmental variable $SATE_TOOLS_RUNDIR is set, then this is returned.
     If not, and a '../bin' directory exists (relative to *this* file, i.e.
@@ -246,7 +246,7 @@ def sate_tools_deploy_dir(default_to_dev_dir=True):
     else:
         home_path = sate_home_dir()
         bin_path = os.path.join(home_path, sate_tools_deploy_subpath())
-    if os.path.exists(bin_path):
+    if os.path.exists(bin_path) or not default_to_dev_dir:
         return bin_path
     try:
         return sate_tools_dev_dir()

@@ -92,7 +92,7 @@ if sys.argv[1] == 'py2exe':
         "optimize": 2,
         "compressed": True,
         "bundle_files": 1,
-        "includes": ['satelib'],
+        "includes": ['sate'],
         "dll_excludes": ['w9xpopen.exe'],
         "dist_dir" : PY2EXE_DIST_DIR,
     }

@@ -86,6 +86,9 @@ if sys.argv[1] == 'py2exe':
         os.path.join(bin_win_src, 'real_bin'),
         os.path.join(bin_win_dest, 'real_bin'),
         ['*'] ) )
+    my_files.append(['', ['LICENSE.txt', 'AUTHORS.txt', 'FAQ.txt']])
+    my_files.append(['data', [os.path.join('sate', 'test', 'data', f) for f in
+            ['small.fasta', 'large.fasta', 'anolis.fasta',]]] )
 
     PY2EXE_OPTIONS = {
         "unbuffered": True,

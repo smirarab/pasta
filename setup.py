@@ -121,38 +121,47 @@ if sys.argv[1] == 'py2exe':
     os.rename(src_path, dest_path)
     sys.stderr.write("OK\n")
 
-# On Linux and OS X systems, move mafft script to deployment directory
-# so sate can be run from the command-line
-#if sys.argv[1] == "develop" or platform.system() != "Windows":
+# On Linux and OS X systems, sym-link all tool scripts
+# to `bin` subdirectory, so SATe can be run from the command-line
+# I know this is ugly. Trust me, I hate it as much as you do.
 if platform.system() != "Windows":
 
-    src_path = os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft"))
-    dest_dir = sate.sate_tools_deploy_dir()
-    dest_path = os.path.join(dest_dir, "mafft")
-
-    #if platform.system() == "Windows":
-    #    pass
-    #    #sys.stderr.write("\nCopying 'mafft' script: '%s' => '%s'\n" % (src_path, dest_path))
-    #    #if os.path.exists(dest_path):
-    #    #    os.remove(dest_path)
-    #    #import shutil
-    #    #shutil.copy(src_path, dest_path)
-    #else:
-    sys.stderr.write("\nCreating link to 'mafft' script: '%s' => '%s'\n" % (src_path, dest_path))
-    if os.path.exists(dest_path) and os.path.islink(dest_path):
-        real_dest = os.path.abspath(os.path.realpath(dest_path))
-        if real_dest != os.path.abspath(os.path.realpath(src_path)):
-            msg = "Symbolic link '%s' already exists, but points to different source: '%s'\n" % (dest_path, real_path)
+    DEST_DIR_ROOT = sate.sate_tools_deploy_dir()
+    def create_symlink(src_path, subdir=None):
+        if subdir:
+            dest_dir = os.path.join(DEST_DIR_ROOT, subdir)
+        else:
+            dest_dir = DEST_DIR_ROOT
+        dest_path = os.path.join(dest_dir, os.path.basename(src_path))
+        sys.stderr.write("\nCreating link: '%s' => '%s'\n" % (src_path, dest_path))
+        if os.path.exists(dest_path) and os.path.islink(dest_path):
+            real_dest = os.path.abspath(os.path.realpath(dest_path))
+            if real_dest != os.path.abspath(os.path.realpath(src_path)):
+                msg = "Symbolic link '%s' already exists, but points to different source: '%s'\n" % (dest_path, real_path)
+                sys.exit(msg)
+            else:
+                sys.stderr.write("Path already exists and is linked correctly.\n")
+        elif os.path.exists(dest_path):
+            msg = "Path already exists: '%s'\n" % dest_path
             sys.exit(msg)
         else:
-            sys.stderr.write("Path already exists and is linked correctly.\n")
-    elif os.path.exists(dest_path):
-        msg = "Path to deployed mafft already exists: '%s'\n" % dest_path
-        sys.exit(msg)
-    else:
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-        os.symlink(src_path, dest_path)
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            os.symlink(src_path, dest_path)
 
+    # mafft
+    create_symlink(os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft")))
 
+    # others
+    tools_bin_srcdir = sate.sate_tools_dev_dir()
+    tools_bin_subdirs = ['', 'real_bin']
 
+    for subdir in tools_bin_subdirs:
+        if subdir:
+            tdir = os.path.join(tools_bin_srcdir, subdir)
+        else:
+            tdir = DEST_DIR_ROOT
+        for fpath in os.listdir(tdir):
+            src_path = os.path.join(tdir, fpath)
+            if os.path.isfile(src_path):
+                create_symlink(src_path, subdir)

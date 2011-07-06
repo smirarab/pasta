@@ -267,7 +267,7 @@ def sate_tools_dev_dir(platform_name=None):
     else:
         if platform_name is None:
             platform_name = platform.system()
-        root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         if platform_name == 'Windows':
             sub_path = "sate-tools-win"
         elif platform_name == 'Darwin':
@@ -276,8 +276,7 @@ def sate_tools_dev_dir(platform_name=None):
             sub_path = "sate-tools-linux"
         else:
             raise OSError("SATe does not bundle tools for '%s' at this time!" % platform_name)
-        bin_path = os.path.join(root_path, "resources", sub_path)
-        print os.path.abspath(bin_path)
+        bin_path = os.path.join(root_path, sub_path)
     if not os.path.exists(bin_path):
         raise ToolsDirNotFoundError(paths_tried=[bin_path],
                 env_var_name="SATE_TOOLS_DEVDIR")

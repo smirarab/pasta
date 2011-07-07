@@ -8,6 +8,7 @@ import random
 import shutil
 from sate import filemgr
 from sate import get_logger
+from sate.configure import get_configuration
 
 _LOG = get_logger(__name__)
 
@@ -67,9 +68,10 @@ class SateProductsTest(unittest.TestCase):
             expected_output_dir = os.path.dirname(input_seq_filepaths[0])
 
         ## create the product manager
-        sp = filemgr.SateProducts(job_name=job_name,
-                input_seq_filepaths=input_seq_filepaths,
-                output_dir=output_dir)
+        user_config = get_configuration()
+        user_config.input_seq_filepaths = input_seq_filepaths
+        user_config.commandline.input = input_seq_filepaths[0]
+        sp = filemgr.SateProducts(sate_user_settings=user_config)
 
         ## job prefix: must be unique
         output_prefix = sp.output_prefix

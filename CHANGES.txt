@@ -1,0 +1,8 @@
+
+
+Release 2.0.1b
+==============
+
+    - Support for multilocus analysis.
+    - `pairalign` (MAFFT) is not run if sequences are > 10K characters. This
+      configuration has not been benchmarked.

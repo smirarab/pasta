@@ -580,7 +580,7 @@ class SateFrame(wx.Frame):
     def _OnStart(self):
         if self.process is None:
             self._create_config_file()
-            command = get_invoke_run_sate_command()
+            command = [self._quoted_file_path(x) for x in get_invoke_run_sate_command()]
             input_filename = self.txt_seqfn.GetValue()
             if not input_filename or not os.path.isfile(input_filename) and (not self.cb_multilocus.Value):
                 wx.MessageBox("Sequence file name is REQUIRED by SATe!", "WARNING", wx.OK|wx.ICON_WARNING)

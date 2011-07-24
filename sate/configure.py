@@ -31,6 +31,7 @@ from sate import get_logger, SATE_SYSTEM_PATHS_CFGFILE
 from sate.settings import SateUserSettings
 from sate.tools import get_external_tool_classes
 import sate
+from sate import filemgr
 
 _LOG = get_logger(__name__)
 
@@ -42,11 +43,12 @@ def get_invoke_run_sate_command():
         if platform.system() == 'Windows':
             return ['run_sate.exe']
         elif platform.system() == 'Darwin':
-            return [sys.executable, os.path.join(sate.sate_home_dir(), 'run_sate.py')]
+            return [filemgr.quoted_file_path(sys.executable),
+                    filemgr.quoted_file_path(os.path.join(sate.sate_home_dir(), 'run_sate.py'))]
         else:
             raise OSError('SATe is not frozen for %s' % platform.system())
     else:
-        return [sys.executable, 'run_sate.py']
+        return [filemgr.quoted_file_path(sys.executable), filemgr.quoted_file_path('run_sate.py')]
 
 _DEFAULT_TOOLS_PATH = None
 

@@ -21,6 +21,15 @@ _ILLEGAL_FILENAME_PATTERN = re.compile(r'[^-_a-zA-Z0-9.]')
 def get_safe_filename(filename):
     return "".join(_ILLEGAL_FILENAME_PATTERN.split(filename))
 
+def quoted_file_path(path):
+    if '"' not in path:
+        return '"'+ path + '"'
+    elif "'" not in path:
+        return "'" + path + "'"
+    else:
+        path = path.replace('"', r'\"')
+        return '"' + path + '"'
+
 def open_with_intermediates(filepath, mode):
     """Opens a `filepath` in the `mode`, but will create intermediate directories if they are absent."""
     d = os.path.dirname(filepath)

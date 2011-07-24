@@ -42,6 +42,7 @@ from sate.tools import AlignerClasses
 from sate.tools import MergerClasses
 from sate.tools import TreeEstimatorClasses
 from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
+from sate import filemgr
 
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
@@ -568,19 +569,11 @@ class SateFrame(wx.Frame):
         for i in range(len(self.ctrls)):
             self.ctrls[i].Enable(self.prev_ctrls_status[i])
 
-    def _quoted_file_path(self, path):
-        if '"' not in path:
-            return '"'+ path + '"'
-        elif "'" not in path:
-            return "'" + path + "'"
-        else:
-            path = path.replace('"', r'\"')
-            return '"' + path + '"'
-
     def _OnStart(self):
         if self.process is None:
             self._create_config_file()
-            command = [self._quoted_file_path(x) for x in get_invoke_run_sate_command()]
+            #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_sate_command()]
+            command = get_invoke_run_sate_command()
             input_filename = self.txt_seqfn.GetValue()
             if not input_filename or not os.path.isfile(input_filename) and (not self.cb_multilocus.Value):
                 wx.MessageBox("Sequence file name is REQUIRED by SATe!", "WARNING", wx.OK|wx.ICON_WARNING)
@@ -593,16 +586,16 @@ class SateFrame(wx.Frame):
                 self._remove_config_file()
                 return
 
-            command.extend(['-i', self._quoted_file_path(input_filename)])
+            command.extend(['-i', filemgr.quoted_file_path(input_filename)])
             if treefilename and os.path.isfile(treefilename):
-                command.extend(['-t', self._quoted_file_path(treefilename)])
-            command.extend(['-j', self._quoted_file_path(jobname) ])
+                command.extend(['-t', filemgr.quoted_file_path(treefilename)])
+            command.extend(['-j', filemgr.quoted_file_path(jobname) ])
             if self.datatype.Value == "Nucleotide":
                 dt = "dna"
             else:
                 dt = "protein"
             command.extend(['-d', dt])
-            command.extend(['%s' % self._quoted_file_path(self.process_cfg_file)])
+            command.extend(['%s' % filemgr.quoted_file_path(self.process_cfg_file)])
             self.process = wx.Process(self)
             self.process.Redirect()
             self.pid = wx.Execute( ' '.join(command), wx.EXEC_ASYNC, self.process)

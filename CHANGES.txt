@@ -1,5 +1,12 @@
 
 
+Release 2.0.2b
+==============
+
+    - Fix for multilocus analysis with non-equal leaf-sets.
+    - Fix for allowing SATe application bundle to be run from directories with
+      non-alphanumeric characters in path.
+
 Release 2.0.1b
 ==============
 

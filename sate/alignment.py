@@ -526,10 +526,10 @@ class MultiLocusDataset(list):
             na = Alignment()
             na.datatype = alignment.datatype
             for k in taxon_names:
-                na[k] = alignment[k]
+                if (alignment.has_key(k)):
+                    na[k] = alignment[k]
             m.append(na)
         return m
-
     def get_num_taxa(self):
         t = set()
         for el in self:

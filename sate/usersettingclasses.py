@@ -383,7 +383,7 @@ class UserSettingsContainer(object):
         except:
             pass
         if not p:
-            raise RuntimeError("Cannot create a wrapper around the merger %s because a path setting was not found in the configuration for this tool")
+            raise RuntimeError("Cannot create a wrapper around the merger %s because a path setting was not found in the configuration for this tool" % s)
 
         from sate.tools import MergerClasses
         d = g.dict()
@@ -410,7 +410,7 @@ class UserSettingsContainer(object):
         except:
             pass
         if not p:
-            raise RuntimeError("Cannot create a wrapper around the tree_estimator %s because a path setting was not found in the configuration for this tool")
+            raise RuntimeError("Cannot create a wrapper around the tree_estimator %s because a path setting was not found in the configuration for this tool" % name)
 
         from sate.tools import TreeEstimatorClasses
         d = g.dict()

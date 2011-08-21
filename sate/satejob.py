@@ -256,6 +256,7 @@ class SateJob (TreeHolder):
             return AcceptMode.NONBLIND_MODE
         if self.is_stuck_in_blind:
             return AcceptMode.BLIND_MODE
+        #if self.move_to_blind_on_worse_score and ( (new_score <= self.score) or self.score is None ):
         if self.move_to_blind_on_worse_score and (new_score <= self.score):
             self._blindmode_trigger = 'move_to_blind_on_worse_score'
             return AcceptMode.BLIND_MODE
@@ -373,6 +374,9 @@ class SateJob (TreeHolder):
                 record_timestamp(os.path.join(curr_tmp_dir_par, 'end_treeinference_timestamp.txt'))
                 curr_timestamp = time.time()
                 accept_iteration = False
+
+                if self.score is None:
+                    self.score = new_score
 
                 if self.best_score is None or new_score > self.best_score:
                     self.store_optimum_results(new_multilocus_dataset,

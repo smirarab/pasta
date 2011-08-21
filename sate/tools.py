@@ -545,7 +545,7 @@ class Randtree(TreeEstimator):
 
 class FakeTreeEstimator(TreeEstimator):
     "Must be sent an starting tree.  It simply returns this tree"
-    section_name = 'faketree'
+    section_name = 'faketree tree_estimator'
     url = ''
     is_bundled = True
 

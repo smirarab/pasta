@@ -112,6 +112,7 @@ class SateJob (TreeHolder):
         self.sate_team = sate_team
         self.tree = tree
         self.score = None
+        self.best_score = None
 
         self._tree_build_job = None
         self._sate_decomp_job = None
@@ -402,6 +403,7 @@ class SateJob (TreeHolder):
                 else:
                     self.status('realignment NOT accepted.')
                 break_strategy_index += 1
+
                 # self.status('current score: %s, best score: %s' % (self.score, self.best_score) )
 
             if not this_iter_score_improved:

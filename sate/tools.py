@@ -253,7 +253,8 @@ class OpalAligner(Aligner):
             return FakeJob(alignment, context_str=job_id)
         scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
 
-        invoc = ['java', '-Xmx2048m', '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
+        #invoc = ['java', '-Xmx1048m', '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
+        invoc = ['java',  '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
         invoc.extend(self.user_opts)
 
         return self._finish_standard_job(alignedfn=alignedfn,
@@ -460,7 +461,8 @@ class OpalMerger (Merger):
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
         assert(alignment1.datatype == alignment2.datatype)
 
-        invoc = ['java', '-Xmx2048m', '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
+        #invoc = ['java', '-Xmx1048m', '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
+        invoc = ['java', '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
 
         job_id = kwargs.get('context_str', '') + '_opal'
 

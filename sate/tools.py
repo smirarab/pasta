@@ -246,6 +246,7 @@ class OpalAligner(Aligner):
 
     def __init__(self, temp_fs, **kwargs):
         Aligner.__init__(self, 'opal', temp_fs, **kwargs)
+        self.max_mem_mb = kwargs.get("max_mem_mb", 2048)
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_opal'
@@ -253,7 +254,7 @@ class OpalAligner(Aligner):
             return FakeJob(alignment, context_str=job_id)
         scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
 
-        invoc = ['java', '-Xmx2048m', '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
+        invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
         invoc.extend(self.user_opts)
 
         return self._finish_standard_job(alignedfn=alignedfn,
@@ -455,12 +456,13 @@ class OpalMerger (Merger):
 
     def __init__(self, temp_fs, **kwargs):
         Merger.__init__(self, 'opal', temp_fs, **kwargs)
+        self.max_mem_mb = kwargs.get("max_mem_mb", 2048)
 
     def create_job(self, alignment1, alignment2, **kwargs):
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
         assert(alignment1.datatype == alignment2.datatype)
 
-        invoc = ['java', '-Xmx2048m', '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
+        invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
 
         job_id = kwargs.get('context_str', '') + '_opal'
 

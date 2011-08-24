@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This file is intended as a code generation tool to keep satelib.settings.py
+"""This file is intended as a code generation tool to keep sate.settings.py
 up-to-date when the UI changes.
 Putting the UI in XML will also make the UI constraints easier to
 handle in GUI and web apps.
@@ -119,8 +119,8 @@ if __name__ == '__main__':
 """% (xml_filepath, os.path.split(sys.argv[0])[1]))
 
     sys.stdout.write("""
-from satelib.usersettingclasses import ChoiceUserSetting, UserSettingsContainer, UserSettingGroup
-from satelib.usersettingclasses import FloatUserSetting, StringUserSetting, IntUserSetting, BoolUserSetting
+from sate.usersettingclasses import ChoiceUserSetting, UserSettingsContainer, UserSettingGroup
+from sate.usersettingclasses import FloatUserSetting, StringUserSetting, IntUserSetting, BoolUserSetting
 
 class SateUserSettings(UserSettingsContainer):
     def __init__(self):

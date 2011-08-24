@@ -44,6 +44,7 @@ from sate.tools import TreeEstimatorClasses
 from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
 from sate import filemgr
 
+DEFAULT_MAX_MB = str(os.environ.get("SATE_MAX_MB", 1024))
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
 GRID_HGAP = 8
@@ -128,9 +129,26 @@ class SateFrame(wx.Frame):
         sizer.Add(wx.StaticText(self, -1, "CPU(s) Available"), (cr,0), flag=wx.ALIGN_LEFT )
         self.cb_ncpu = wx.ComboBox(self, -1, "1", choices=map(str, range(1,9)), style=wx.CB_READONLY)
         sizer.Add(self.cb_ncpu, (cr,1), flag=wx.EXPAND)
+        cr += 1
+        sizer.Add(wx.StaticText(self, -1, "Maximum MB"), (cr,0), flag=wx.ALIGN_LEFT )
+        self.txt_maxmb = wx.TextCtrl(self, -1, DEFAULT_MAX_MB)
+        sizer.Add(self.txt_maxmb, (cr,1), flag=wx.EXPAND)
+
         staticboxsizer.Add(sizer, 0, wx.CENTER, 0)
         self.Bind(wx.EVT_BUTTON, self.OnChooseOutputDir, self.outputdir_btn)
         return staticboxsizer
+
+    def validate_max_mb(self, value):
+        try:
+            mb = int(value)
+            if mb <= 0:
+                raise ValueError
+            return True
+        except ValueError:
+            wx.MessageBox("Invalid value for Maximum MB: '" + value + "': require positive integer value.",
+                    "Invalid Value for Maximum MB",
+                    wx.OK|wx.ICON_EXCLAMATION)
+            return False
 
     def OnChooseOutputDir(self, event):
         dialog = wx.DirDialog(None, "Choose directory for output", style=wx.FD_OPEN)
@@ -571,7 +589,9 @@ class SateFrame(wx.Frame):
 
     def _OnStart(self):
         if self.process is None:
-            self._create_config_file()
+            cfg_success = self._create_config_file()
+            #if not cfg_success:
+            #    return
             #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_sate_command()]
             command = get_invoke_run_sate_command()
             input_filename = self.txt_seqfn.GetValue()
@@ -683,6 +703,10 @@ class SateFrame(wx.Frame):
         cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
         cfg.sate.output_directory = self.txt_outputdir.GetValue()
         cfg.sate.num_cpus = self.cb_ncpu.Value
+        max_mb = self.txt_maxmb.GetValue()
+        #if not self.validate_max_mb(max_mb):
+        #    return False
+        cfg.sate.max_mb = max_mb
 
         # this creates a file that cannot be deleted while the Python
         # process is running (under the mess that is called 'Windows')
@@ -693,6 +717,7 @@ class SateFrame(wx.Frame):
         self.process_cfg_file = tf.name
         tf.close()
         cfg.save_to_filepath(self.process_cfg_file)
+        return True
 
     def _remove_config_file(self):
         if "SATE_GUIDEVMODE" in os.environ:

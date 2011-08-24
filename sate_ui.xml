@@ -35,7 +35,7 @@
 	</string-option>
 	<string-option name="options" default="" category="fasttree">
 		<help>Options to be passed to FastTree.</help>
-	</string-option>	
+	</string-option>
 	<infile-option name="path" default="" category="opal">
 		<help>Path to Opal jar file</help>
 	</infile-option>
@@ -88,6 +88,9 @@
 	</choice-option>
 	<int-option name="num_cpus" default="1" min="1" category="sate" subcategory="platform" must-be-valid="True">
 		<help>The number of processing cores that you would like to assign to SATe.  This number should not exceed the number of cores on your machine.</help>
+	</int-option>
+	<int-option name="max_mem_mb" default="2048" min="1024" category="sate" subcategory="platform" must-be-valid="True">
+		<help>The maximum memory available (for the Java heap size when running Java tools)</help>
 	</int-option>
 	<string-option name="aligner" default="mafft" category="sate" subcategory="tools">
 		<help>The name of the alignment program to use for subproblems.</help>

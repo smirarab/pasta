@@ -27,7 +27,7 @@ import time
 import platform
 
 from alignment import Alignment
-from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE
+from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB
 from sate.filemgr import open_with_intermediates
 from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob
 
@@ -246,7 +246,7 @@ class OpalAligner(Aligner):
 
     def __init__(self, temp_fs, **kwargs):
         Aligner.__init__(self, 'opal', temp_fs, **kwargs)
-        self.max_mem_mb = kwargs.get("max_mem_mb", 2048)
+        self.max_mem_mb = kwargs.get("max_mem_mb", DEFAULT_MAX_MB)
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_opal'
@@ -456,7 +456,7 @@ class OpalMerger (Merger):
 
     def __init__(self, temp_fs, **kwargs):
         Merger.__init__(self, 'opal', temp_fs, **kwargs)
-        self.max_mem_mb = kwargs.get("max_mem_mb", 2048)
+        self.max_mem_mb = kwargs.get("max_mem_mb", DEFAULT_MAX_MB)
 
     def create_job(self, alignment1, alignment2, **kwargs):
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)

@@ -191,6 +191,7 @@ MESSENGER = Messenger()
 SATE_SYSTEM_PATHS_CFGFILE =  os.path.abspath(os.path.join(os.path.expanduser('~'), '.sate', 'sate_tool_paths.cfg'))
 SATE_GUI_RESOURCES = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "resources", "images"))
 SATE_SCRIPT_RESOURCES = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "resources", "scripts"))
+DEFAULT_MAX_MB = os.environ.get("SATE_MAX_MB", 1024)
 
 ##############################################
 ## Path configuration

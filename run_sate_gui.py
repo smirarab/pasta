@@ -34,6 +34,7 @@ from sate import PROGRAM_VERSION
 from sate import PROGRAM_WEBSITE
 from sate import PROGRAM_YEAR
 from sate import GLOBAL_DEBUG
+from sate import DEFAULT_MAX_MB
 from ConfigParser import RawConfigParser
 from sate import sate_is_frozen
 from sate import sate_home_dir
@@ -44,7 +45,6 @@ from sate.tools import TreeEstimatorClasses
 from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
 from sate import filemgr
 
-DEFAULT_MAX_MB = str(os.environ.get("SATE_MAX_MB", 1024))
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
 GRID_HGAP = 8
@@ -131,7 +131,7 @@ class SateFrame(wx.Frame):
         sizer.Add(self.cb_ncpu, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Maximum MB"), (cr,0), flag=wx.ALIGN_LEFT )
-        self.txt_maxmb = wx.TextCtrl(self, -1, DEFAULT_MAX_MB)
+        self.txt_maxmb = wx.TextCtrl(self, -1, str(DEFAULT_MAX_MB))
         sizer.Add(self.txt_maxmb, (cr,1), flag=wx.EXPAND)
 
         staticboxsizer.Add(sizer, 0, wx.CENTER, 0)

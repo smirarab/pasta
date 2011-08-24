@@ -590,8 +590,8 @@ class SateFrame(wx.Frame):
     def _OnStart(self):
         if self.process is None:
             cfg_success = self._create_config_file()
-            #if not cfg_success:
-            #    return
+            if not cfg_success:
+                return
             #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_sate_command()]
             command = get_invoke_run_sate_command()
             input_filename = self.txt_seqfn.GetValue()
@@ -704,9 +704,9 @@ class SateFrame(wx.Frame):
         cfg.sate.output_directory = self.txt_outputdir.GetValue()
         cfg.sate.num_cpus = self.cb_ncpu.Value
         max_mb = self.txt_maxmb.GetValue()
-        #if not self.validate_max_mb(max_mb):
-        #    return False
-        cfg.sate.max_mb = max_mb
+        if not self.validate_max_mb(max_mb):
+            return False
+        cfg.sate.max_mem_mb = max_mb
 
         # this creates a file that cannot be deleted while the Python
         # process is running (under the mess that is called 'Windows')

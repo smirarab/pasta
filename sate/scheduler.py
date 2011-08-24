@@ -151,7 +151,7 @@ class DispatchableJob(JobBase):
             #f.close()
             _LOG.debug('setting launched_event')
         except:
-            self.error = RuntimeError("The invocation:\n'%s'\nfailed" % "' '".join(self._invocation))
+            self.error = RuntimeError("The invocation:\n'%s'\nfailed" % '" "'.join(self._invocation))
             raise
         finally:
             self.launched_event.set()
@@ -209,7 +209,7 @@ class DispatchableJob(JobBase):
 
                     err_msg = []
                     err_msg.append("SATe failed because one of the programs it tried to run failed.")
-                    err_msg.append("The invocation that failed was: \n    '%s'\n" % "' '".join(self._invocation))
+                    err_msg.append('The invocation that failed was: \n    "%s"\n' % '" "'.join(self._invocation))
 
                     try:
                         self.return_code = self.process.wait()

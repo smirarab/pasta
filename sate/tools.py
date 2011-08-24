@@ -463,7 +463,6 @@ class OpalMerger (Merger):
         assert(alignment1.datatype == alignment2.datatype)
 
         invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
-
         job_id = kwargs.get('context_str', '') + '_opal'
 
         return self._finish_standard_job(alignedfn=outfn,

@@ -121,6 +121,8 @@ if sys.argv[1] == 'py2exe':
     dest_path = os.path.join(PY2EXE_DIST_DIR,
             bin_win_dest,
             "mafft.exe")
+    if os.path.exists(dest_path):
+        os.remove(dest_path)
     os.rename(src_path, dest_path)
     sys.stderr.write("OK\n")
 

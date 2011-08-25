@@ -168,7 +168,7 @@ class SateFrame(wx.Frame):
             self.rb_stop2.SetValue(1)
             self.cb_stop1.Disable()
             self.cb_stop2.Enable()
-            self.cb_stop2.SetValue("100")
+            self.cb_stop2.SetValue("8")
             self.cb_apply_stop_rule.SetValue("After Launch")
             if preset_selection == "SATe-II-simple":
                 self.cb_tree_and_alignment.SetValue("Final")

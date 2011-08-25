@@ -151,7 +151,7 @@ class DispatchableJob(JobBase):
             #f.close()
             _LOG.debug('setting launched_event')
         except:
-            self.error = RuntimeError("The invocation:\n'%s'\nfailed" % '" "'.join(self._invocation))
+            self.error = RuntimeError('The invocation:\n"%s"\nfailed' % '" "'.join(self._invocation))
             raise
         finally:
             self.launched_event.set()

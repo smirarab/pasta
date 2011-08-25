@@ -269,10 +269,10 @@ class SateFrame(wx.Frame):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "SATe Settings"), wx.VERTICAL)
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
 
-        preset_choices = ["SATe-II-simple", "SATe-II-ML", "SATe-II-fast", "(Custom)",]
+        preset_choices = ["SATe-II-fast", "SATe-II-ML", "SATe-II-simple", "(Custom)",]
         self.cb_sate_presets = wx.ComboBox(self,
                 -1,
-                "SATe-II-ML",
+                "SATe-II-fast",
                 choices=preset_choices,
                 style=wx.CB_READONLY)
 

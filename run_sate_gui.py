@@ -168,7 +168,7 @@ class SateFrame(wx.Frame):
             self.rb_stop2.SetValue(1)
             self.cb_stop1.Disable()
             self.cb_stop2.Enable()
-            self.cb_stop2.SetValue("8")
+            self.cb_stop2.SetValue("10")
             self.cb_apply_stop_rule.SetValue("After Launch")
             if preset_selection == "SATe-II-simple":
                 self.cb_tree_and_alignment.SetValue("Final")
@@ -299,7 +299,7 @@ class SateFrame(wx.Frame):
         self.rb_stop1 = wx.RadioButton(self, -1, "Time Limit (h)", name="timelimit", style=wx.RB_GROUP)
         self.rb_stop2 = wx.RadioButton(self, -1, "Iteration Limit", name="iterlimit")
         self.cb_stop1 = wx.ComboBox(self, -1, "24", choices=timelimit_list, style=wx.CB_READONLY)
-        self.cb_stop2 = wx.ComboBox(self, -1, "100",choices=iterlimit_list, style=wx.CB_READONLY)
+        self.cb_stop2 = wx.ComboBox(self, -1, "8",choices=iterlimit_list, style=wx.CB_READONLY)
         self.blindmode = wx.CheckBox(self, -1, "Blind Mode Enabled")
 
         apply_stop_rule_choices = ["After Launch", "After Blind Mode"]
@@ -377,6 +377,7 @@ class SateFrame(wx.Frame):
             self.cb_stop2.Value = "100"
 
         self.Bind(wx.EVT_COMBOBOX, self.OnSatePresets, self.cb_sate_presets)
+        self.OnSatePresets(self.cb_sate_presets)
 
         self.Bind(wx.EVT_CHECKBOX, self.OnBlindMode, self.blindmode)
         self.Bind(wx.EVT_RADIOBUTTON, self.OnMaxSubproblem, self.rb_maxsub1)

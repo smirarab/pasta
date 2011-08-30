@@ -2,7 +2,7 @@ Release 2.0.3
 =============
 
     - Fix for not terminating correctly in SATE-II-fast mode.
-    - Allow specification of memory to be allocated to JVM when running Opal.
+    - Allow specification of memory to be allocated to JVM when running Opal [NOTE: default memory allocation is now 1024MB instead of 2048MB].
     - Default to SATE-II-fast mode instead of SATE-II-ML.
     - SATE-II-ML defaults to 10 iterations instead of 100.
 

@@ -177,10 +177,18 @@ tool that you have chosen.
       choosing 2 should decrease the running time of SATe because subproblem
       alignment will be conducted in parallel.
 
+    * "Maximum MB" lets you specify the size of the Java Virtual Machine (JVM)
+      heap to be allocated when running Java tools such as Opal. This should
+      be as large as possible. If you get errors when running Java tools, one
+      possible reason might be that you have allocated insufficient memory to
+      the JVM given the size of your dataset. By default, the memory defaults
+      to 1024 MB (versions of SATe prior to 2.0.3 had a default of 2048 MB,
+      and did not allow the option of changing this).
+
     * "Job Name" allows you to specify an identifier for the output files created by
       running SATe. Files tagged with this name will appear in the output directory
       when the run completes.
-      
+
 
 
 ####################

@@ -289,6 +289,31 @@ class Clustalw2Aligner(Aligner):
                                         job_id=job_id,
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
 
+class ProbalignAligner(Aligner):
+    section_name = 'probalign'
+    url = 'http://probalign.njit.edu'
+    is_bundled_tool = True
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'probalign', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_probalign'
+        if alignment.get_num_taxa() == 1:
+            return FakeJob(alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+
+        invoc = [self.exe, '-nuc', "-o", alignedfn, seqfn]
+        invoc.extend(self.user_opts)
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                                        datatype=alignment.datatype,
+                                        invoc=invoc,
+                                        scratch_dir=scratch_dir,
+                                        job_id=job_id,
+                                        delete_temps=kwargs.get('delete_temps', self.delete_temps))
+
+
 class PrankAligner(Aligner):
     section_name = 'prank aligner'
     url = 'http://www.ebi.ac.uk/goldman-srv/prank/prank'
@@ -733,11 +758,11 @@ class Raxml(TreeEstimator):
         return job
 
 if GLOBAL_DEBUG:
-    AlignerClasses = (Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner)
     MergerClasses = (MuscleMerger, OpalMerger, PadMerger, FakeMerger, CustomMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:
-    AlignerClasses = (Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner)
     MergerClasses = (MuscleMerger, OpalMerger, CustomMerger)
     TreeEstimatorClasses = (Raxml, FastTree, CustomTreeEstimator)
 

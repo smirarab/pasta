@@ -629,6 +629,7 @@ class FastTree(TreeEstimator):
         invoc.extend(['-log', log_file,    seqfn ])
 
         if num_cpus > 1:
+            os.putenv("OMP_NUM_THREADS", num_cpus)
             invoc[0] += 'MP'
 #            if platform.system() == 'Windows':
 #                x = invoc[0].split('.')

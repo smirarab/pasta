@@ -49,7 +49,7 @@ class SateTeam (object):
         has chosen.
         """
         try:
-            max_mem_mb = config.sate.max_mem_mb
+            max_mem_mb = config.commandline.max_mem_mb
             self._temp_fs = TempFS()
             self.aligner = config.create_aligner(temp_fs=self._temp_fs)
             self.aligner.max_mem_mb = max_mem_mb

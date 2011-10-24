@@ -100,6 +100,9 @@ def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=
         tree_str = open(fasttree_restults_file, 'rU').read().strip()
         score = None
         for line in reversed(open(log, 'rU').readlines()):
+            if (line.split()[0] == 'Gamma20LogLk'):
+                score = float(line.split()[1])
+                break                                                                      
             if (line.split()[0] == 'TreeLogLk'):
                 score = float(line.split()[2])
                 break
@@ -655,6 +658,7 @@ class FastTree(TreeEstimator):
         invoc.extend(['-log', log_file,    seqfn ])
 
         if num_cpus > 1:
+            os.putenv("OMP_NUM_THREADS", num_cpus)
             invoc[0] += 'MP'
 #            if platform.system() == 'Windows':
 #                x = invoc[0].split('.')

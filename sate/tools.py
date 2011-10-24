@@ -85,8 +85,9 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs):
             break
     raxml_log = os.path.join(dir, 'RAxML_log.%s' % id)
     logsc = filter(lambda x : x.find("Final GAMMA-based Score of best tree")!=-1 , open(raxml_log, 'rU').readlines())
-    score = float(logsc[0].split(" ")[-1])
-    if score is None:
+    if logsc:
+        score = float(logsc[0].split(" ")[-1])
+    else:
         score = float(open(raxml_log, 'rU').readlines()[-1].split()[1])
     raxml_result = os.path.join(dir, 'RAxML_result.%s' % id)
     tree_str = open(raxml_result, 'rU').read().strip()

@@ -255,7 +255,6 @@ class OpalAligner(Aligner):
         Aligner.__init__(self, 'opal', temp_fs, **kwargs)
         self.max_mem_mb = kwargs.get("max_mem_mb", DEFAULT_MAX_MB)
 
-
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_opal'
         if alignment.get_num_taxa() == 1:

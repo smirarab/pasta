@@ -707,7 +707,7 @@ class SateFrame(wx.Frame):
         max_mb = self.txt_maxmb.GetValue()
         if not self.validate_max_mb(max_mb):
             return False
-        cfg.commandline.max_mem_mb = max_mb
+        cfg.sate.max_mem_mb = max_mb
 
         # this creates a file that cannot be deleted while the Python
         # process is running (under the mess that is called 'Windows')

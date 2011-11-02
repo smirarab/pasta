@@ -516,7 +516,7 @@ class MultiLocusDataset(list):
                 self.taxa_label_to_taxon[real_name].label = real_name
             keys = alignment.keys()
             for k in keys:
-                del k
+                del alignment[k]
             for k, v in new_aln.iteritems():
                 alignment[k] = v
         self.safe_to_real_names = {}

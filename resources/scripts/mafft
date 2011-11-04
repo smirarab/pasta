@@ -9,6 +9,15 @@ import sys
 import shutil
 import subprocess
 
+
+RUN_GENERATED_FILE_BASENAMES = [
+        "hat2",
+        "hat3",
+        "infile.tree",
+        "order",
+        "pre",
+        "trace"
+        ]
 FILES_CREATED = []
 DIRS_CREATED = []
 
@@ -53,6 +62,11 @@ def clean_up_files_and_dirs(noisy=True):
         except OSError:
             sys.stderr.write("FAILED\n")
     for d in DIRS_CREATED[-1::-1]:
+        for f in RUN_GENERATED_FILE_BASENAMES:
+            try:
+                os.remove(os.path.join(d, f))
+            except OSError:
+                pass
         if noisy:
             sys.stderr.write("mafft: deleting '%s' ..." % d)
         try:

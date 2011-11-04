@@ -9,6 +9,9 @@ import sys
 import shutil
 import subprocess
 
+FILES_CREATED = []
+DIRS_CREATED = []
+
 def add_suffix(command):
     if sys.platform == 'win32':
         command += ' > NUL'
@@ -26,6 +29,38 @@ def get_main_dir():
         return os.path.dirname(sys.executable)
     return os.path.dirname(sys.argv[0])
 
+def copy_file(src, dest):
+    if os.path.isdir(dest):
+        dest = os.path.join(dest, os.path.basename(src))
+    FILES_CREATED.append(dest)
+    shutil.copy(src, dest)
+    return dest
+
+def create_dir(create_in_dir):
+    d = mkdtemp(prefix='mymafft', dir=create_in_dir)
+    DIRS_CREATED.append(d)
+    return d
+
+def clean_up_files_and_dirs(noisy=True):
+    if noisy:
+        sys.stderr.write("mafft: cleaning up ...\n")
+    for f in FILES_CREATED[-1::-1]:
+        if noisy:
+            sys.stderr.write("mafft: deleting '%s' ..." % f)
+        try:
+            os.remove(f)
+            sys.stderr.write("OK\n")
+        except OSError:
+            sys.stderr.write("FAILED\n")
+    for d in DIRS_CREATED[-1::-1]:
+        if noisy:
+            sys.stderr.write("mafft: deleting '%s' ..." % d)
+        try:
+            os.rmdir(d)
+            sys.stderr.write("OK\n")
+        except OSError:
+            sys.stderr.write("FAILED\n")
+
 def main():
     usage = "usage: %prog [options] args"
     parser = OptionParser(usage=usage)
@@ -40,7 +75,7 @@ def main():
         sys.exit('Please use "python mafft -h" to get more information.\n')
     infn = os.path.abspath(args[0])
     curdir = os.getcwd()
-    newdir = mkdtemp(prefix='mymafft', dir=curdir)
+    newdir = create_dir(create_in_dir=curdir)
     maindir = get_main_dir()
 
     INFILE = os.path.basename(infn)
@@ -77,9 +112,9 @@ def main():
     for fname in ['pairlocalalign', 'tbfast', 'dvtditr', 'disttbfast']:
         np = _compose_path(fname)
         _trace("Copying: " + np, newdir)
-        shutil.copy(np, newdir)
+        copy_file(np, newdir)
     _trace("Copying: " + infn, newdir)
-    shutil.copy( infn, newdir )
+    copy_file( infn, newdir )
 
     _trace("changing dir: " + newdir)
     os.chdir(newdir)
@@ -134,7 +169,7 @@ def main():
         _trace("changing directory: " + curdir)
         os.chdir(curdir)
         _trace("deleting directory: " + newdir)
-        shutil.rmtree(newdir)
+        clean_up_files_and_dirs(noisy=not options.quiet)
     else:
         command = [os.path.join('.', 'disttbfast'),
                 "-i", INFILE,
@@ -170,7 +205,7 @@ def main():
         _trace("changing directory: " + curdir)
         os.chdir(curdir)
         _trace("deleting directory: " + newdir)
-        shutil.rmtree(newdir)
+        clean_up_files_and_dirs(noisy=not options.quiet)
 
 if __name__ == "__main__":
     main()

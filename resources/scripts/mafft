@@ -15,6 +15,7 @@ RUN_GENERATED_FILE_BASENAMES = [
         "hat3",
         "infile.tree",
         "order",
+        "output_fftns1",
         "pre",
         "trace"
         ]

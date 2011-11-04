@@ -183,7 +183,7 @@ def main():
         _trace("changing directory: " + curdir)
         os.chdir(curdir)
         _trace("deleting directory: " + newdir)
-        clean_up_files_and_dirs(noisy=not options.quiet)
+        clean_up_files_and_dirs(noisy=options.trace)
     else:
         command = [os.path.join('.', 'disttbfast'),
                 "-i", INFILE,
@@ -219,7 +219,7 @@ def main():
         _trace("changing directory: " + curdir)
         os.chdir(curdir)
         _trace("deleting directory: " + newdir)
-        clean_up_files_and_dirs(noisy=not options.quiet)
+        clean_up_files_and_dirs(noisy=options.trace)
 
 if __name__ == "__main__":
     main()

@@ -215,6 +215,7 @@ class TempFS(object):
                 os.rmdir(real_path)
             except OSError:
                 pass
+            return True
         return False
 
     def get_remaining_directories(self):

@@ -51,6 +51,43 @@ class TempFS(object):
         will be deleted.
     '''
 
+    run_generated_filenames = [
+        ".Job.stderr.txt",
+        ".Job.stdout.txt",
+        "1.fasta",
+        "2.fasta",
+        "RAxML_bestTree.default",
+        "RAxML_info.default",
+        "RAxML_log.default",
+        "RAxML_parsimonyTree.default",
+        "RAxML_result.default",
+        "disttbfast",
+        "dvtditr",
+        "end_sateiter_timestamp.txt",
+        "end_treeinference_timestamp.txt",
+        "hat2",
+        "hat3",
+        "infile.tree",
+        "input.aligned",
+        "input.fasta",
+        "input.fasta",
+        "input.phy",
+        "input.phy.reduced",
+        "last_used.cfg",
+        "order",
+        "out.fasta",
+        "pairlocalalign",
+        "partition.txt",
+        "partition.txt.reduced",
+        "pre",
+        "start.tre",
+        "start_align_timestamp.txt",
+        "start_sateiter_timestamp.txt",
+        "start_treeinference_timestamp.txt",
+        "tbfast",
+        "trace",
+        ]
+
     def __init__(self):
         self._directories_created = set()
         self._top_level_temp = None
@@ -62,7 +99,6 @@ class TempFS(object):
         b = real_path in self._directories_created
         self._directories_created_lock.release()
         return b
-
 
     def create_subdir(self, dir):
         '''Creates a directory `dir`
@@ -168,17 +204,17 @@ class TempFS(object):
                 raise ValueError("'%s' is not registered as a temporary directory that was created by this process!" % real_path)
         finally:
              self._directories_created_lock.release()
-        _LOG.debug("Removing temp dir: '%s'" % real_path)
-        # Because we raise an exception if real_path is not in _directories_created,
-        #   we only get down here if real_path was in self._directories_created
-        #   thus, this call should only delete a directory created by this
-        #   TempFS instance.
+        _LOG.debug("Cleaning temp dir: '%s'" % real_path)
         if os.path.exists(real_path):
+            for fname in self.run_generated_filenames:
+                try:
+                    os.remove(os.path.join(real_path, fname))
+                except OSError:
+                    pass
             try:
-                shutil.rmtree(real_path)
-                return True
-            except:
-                return False
+                os.rmdir(real_path)
+            except OSError:
+                pass
         return False
 
     def get_remaining_directories(self):

@@ -100,6 +100,9 @@ class TempFS(object):
         self._directories_created_lock.release()
         return b
 
+    def _register_created_dir(self, path):
+        self._directories_created.add(os.path.abspath(path))
+
     def create_subdir(self, dir):
         '''Creates a directory `dir`
 
@@ -124,7 +127,7 @@ class TempFS(object):
                 raise OSError("Subdirectory is flagged as having already been created: '%s'" % rp)
             else:
                 os.makedirs(rp)
-                self._directories_created.add(rp)
+                self._register_created_dir(rp)
                 return rp
         finally:
             self._directories_created_lock.release()
@@ -154,7 +157,7 @@ class TempFS(object):
         try:
             self._top_level_temp = tempfile.mkdtemp(prefix=prefix, dir=r_parent)
             self._top_level_temp_real = os.path.realpath(self._top_level_temp)
-            self._directories_created.add(self._top_level_temp_real)
+            self._register_created_dir(self._top_level_temp_real)
             return self._top_level_temp_real
         finally:
              self._directories_created_lock.release()
@@ -183,7 +186,7 @@ class TempFS(object):
         try:
             d = tempfile.mkdtemp(prefix=prefix, dir=r_parent)
             rp = os.path.realpath(d)
-            self._directories_created.add(rp)
+            self._register_created_dir(rp)
             return rp
         finally:
             self._directories_created_lock.release()

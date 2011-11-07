@@ -197,6 +197,7 @@ class TempFS(object):
         a ValueError if it is not listed).
         '''
         self._directories_created_lock.acquire()
+        real_path = os.path.abspath(real_path)
         try:
             if real_path in self._directories_created:
                 self._directories_created.remove(real_path)
@@ -209,6 +210,15 @@ class TempFS(object):
              self._directories_created_lock.release()
         _LOG.debug("Cleaning temp dir: '%s'" % real_path)
         if os.path.exists(real_path):
+            for path in os.listdir(real_path):
+                fpath = os.path.join(real_path, path)
+                if os.path.isdir(fpath):
+                    try:
+                        self.remove_dir(fpath)
+                    except ValueError:
+                        sys.stderr.write("Refused to clean '%s': not created by SATe" % fpath)
+                    except OSError:
+                        sys.stderr.write("Error trying to remove '%s'" % fpath)
             for fname in self.run_generated_filenames:
                 try:
                     os.remove(os.path.join(real_path, fname))

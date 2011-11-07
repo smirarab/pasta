@@ -24,7 +24,10 @@ class TreeEstimatorTest(unittest.TestCase):
     def tearDown(self):
         dir_list = self.ts.get_remaining_directories()
         for dir in dir_list:
-            self.ts.remove_dir(dir)
+            try:
+                self.ts.remove_dir(dir)
+            except ValueError:
+                pass
     def get_tree_estimator(self, name):
         try:
             return config.create_tree_estimator(name=name, temp_fs=self.ts)

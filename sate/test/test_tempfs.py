@@ -110,7 +110,8 @@ class TempFSTest(unittest.TestCase):
         self.assertTrue(not os.path.exists(sd))
         self.assertTrue(os.path.exists(tsd))
         self.assertEquals(self.ts.remove_dir(d), True)
-        self.assertEquals(self.ts.remove_dir(tsd), False) # higher level deletion gets this dir, too
+        self.assertFalse(os.path.exists(tsd))
+        self.assertRaises(ValueError, self.ts.remove_dir, tsd)
         self.assertRaises(ValueError, self.ts.remove_dir, d)
         self.assertRaises(ValueError, self.ts.create_subdir, 'bogus')
         self.assertRaises(OSError, self.ts.create_temp_subdir, prefix='bogus', parent=d)

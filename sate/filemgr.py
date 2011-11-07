@@ -10,6 +10,7 @@ File and path management.
 """
 
 import os
+import sys
 import re
 import tempfile
 import shutil

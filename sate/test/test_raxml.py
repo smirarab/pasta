@@ -42,6 +42,11 @@ your installation is not configured to run this tool.
 
     def _impl_test_tree_estimator(self, name, datatype, partitions):
         filename = data_source_path('anolis.fasta')
+
+        # md = MultiLocusDataset()
+        # md.read_files(seq_filename_list=[filename],
+        #         datatype=datatype)
+
         alignment = Alignment()
         alignment.read_filepath(filename, 'FASTA')
         te = self.get_tree_estimator(name)

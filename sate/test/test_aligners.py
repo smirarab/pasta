@@ -3,6 +3,7 @@
 import unittest
 import datetime
 import logging
+import sys
 import os
 
 from sate.test import get_testing_configuration, data_source_path, TestLevel, is_test_enabled

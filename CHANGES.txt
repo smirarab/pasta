@@ -1,3 +1,11 @@
+
+Release 2.1.0
+=============
+
+    - [BUG FIX] No longer write out duplicate sequence entries in final alignment output.
+    - [CHANGES] Do not clean up files and directories in temporary working directory not created by SATe.
+    - [BUG FIX] Check for gamma score in output file before using value in log file.
+
 Release 2.0.3
 =============
 

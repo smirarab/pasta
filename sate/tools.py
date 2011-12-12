@@ -102,7 +102,7 @@ def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=
         for line in reversed(open(log, 'rU').readlines()):
             if (line.split()[0] == 'Gamma20LogLk'):
                 score = float(line.split()[1])
-                break                                                                      
+                break
             if (line.split()[0] == 'TreeLogLk'):
                 score = float(line.split()[2])
                 break
@@ -336,6 +336,7 @@ class PrankAligner(Aligner):
         scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
 
         invoc = [self.exe, '-once', '-noxml', '-notree', '-nopost', '+F', '-quiet', '-matinitsize=5', '-uselogs', '-d=%s' % seqfn, '-o=%s' % alignedfn]
+        invoc.extend(self.user_opts)
         alignedfn = alignedfn + '.1.fas'
 
         return self._finish_standard_job(alignedfn=alignedfn,

@@ -4,28 +4,35 @@ Overview
 
 http://phylo.bio.ku.edu/software/sate/sate.html
 
-SATe is a tool for producing trees from unaligned sequence data by iteratively
-creating alignments using a divide-and-conquer strategy of the ML tree.
+SATe is a tool for producing trees and alignments
+from unaligned sequence data, by iteratively
+creating alignments using a divide-and-conquer strategy of the ML tree
+from the previous iteration,
+and then
+computing a new ML tree on the new alignment.
 
-Currently RAxML is used for tree inference from aligned matrices. The 'GTRMIX'
+Currently RAxML is used for tree inference from aligned sequences. The 'GTRMIX'
 model option in RAxML (searching under the 'GTRCAT', but scoring the final tree
 under 'GTRGAMMA') is used for DNA sequences, while the 'PROTMIXWAGF' model is
 used for amino acid sequences.
 
-The reference for the algorithmic approach is:
+
+The references for the algorithmic approach are:
 
     Kevin Liu, Sindhu Raghavan, Serita Nelesen, C. Randal Linder, and  Tandy
-    Warnow "Rapid and Accurate Large-Scale Coestimation of Sequence Alignments
+    Warnow. "Rapid and Accurate Large-Scale Coestimation of Sequence Alignments
     and Phylogenetic Trees" Science. 2009. Vol. 324(5934), pp. 1561- 1564.
-
     DOI: 10.1126/science.1171243
 
-The manuscript describing the recursive decomposition approach that is
-implemented in the GUI version is currently in review.
+    Kevin Liu, Tandy Warnow, Mark T. Holder, Serita Nelesen, Jiaye Yu,
+    Alexis Stamatakis, and C. Randal Linder. "SATe-II: Very Fast and Accurate
+    Simultaneous Estimation of Multiple Sequence Alignments and Phylogenetic
+    Trees."  Systematic Biology, 61(1):90-106, 2011.
 
-The GUI version is written by Dr. Jiaye Yu (with some code contributions by Dr.
-Mark Holder as well as the use of the Dendropy library of Sukumaran and
-Holder).
+
+The GUI version is written by Jiaye Yu, with some code contributions by Dr.
+Mark Holder, Jeet Sukumaran, and Siavash Mirarab, as well as the use of the
+Dendropy library of Sukumaran and Holder.
 
 
 #######
@@ -37,7 +44,7 @@ SATe software is currently available for testing purposes.
 Please check your results carefully, and contact us if you have questions,
 suggestions or other feedback.
 
-We are aware the the error-reporting needs work. If the software fails to
+We are aware that the error-reporting needs work. If the software fails to
 produce output files despite the fact it announces that it is finished, then an
 error has occurred.  We are working on having SATe give useful error messages.
 In the meantime, please contact us for help if you experience problems running
@@ -69,7 +76,7 @@ of the algorithm.
 If you do NOT give it a starting tree sequences, then SATe will use RAxML to
 infer the initial tree.  This requires an alignment.  If all of the input
 sequences are of the same length, then SATe will assume that you are providing
-it with an aligned matrix; it will realign the data during the course of the
+it with an alignment matrix; it will realign the data during the course of the
 algorithm, but the initial tree search will be conducted on the alignment that
 you supply. If your initial sequences do not have the same length and you do
 not supply a tree, then SATe will use the alignment tool that you have selected
@@ -80,6 +87,7 @@ to produce an initial alignment for the entire dataset (this can be slow).
     alignment operations. In the meantime, if you want a "quick and dirty"
     alignment for the initial tree searching, you will need to produce this
     alignment yourself and then give it to SATe.
+
 
 ##################################
 External Tools (upper left corner)
@@ -152,9 +160,9 @@ tool that you have chosen.
       iterations ("Iteration Limit" settings) or the amount of time in hours (the
       "Time Limit (h)" settings).
 
-    * If you choose the "Blind Mode Enabled", mode SATe will accept tree/alignment
+    * If you choose "Blind Mode Enabled", SATe will accept tree/alignment
       proposals even if they do not improve the ML score. At the end of the run, the
-      tree alignment pair with the highest ML score will be returned.  If "blind"
+      tree alignment pair with the highest ML score will be returned.  If the "blind"
       mode is not in effect, then only pairs with a higher ML score will be accepted.
 
     * When you are running in "blind" mode, you can elect to have the stopping rule
@@ -167,8 +175,8 @@ tool that you have chosen.
       rule counts the number of iterations (or amount of time) since the last
       improvement in score.
 
-    * Thus, if you choose BLIND mode, an Iteration Limit of 1, and "after list
-      improvement", then SATe will terminate if it ever completes one iteration
+    * Thus, if you choose BLIND mode, an Iteration Limit of 1, and "after last
+      improvement", then SATe will terminate if it even completes one iteration
       without improving the ML score. The effect of this will be that SATe iterations
       act like a strictly uphill climber in terms of the ML score.
 
@@ -200,7 +208,7 @@ in your environment will display full stack traces on error exits.
 
 Putting:
     SATE_LOGGING_LEVEL=debug
-in your environment will display debuggingl level logged messages
+in your environment will display debugging level logged messages
 
 
 Putting:

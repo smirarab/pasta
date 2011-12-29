@@ -168,12 +168,12 @@ tool that you have chosen.
     * When you are running in "blind" mode, you can elect to have the stopping rule
       count the number of iterations (or the time) over the entire run, or you can
       use a termination condition that is based on the progress since the last
-      improvement in ML score.  Often this corresponds to the decrease in ML score
-      when SATe enters "blind mode." If you check the checkbox labelled "Stop Rule
-      Applied Only After Blind Mode Entered" then the counters for the stopping rule
-      will be reset whenever the ML score improves.  This means that the stopping
-      rule counts the number of iterations (or amount of time) since the last
-      improvement in score.
+      improvement in ML score.  Often this corresponds to the improvement in ML
+      score when SATe enters "blind mode." If you check the checkbox labelled
+      "Stop Rule Applied Only After Blind Mode Entered" then the counters for
+      the stopping rule will be reset whenever the ML score improves.  This
+      means that the stopping rule counts the number of iterations (or amount
+      of time) since the last improvement in score.
 
     * Thus, if you choose BLIND mode, an Iteration Limit of 1, and "after last
       improvement", then SATe will terminate if it even completes one iteration

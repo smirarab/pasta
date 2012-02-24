@@ -16,7 +16,7 @@ config = get_testing_configuration()
 class MainTest(unittest.TestCase):
     def _main_execution(self, argv, stderr=None, stdout=None, rc=0):
         try:
-            cmd = "import sys; from sate.mainsate import main_sate; main_sate(%s)[0] or sys.exit(1)" % repr(argv)
+            cmd = "import sys; from sate.mainsate import sate_main; sate_main(%s)[0] or sys.exit(1)" % repr(argv)
             invoc = [sys.executable, '-c', cmd]
             _LOG.debug("Command:\n\tpython -c " + repr(cmd))
             p = subprocess.Popen(invoc,

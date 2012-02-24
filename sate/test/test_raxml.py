@@ -7,7 +7,7 @@ import os
 
 from sate.test import get_testing_configuration, data_source_path, TestLevel, is_test_enabled
 from sate import get_logger, log_exception
-from sate.alignment import Alignment
+from sate.alignment import Alignment, MultiLocusDataset
 from sate.scheduler import jobq, start_worker
 from sate.filemgr import TempFS
 
@@ -43,18 +43,18 @@ your installation is not configured to run this tool.
     def _impl_test_tree_estimator(self, name, datatype, partitions):
         filename = data_source_path('anolis.fasta')
 
-        # md = MultiLocusDataset()
-        # md.read_files(seq_filename_list=[filename],
-        #         datatype=datatype)
+        md = MultiLocusDataset()
+        md.read_files(seq_filename_list=[filename],
+                datatype=datatype)
 
-        alignment = Alignment()
-        alignment.read_filepath(filename, 'FASTA')
+        # alignment = Alignment()
+        # alignment.read_filepath(filename, 'FASTA')
         te = self.get_tree_estimator(name)
         if te is None:
             _LOG.warn("test%s skipped" % name)
             return
-        alignment.datatype = datatype
-        a = te.run(alignment=alignment,
+        # alignment.datatype = datatype
+        a = te.run(alignment=md,
                    partitions=partitions,
                    tmp_dir_par=self.ts.top_level_temp,
                    delete_temps=True)

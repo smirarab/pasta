@@ -114,7 +114,7 @@ class SateJob (TreeHolder):
         self.multilocus_dataset = multilocus_dataset
         self.sate_team = sate_team
         self.tree = tree
-        self.score = None
+        self.score = kwargs.get('score', None)
         self.best_score = None
 
         self._tree_build_job = None

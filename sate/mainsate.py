@@ -176,6 +176,7 @@ def finish_sate_execution(sate_team,
                         sate_team=sate_team,
                         name=options.job,
                         status_messages=MESSENGER.send_info,
+                        score=score,
                         **sate_config_dict)
         job.tree_str = starting_tree_str
         if score is not None:

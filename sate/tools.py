@@ -636,9 +636,14 @@ class FastTree(TreeEstimator):
             invoc.extend([datatype])
 
         model = self.model  if self.model is not None else ''
+
         if model != '':
             model = model.split(' ')
             invoc.extend(model)
+        elif datatype == '-nt':
+            model = '-gtr'
+            invoc.append(model)
+            
         if options is not None and len(options) >=1 :
             invoc.extend(options)
 

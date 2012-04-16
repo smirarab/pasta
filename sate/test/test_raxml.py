@@ -46,7 +46,7 @@ your installation is not configured to run this tool.
         md = MultiLocusDataset()
         md.read_files(seq_filename_list=[filename],
                 datatype=datatype)
-
+        md.relabel_for_sate()
         # alignment = Alignment()
         # alignment.read_filepath(filename, 'FASTA')
         te = self.get_tree_estimator(name)

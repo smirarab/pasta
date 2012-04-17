@@ -20,7 +20,7 @@ class SateProductsTest(unittest.TestCase):
         self.product_results = []
 
     def tearDown(self):
-        shutil.rmtree(self.top_dir)
+        pass
 
     def create_input_files(self,
             job_subdir,

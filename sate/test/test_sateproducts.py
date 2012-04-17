@@ -5,7 +5,6 @@ import os
 import sys
 import tempfile
 import random
-import shutil
 from sate import filemgr
 from sate import get_logger
 from sate.configure import get_configuration

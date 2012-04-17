@@ -664,14 +664,13 @@ class FastTree(TreeEstimator):
         invoc.extend(['-log', log_file,    seqfn ])
 
         if num_cpus > 1:
-            os.putenv("OMP_NUM_THREADS", str(num_cpus))
-            invoc[0] += 'MP'
-#            if platform.system() == 'Windows':
-#                x = invoc[0].split('.')
-#                x[-2] += 'p'
-#                invoc[0] = '.'.join(x)
-#            else:
-#                invoc[0] += 'p'
+            if platform.system() == 'Windows':
+                mp_path = self.exe.replace('.', 'MP.')
+            else:
+                mp_path = self.exe + 'MP'
+            if os.path.exists(mp_path):
+                os.putenv("OMP_NUM_THREADS", str(num_cpus))
+                invoc[0] = mp_path
 
         dirs_to_delete = []
         if kwargs.get('delete_temps', self.delete_temps):

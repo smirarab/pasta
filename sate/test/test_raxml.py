@@ -28,14 +28,12 @@ class TreeEstimatorTest(unittest.TestCase):
                 'FASTA')
 
     def tearDown(self):
-        dir = self.ts.top_level_temp
-        shutil.rmtree(dir)
-        # dir_list = self.ts.get_remaining_directories()
-        # for dir in dir_list:
-        #     try:
-        #         self.ts.remove_dir(dir)
-        #     except ValueError:
-        #         pass
+        dir_list = self.ts.get_remaining_directories()
+        for dir in dir_list:
+            try:
+                self.ts.remove_dir(dir)
+            except ValueError:
+                pass
 
     def get_tree_estimator(self, name):
         try:

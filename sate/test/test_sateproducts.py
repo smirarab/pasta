@@ -5,7 +5,6 @@ import os
 import sys
 import tempfile
 import random
-import shutil
 from sate import filemgr
 from sate import get_logger
 from sate.configure import get_configuration
@@ -20,7 +19,7 @@ class SateProductsTest(unittest.TestCase):
         self.product_results = []
 
     def tearDown(self):
-        shutil.rmtree(self.top_dir)
+        pass
 
     def create_input_files(self,
             job_subdir,

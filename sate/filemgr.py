@@ -87,6 +87,8 @@ class TempFS(object):
         "start_treeinference_timestamp.txt",
         "tbfast",
         "trace",
+        "log",
+        "results",
         ]
 
     def __init__(self):

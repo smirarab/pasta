@@ -4,12 +4,10 @@ Overview
 
 http://phylo.bio.ku.edu/software/sate/sate.html
 
-SATe is a tool for producing trees and alignments
-from unaligned sequence data, by iteratively
-creating alignments using a divide-and-conquer strategy of the ML tree
-from the previous iteration,
-and then
-computing a new ML tree on the new alignment.
+SATe is a tool for producing trees and alignments from unaligned sequence data,
+by iteratively creating alignments using a divide-and-conquer strategy of the ML
+tree from the previous iteration, and then computing a new ML tree on the new
+alignment.
 
 Currently RAxML is used for tree inference from aligned sequences. The 'GTRMIX'
 model option in RAxML (searching under the 'GTRCAT', but scoring the final tree
@@ -30,9 +28,9 @@ The references for the algorithmic approach are:
     Trees."  Systematic Biology, 61(1):90-106, 2011.
 
 
-The GUI version is written by Jiaye Yu, with some code contributions by Dr.
-Mark Holder, Jeet Sukumaran, and Siavash Mirarab, as well as the use of the
-Dendropy library of Sukumaran and Holder.
+The GUI version is written by Jiaye Yu, with some code contributions by Dr. Mark
+Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks, as well as the use of
+the Dendropy library of Sukumaran and Holder.
 
 
 #######
@@ -104,8 +102,8 @@ tools used for each step:
       produce the initial full alignment (this can be slow!), and to align the
       subproblems.
 
-    * "Merger" is used to select the multiple sequence alignment tool used to merge
-      the alignments of subproblems into a larger alignment.
+    * "Merger" is used to select the multiple sequence alignment tool used to
+      merge the alignments of subproblems into a larger alignment.
 
     * "Tree estimator" will allow you to choose the software for tree inference
       from a fixed alignment (currently only RAxML is supported).
@@ -125,8 +123,8 @@ Sequences and Tree (lower left)
 
     * Clicking the "Result Directory (optional)..." button will allow you to
       choose the output directory to which to save the final alignment and tree.
-      By default, the results will be written to the same directory as the source
-      data file.
+      By default, the results will be written to the same directory as the
+      source data file.
 
     * Use the "Data type" drop down menu to specify whether the data should be
       treated as DNA or amino acid sequences (because of the 15 IUPAC codes for
@@ -143,47 +141,48 @@ During each iteration, the dataset will be decomposed into non-overlapping
 subsets of sequences, and then these subproblems are given to the alignment
 tool that you have chosen.
 
-    * The "Max. Subproblem" settings control the largest dataset that will be aligned
-      during the iterative part of the algorithm.  Use the "Fraction" button and the
-      associated drop-down menu if you would like to express the maximum problem size
-      as a percentage of the total number of taxa in the full dataset (eg. 20 for
-      "20%").
+    * The "Max. Subproblem" settings control the largest dataset that will be
+      aligned during the iterative part of the algorithm.  Use the "Fraction"
+      button and the associated drop-down menu if you would like to express the
+      maximum problem size as a percentage of the total number of taxa in the
+      full dataset (eg. 20 for "20%").
 
-    * If you want to express the size cutoff in absolute number of sequences, use the
-      "Size" button and its drop-down menu.
+    * If you want to express the size cutoff in absolute number of sequences,
+      use the "Size" button and its drop-down menu.
 
-    * "Decomposition" allows you to select the procedure used to find the edge that
-      should be broken to create subproblems.
+    * "Decomposition" allows you to select the procedure used to find the edge
+      that should be broken to create subproblems.
 
-    * The "Stopping Rule" section allows you to control how SATe decides that it is
-      done. The decision to stop the run can be done based on the number of
-      iterations ("Iteration Limit" settings) or the amount of time in hours (the
-      "Time Limit (h)" settings).
+    * The "Stopping Rule" section allows you to control how SATe decides that it
+      is done. The decision to stop the run can be done based on the number of
+      iterations ("Iteration Limit" settings) or the amount of time in hours
+      (the "Time Limit (h)" settings).
 
     * If you choose "Blind Mode Enabled", SATe will accept tree/alignment
-      proposals even if they do not improve the ML score. At the end of the run, the
-      tree alignment pair with the highest ML score will be returned.  If the "blind"
-      mode is not in effect, then only pairs with a higher ML score will be accepted.
+      proposals even if they do not improve the ML score. At the end of the run,
+      the tree alignment pair with the highest ML score will be returned.  If
+      the "blind" mode is not in effect, then only pairs with a higher ML score
+      will be accepted.
 
-    * When you are running in "blind" mode, you can elect to have the stopping rule
-      count the number of iterations (or the time) over the entire run, or you can
-      use a termination condition that is based on the progress since the last
-      improvement in ML score.  Often this corresponds to the improvement in ML
-      score when SATe enters "blind mode." If you check the checkbox labelled
-      "Stop Rule Applied Only After Blind Mode Entered" then the counters for
-      the stopping rule will be reset whenever the ML score improves.  This
-      means that the stopping rule counts the number of iterations (or amount
-      of time) since the last improvement in score.
+    * When you are running in "blind" mode, you can elect to have the stopping
+      rule count the number of iterations (or the time) over the entire run, or
+      you can use a termination condition that is based on the progress since
+      the last improvement in ML score.  Often this corresponds to the
+      improvement in ML score when SATe enters "blind mode." If you check the
+      checkbox labelled "Stop Rule Applied Only After Blind Mode Entered" then
+      the counters for the stopping rule will be reset whenever the ML score
+      improves.  This means that the stopping rule counts the number of
+      iterations (or amount of time) since the last improvement in score.
 
     * Thus, if you choose BLIND mode, an Iteration Limit of 1, and "after last
       improvement", then SATe will terminate if it even completes one iteration
-      without improving the ML score. The effect of this will be that SATe iterations
-      act like a strictly uphill climber in terms of the ML score.
+      without improving the ML score. The effect of this will be that SATe
+      iterations act like a strictly uphill climber in terms of the ML score.
 
     * "CPU(s) Available" allows you to specify how many processors should be
-      dedicated to the alignment tasks of SATe. If you have a dual-core machine, then
-      choosing 2 should decrease the running time of SATe because subproblem
-      alignment will be conducted in parallel.
+      dedicated to the alignment tasks of SATe. If you have a dual-core machine,
+      then choosing 2 should decrease the running time of SATe because
+      subproblem alignment will be conducted in parallel.
 
     * "Maximum MB" lets you specify the size of the Java Virtual Machine (JVM)
       heap to be allocated when running Java tools such as Opal. This should
@@ -193,9 +192,9 @@ tool that you have chosen.
       to 1024 MB (versions of SATe prior to 2.0.3 had a default of 2048 MB,
       and did not allow the option of changing this).
 
-    * "Job Name" allows you to specify an identifier for the output files created by
-      running SATe. Files tagged with this name will appear in the output directory
-      when the run completes.
+    * "Job Name" allows you to specify an identifier for the output files
+      created by running SATe. Files tagged with this name will appear in the
+      output directory when the run completes.
 
 
 

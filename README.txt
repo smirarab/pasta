@@ -28,7 +28,7 @@ The references for the algorithmic approach are:
     Trees."  Systematic Biology, 61(1):90-106, 2011.
 
 
-The GUI version is written by Jiaye Yu, with some code contributions by Dr. Mark
+The GUI version is written by Jiaye Yu, with some code contributions by Mark T.
 Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks, as well as the use of
 the Dendropy library of Sukumaran and Holder.
 

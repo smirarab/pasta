@@ -275,6 +275,24 @@ class UserSettingGroup(object):
             if v is not None:
                 o.value = v
 
+def get_list_of_seq_filepaths_from_dir(dir_path):
+    """
+    Given a directory, finds all '*.fas' and '*.fasta' files and returns them 
+    as a list of absolute paths.
+    """
+    if not dir_path:
+        raise Exception("Sequence file directory must be specified for multilocus analysis.\n")
+    if not os.path.exists(dir_path):
+        raise Exception("The input sequence file directory '%s' does not exist.\n" % dir_path)
+    if not os.path.isdir(dir_path):
+        raise Exception("The input sequence files must be put into one directory for multilocus analysis, '%s' is not a directory.\n" % dir_path)
+    dot_fas_glob = os.path.join(os.path.abspath(dir_path), '*.fas')
+    dot_fasta_glob = os.path.join(os.path.abspath(dir_path), '*.fasta')
+    seq_filename_list = glob.glob(dot_fas_glob) + glob.glob(dot_fasta_glob)
+    if len(seq_filename_list) == 0:
+        raise Exception("No files found with extension '.fas' or '.fasta' in directory: '%s'" % dir_path)
+    return seq_filename_list
+
 class UserSettingsContainer(object):
 
     def __init__(self):
@@ -287,17 +305,7 @@ class UserSettingsContainer(object):
         Given a directory, finds all '*.fas' and '*.fasta' files and adds
         to `self.input_seq_filepaths`
         """
-        if not dir_path:
-            raise Exception("Sequence file directory must be specified for multilocus analysis.\n")
-        if not os.path.exists(dir_path):
-            raise Exception("The input sequence file directory '%s' does not exist.\n" % dir_path)
-        if not os.path.isdir(dir_path):
-            raise Exception("The input sequence files must be put into one directory for multilocus analysis, '%s' is not a directory.\n" % dir_path)
-        dot_fas_glob = os.path.join(os.path.abspath(dir_path), '*.fas')
-        dot_fasta_glob = os.path.join(os.path.abspath(dir_path), '*.fasta')
-        seq_filename_list = glob.glob(dot_fas_glob) + glob.glob(dot_fasta_glob)
-        if len(seq_filename_list) == 0:
-            raise Exception("No files found with extension '.fas' or '.fasta' in directory: '%s'" % dir_path)
+        seq_filename_list = get_list_of_seq_filepaths_from_dir(dir_path)
         self.input_seq_filepaths.extend(seq_filename_list)
 
     def read_seq_filepaths_from_delimited_string(self, dstr, delimiter=","):

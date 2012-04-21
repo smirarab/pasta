@@ -278,7 +278,7 @@ class SequenceDataset(object):
         return getattr(self.dataset, DATASET_TAXA_ATTR)[0]
     taxa = property(get_taxa_block)
 
-    def read(self, file_obj, file_format='FASTA', datatype=None, filename='<unknown>'):
+    def read(self, file_obj, file_format='FASTA', datatype=None, filename='<unknown>', careful_parse=False):
         """If the datatype is fasta (or some other type that does not
         specify the type of data, then the datatype arg should be DNA, RNA
         or 'PROTEIN'
@@ -297,7 +297,10 @@ class SequenceDataset(object):
         try:
             import dendropy
             self.dataset = dendropy.DataSet()
-            self.dataset.read(file_obj, schema=file_format, row_type='str')
+            if careful_parse:
+                self.dataset.read(file_obj, schema=file_format)
+            else:
+                self.dataset.read(file_obj, schema=file_format, row_type='str')
             n1 = len(self.dataset.taxon_sets[0].labels())
             n2 = len(set(self.dataset.taxon_sets[0].labels()))
             if n1 != n2:
@@ -369,7 +372,8 @@ class MultiLocusDataset(list):
         seq_filename_list,
         datatype,
         missing=None,
-        file_format='FASTA'):
+        file_format='FASTA',
+        careful_parse=False):
         """
         Return a MultiLocusDataset object or raises an `Exception`
 
@@ -391,7 +395,8 @@ class MultiLocusDataset(list):
                 sd.read(fileobj,
                         file_format=file_format,
                         datatype=datatype,
-                        filename=seq_fn)
+                        filename=seq_fn,
+                        careful_parse=careful_parse)
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
             except Exception, x:
                 raise Exception("Error reading file:\n%s\n" % str(x))
@@ -537,3 +542,35 @@ class MultiLocusDataset(list):
         return len(t)
     def get_num_loci(self):
         return len(self)
+
+def summary_stats_from_parse(filepath_list, datatype_list):
+    """
+    Returns a tuple of information about the datafiles found in `filepath_list`
+    `datatype_list` provides the order that datatypes should be checked. The 
+    first datatype that parses the file will result in the returned tuple.
+    
+    The returned tuple, el,  consists of
+        el[0] the datatype,
+        el[1] a list of pairs of number of taxa and max number of sites for each
+            datafile read
+        el[2] is the total number of taxa encountered (size of the union of all
+            leaf sets.
+    """
+    is_multi_locus = len(filepath_list) > 1
+    caught_exception = None
+    for datatype in datatype_list:
+        md = MultiLocusDataset()
+        try:
+            md.read_files(filepath_list, datatype, careful_parse=True)
+            total_n_leaves = 0
+            taxa_char_tuple_list = []
+            for element in md:
+                mat = element.get_character_matrix()
+                ntax = len(mat)
+                nchar = max([len(row) for row in mat.values()])
+                t_c_pair = (ntax, nchar)
+                taxa_char_tuple_list.append(t_c_pair)
+            return (datatype, taxa_char_tuple_list, len(md.dataset.taxon_sets[0]))
+        except Exception, e:
+            caught_exception = e
+    raise e

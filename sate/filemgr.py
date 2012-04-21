@@ -71,7 +71,7 @@ class TempFS(object):
         "infile.tree",
         "input.aligned",
         "input.fasta",
-        "input.fasta",
+        "input.dnd",
         "input.phy",
         "input.phy.reduced",
         "last_used.cfg",

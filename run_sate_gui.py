@@ -44,11 +44,14 @@ from sate.tools import MergerClasses
 from sate.tools import TreeEstimatorClasses
 from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
 from sate import filemgr
+from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
+from sate.alignment import summary_stats_from_parse
 
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
 GRID_HGAP = 8
 
+PARSING_FILES_IN_GUI = True
 
 class SateFrame(wx.Frame):
 
@@ -57,7 +60,7 @@ class SateFrame(wx.Frame):
         self.SetBackgroundColour(wx.LIGHT_GREY)
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("SATe Ready!")
-        if wx.Platform == '__WXMSW__' or wx.Platform == '__WXMAC__':
+        if wx.Platform == "__WXMSW__" or wx.Platform == "__WXMAC__":
             import base64
             import cStringIO
             icon = wx.EmptyIcon()
@@ -95,9 +98,9 @@ class SateFrame(wx.Frame):
         sizer_all.Add(self.sizer_settings, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 10)
 
         self.button = wx.Button(self, label="Start")
-        self.log = wx.TextCtrl(self, -1, '', size=(200,120),style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_RICH2)
+        self.log = wx.TextCtrl(self, -1, "", size=(200,120),style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_RICH2)
         self.log.AppendText(WELCOME_MESSAGE)
-        self.log.AppendText('Running Log (%s %s)\n\n' % (time.strftime("%Y-%m-%d %H:%M:%S"), time.tzname[0]))
+        self.log.AppendText("Running Log (%s %s)\n\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), time.tzname[0]))
         sizer_all.Add(self.button, 0, wx.BOTTOM|wx.ALIGN_CENTER, 10)
         sizer_all.Add(self.log, 4, wx.EXPAND)
 
@@ -118,12 +121,12 @@ class SateFrame(wx.Frame):
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
         cr = 0
         sizer.Add(wx.StaticText(self, -1, "Job Name"),(cr,0), flag=wx.ALIGN_LEFT )
-        self.txt_jobname = wx.TextCtrl(self,-1,'satejob')
+        self.txt_jobname = wx.TextCtrl(self,-1,"satejob")
         sizer.Add(self.txt_jobname, (cr,1), flag=wx.EXPAND)
         cr += 1
         self.outputdir_btn = wx.Button(self, label="Output Dir." )
         sizer.Add(self.outputdir_btn,(cr,0), flag=wx.ALIGN_LEFT )
-        self.txt_outputdir = wx.TextCtrl(self, -1, '', size=(250,9))
+        self.txt_outputdir = wx.TextCtrl(self, -1, "", size=(250,9))
         sizer.Add(self.txt_outputdir, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "CPU(s) Available"), (cr,0), flag=wx.ALIGN_LEFT )
@@ -159,7 +162,7 @@ class SateFrame(wx.Frame):
         self.cb_sate_presets.SetValue("(custom)")
 
     def OnSatePresets(self, event):
-        #wx.MessageBox('Preset Selected (Binding 1)', 'Info')
+        #wx.MessageBox("Preset Selected (Binding 1)", "Info")
         preset_selection = self.cb_sate_presets.GetValue()
         if preset_selection != "(custom)":
             self.cb_decomp.SetValue("Longest")
@@ -285,8 +288,8 @@ class SateFrame(wx.Frame):
 
         timelimit_list = map(str, [i/100.0 for i in range(1,10)] + [i/10.0 for i in range(1,10)] + range(1,73))
         iterlimit_list = map(str, [1, 5, 10, 20, 50, 100, 200, 500, 1000])
-        self.rb_maxsub1 = wx.RadioButton(self, -1, "Fraction", name='frac', style=wx.RB_GROUP)
-        self.rb_maxsub2 = wx.RadioButton(self, -1, "Size", name='size')
+        self.rb_maxsub1 = wx.RadioButton(self, -1, "Fraction", name="frac", style=wx.RB_GROUP)
+        self.rb_maxsub2 = wx.RadioButton(self, -1, "Size", name="size")
         self.cb_maxsub1 = wx.ComboBox(self, -1, "20", choices=map(str, range(1,51)), style=wx.CB_READONLY)
         self.cb_maxsub2 = wx.ComboBox(self, -1, "200", choices=map(str, range(1,201)), style=wx.CB_READONLY)
 
@@ -322,7 +325,7 @@ class SateFrame(wx.Frame):
                            self.cb_apply_stop_rule,
                            ])
 
-        strategy_list = ['Centroid', 'Longest']
+        strategy_list = ["Centroid", "Longest"]
         self.cb_decomp = wx.ComboBox(self, -1, "Longest", choices=strategy_list, style=wx.CB_READONLY)
 
         self.ctrls.append(self.cb_decomp)
@@ -448,11 +451,11 @@ class SateFrame(wx.Frame):
         dialog.ShowModal()
         fn = dialog.GetPath()
         if len(fn) > 4:
-            if not fn[-4:] == '.log':
+            if not fn[-4:] == ".log":
                 fn += ".log"
         else:
             fn += ".log"
-        fc = open(fn, 'w')
+        fc = open(fn, "w")
         fc.write(self.log.GetValue())
         fc.close()
 
@@ -504,28 +507,92 @@ class SateFrame(wx.Frame):
         info = wx.AboutDialogInfo()
         info.SetName(PROGRAM_NAME)
         info.SetVersion(PROGRAM_VERSION)
-        info.SetCopyright('Copyright (C) %s' % PROGRAM_YEAR)
-        info.SetWebSite((PROGRAM_WEBSITE, '%s Homepage' % PROGRAM_NAME))
+        info.SetCopyright("Copyright (C) %s" % PROGRAM_YEAR)
+        info.SetWebSite((PROGRAM_WEBSITE, "%s Homepage" % PROGRAM_NAME))
         info.SetLicense(PROGRAM_LICENSE)
         info.SetDescription(PROGRAM_DESCRIPTION)
         [info.AddDeveloper(i) for i in PROGRAM_AUTHOR]
         wx.AboutBox(info)
 
     def OnChooseSeq(self, event):
-        if not self.cb_multilocus.Value:
-            dialog = wx.FileDialog(None, "Choose sequences...", wildcard = "FASTA files (*.fasta)|*.fasta|FASTA files (*.fas)|*.fas", style=wx.FD_OPEN)
+        filepath = None
+        parse_as_multilocus = self.cb_multilocus.Value
+        if not parse_as_multilocus:
+            dialog = wx.FileDialog(None, "Choose sequences...", wildcard = "FASTA files (*.fasta)|*.fasta|FASTA files (*.fas)|*.fas|FASTA files (*)|*", style=wx.FD_OPEN)
             dialog.ShowModal()
             self.txt_seqfn.SetValue( dialog.GetPath() )
-            f = self.txt_seqfn.GetValue()
-            if f and not self.txt_outputdir.GetValue():
-                self.txt_outputdir.SetValue(os.path.dirname(os.path.abspath(f)))
+            filepath = self.txt_seqfn.GetValue()
+            if filepath and not self.txt_outputdir.GetValue():
+                self.txt_outputdir.SetValue(os.path.dirname(os.path.abspath(filepath)))
         else:
             dialog = wx.DirDialog(None, "Choose directory for multiple sequence files", style=wx.FD_OPEN)
             dialog.ShowModal()
             self.txt_seqfn.SetValue( dialog.GetPath() )
-            f = self.txt_seqfn.GetValue()
-            if f and not self.txt_outputdir.GetValue():
-                self.txt_outputdir.SetValue(os.path.abspath(f))
+            filepath = self.txt_seqfn.GetValue()
+        if PARSING_FILES_IN_GUI and filepath:
+            confirm_parse_dlg = wx.MessageDialog(parent=self,  
+                                                 message="Do you want SATe to read the data now? (this SATe to customize some of the settings for your data).",
+                                                 caption="Read input data now?", 
+                                                 style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+            result = confirm_parse_dlg.ShowModal()
+            confirm_parse_dlg.Destroy()
+            if result == wx.ID_OK:
+                progress_dialog = wx.ProgressDialog(title="Reading input data",
+                                         message="Parsing data files        ",
+                                         maximum=100,
+                                         parent=self,
+                                         style=wx.PD_AUTO_HIDE|wx.PD_APP_MODAL)
+                progress_dialog.Update(1, "Beginning Parse")
+                error_msg = None
+                try:
+                    if parse_as_multilocus:
+                        fn_list = get_list_of_seq_filepaths_from_dir(filepath)
+                    else:
+                        fn_list = [filepath]
+                    if self.datatype.Value == "Protein":
+                        datatype_list = ["PROTEIN"]
+                    else:
+                        datatype_list = ["DNA", "PROTEIN"]
+                    summary_stats = summary_stats_from_parse(fn_list, datatype_list)
+                    progress_dialog.Update(100, "Done")
+                except Exception, x:
+                    try:
+                        error_msg = "Problem reading the data:\n" + str(x.message)
+                    except:
+                        error_msg = "Unknown error encountered while reading the data."
+                except:
+                    error_msg = "Unknown error encountered while reading the data."
+                if error_msg:
+                    error_msg_dlg = wx.MessageDialog(parent=self,  
+                                                 message=error_msg,
+                                                 caption="Input parsing error",
+                                                 style=wx.OK|wx.ICON_ERROR)
+                    error_msg_dlg.ShowModal()
+                    error_msg_dlg.Destroy()
+                    filepath = None
+                else:
+                    read_type = summary_stats[0]
+                    if read_type == "PROTEIN":
+                        self.datatype.SetValue("Protein")
+                    else:
+                        self.datatype.SetValue("Nucleotide")
+                    self.log.AppendText("Read %d file(s) with %s data. Total of %d taxa found.\n" % (len(fn_list), read_type, summary_stats[2]))
+                    by_file = summary_stats[1]
+                    for n, fn in enumerate(fn_list):
+                        t_c_tuple = by_file[n]
+                        self.log.AppendText('  Parsing of the file "%s" returned %d sequences, longest length = %d\n' % (fn, t_c_tuple[0], t_c_tuple[1]))
+
+                    
+                progress_dialog.Destroy()
+        if filepath:
+            if not parse_as_multilocus:
+                if filepath and not self.txt_outputdir.GetValue():
+                    self.txt_outputdir.SetValue(os.path.dirname(os.path.abspath(filepath)))
+            else:
+                if filepath and not self.txt_outputdir.GetValue():
+                    self.txt_outputdir.SetValue(os.path.abspath(filepath))
+        else:
+            self.txt_seqfn.SetValue("")
 
     def OnChooseTree(self, event):
         dialog = wx.FileDialog(None, "Choose tree...", wildcard = "Tree files (*.tree)|*.tree|Tree files (*.tre)|*.tre|Tree files (*.phy)|*.phy", style=wx.FD_OPEN)
@@ -557,16 +624,16 @@ class SateFrame(wx.Frame):
 
         self.process.Destroy()
         self.process = None
-        self.log.AppendText('Job %s is finished.\n' % self.txt_jobname.GetValue())
+        self.log.AppendText("Job %s is finished.\n" % self.txt_jobname.GetValue())
         self._remove_config_file()
         self._ReactivateOptions()
         self.statusbar.SetStatusText("SATe Ready!")
-        self.button.SetLabel('Start')
+        self.button.SetLabel("Start")
 
     def OnButton(self, event):
         if self.button.GetLabel() == "Start":
             self._OnStart()
-        elif self.button.GetLabel() == 'Stop':
+        elif self.button.GetLabel() == "Stop":
             self._OnStop()
         else:
             raise ValueError("Button label %s not recognized.\n" % self.button.GetLabel() )
@@ -607,36 +674,36 @@ class SateFrame(wx.Frame):
                 self._remove_config_file()
                 return
 
-            command.extend(['-i', filemgr.quoted_file_path(input_filename)])
+            command.extend(["-i", filemgr.quoted_file_path(input_filename)])
             if treefilename and os.path.isfile(treefilename):
-                command.extend(['-t', filemgr.quoted_file_path(treefilename)])
-            command.extend(['-j', filemgr.quoted_file_path(jobname) ])
+                command.extend(["-t", filemgr.quoted_file_path(treefilename)])
+            command.extend(["-j", filemgr.quoted_file_path(jobname) ])
             if self.datatype.Value == "Nucleotide":
                 dt = "dna"
             else:
                 dt = "protein"
-            command.extend(['-d', dt])
-            command.extend(['%s' % filemgr.quoted_file_path(self.process_cfg_file)])
+            command.extend(["-d", dt])
+            command.extend(["%s" % filemgr.quoted_file_path(self.process_cfg_file)])
             self.process = wx.Process(self)
             self.process.Redirect()
-            self.pid = wx.Execute( ' '.join(command), wx.EXEC_ASYNC, self.process)
+            self.pid = wx.Execute( " ".join(command), wx.EXEC_ASYNC, self.process)
             self.button.SetLabel("Stop")
             self.statusbar.SetStatusText("SATe Running!")
             self._FreezeOptions()
 
         else:
-            self.log.AppendText('Job %s is still running!\n' % self.txt_jobname.GetValue())
+            self.log.AppendText("Job %s is still running!\n" % self.txt_jobname.GetValue())
 
     def _OnStop(self):
         if self.process is not None:
-            self.log.AppendText('Job %s is terminated early.\n' % self.txt_jobname.GetValue())
+            self.log.AppendText("Job %s is terminated early.\n" % self.txt_jobname.GetValue())
             self.process.Kill(self.pid, wx.SIGKILL)
             self._remove_config_file()
             self._ReactivateOptions()
-            self.button.SetLabel('Start')
+            self.button.SetLabel("Start")
             self.statusbar.SetStatusText("SATe Ready!")
         else:
-            self.log.AppendText('No active SATe jobs to terminate!\n')
+            self.log.AppendText("No active SATe jobs to terminate!\n")
 
     def _create_config_file(self):
         from sate.configure import get_configuration
@@ -710,11 +777,11 @@ class SateFrame(wx.Frame):
         cfg.sate.max_mem_mb = max_mb
 
         # this creates a file that cannot be deleted while the Python
-        # process is running (under the mess that is called 'Windows')
+        # process is running (under the mess that is called "Windows")
         #tf, self.process_cfg_file = tempfile.mkstemp(dir=sate_home_dir(),
-        #        suffix='_internal.cfg')
+        #        suffix="_internal.cfg")
 
-        tf = tempfile.NamedTemporaryFile(suffix='_internal.cfg', dir=sate_home_dir())
+        tf = tempfile.NamedTemporaryFile(suffix="_internal.cfg", dir=sate_home_dir())
         self.process_cfg_file = tf.name
         tf.close()
         cfg.save_to_filepath(self.process_cfg_file)

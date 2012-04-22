@@ -45,6 +45,9 @@
 	<infile-option name="path" default="" category="muscle">
 		<help>Path to muscle exeutable</help>
 	</infile-option>
+	<infile-option name="path" default="" category="probalign">
+		<help>Path to ProbalignAligner exeutable</help>
+	</infile-option>
 	<outfile-option name="exportconfig" category="commandline">
 		<help>Export the configuration to the specified file and exit. This is useful if you want to combine several configurations and command line settings into a single configuration file to be used in other analyses.</help>
 	</outfile-option>
@@ -109,7 +112,7 @@
 	<int-option name="max_subproblem_size" default="3" category="sate" subcategory="decomposition" min="0">
 		<help>The maximum size (number of leaves) of subproblems.  When a subproblem contains this number of leaves (or fewer), then it will not be decomposed further.</help>
 	</int-option>
-	<number-option name="max_subproblem_frac" default="0.2" category="sate" subcategory="decomposition" min="0.0">
+	<number-option name="max_subproblem_frac" default="0.5" category="sate" subcategory="decomposition" min="0.0">
 		<help>The maximum size (number of leaves) of subproblems specified in terms as a proportion of the total number of leaves.  When a subproblem contains this number of leaves (or fewer), then it will not be decomposed further.</help>
 	</number-option>
 	<bool-option name="start_tree_search_from_current" default="False" category="sate" subcategory="searching">

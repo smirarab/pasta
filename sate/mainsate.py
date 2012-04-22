@@ -48,6 +48,22 @@ _LOG = get_logger(__name__)
 
 
 def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_num_tax):
+    """
+    Returns nested dictionaries with the following keys set:
+
+    "commandline" : ["multilocus", "datatype"],
+    "sate" : ["tree_estimator",  "aligner", "merger", "break_strategy",
+              "move_to_blind_on_worse_score",  "start_tree_search_from_current",
+              "after_blind_iter_without_imp_limit", "max_subproblem_size", 
+              "max_subproblem_frac", "num_cpus"],
+    "fasttree" : ["model"]
+
+
+    DO NOT delete keys from this dictionary without making sure that the GUI
+        code can deal with your change! This code is used to keep the --auto
+        command line option and the data-set dependent defaults of the GUI 
+        in sync!
+    """
     new_defaults = {}
     new_sate_defaults = {
         'tree_estimator' : 'fasttree',
@@ -84,8 +100,8 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     new_commandline_defaults = {
         'datatype' : datatype.lower()
         }
+    new_commandline_defaults['multilocus'] = bool(len(ntax_nchar_tuple_list) > 1)
     new_defaults['commandline'] = new_commandline_defaults
-    new_defaults['multilocus'] = bool(len(ntax_nchar_tuple_list) > 1)
     return new_defaults
 
 def killed_handler(n, frame):

@@ -46,6 +46,48 @@ _RunningJobs = None
 
 _LOG = get_logger(__name__)
 
+
+def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_num_tax):
+    new_defaults = {}
+    new_sate_defaults = {
+        'tree_estimator' : 'fasttree',
+        'aligner' : 'mafft',
+        'merger' : 'opal',
+        'break_strategy' : 'longest',
+        'move_to_blind_on_worse_score' : True,
+        'start_tree_search_from_current' : True,
+        'after_blind_iter_without_imp_limit' : 1,
+        }
+    if total_num_tax > 400:
+        new_sate_defaults['max_subproblem_size'] = 200
+        new_sate_defaults['max_subproblem_frac'] = 200.0/total_num_tax
+    else:
+        new_sate_defaults['max_subproblem_size'] = int(total_num_tax/2.0)
+        new_sate_defaults['max_subproblem_frac'] = 0.5
+    #new_sate_defaults[''] =
+    #new_sate_defaults[''] =
+    #new_sate_defaults[''] =
+    if datatype.lower() == 'protein':
+        new_defaults['fasttree'] = {'model' : '-wag -gamma'}
+    else:
+        new_defaults['fasttree'] = {'model' : '-gtr -gamma'}
+     
+    num_cpu = 1
+    try:
+        import multiprocessing
+        num_cpu = multiprocessing.cpu_count()
+        new_sate_defaults['num_cpus'] = num_cpu
+    except:
+        pass
+        
+    new_defaults['sate'] = new_sate_defaults
+    new_commandline_defaults = {
+        'datatype' : datatype.lower()
+        }
+    new_defaults['commandline'] = new_commandline_defaults
+    new_defaults['multilocus'] = bool(len(ntax_nchar_tuple_list) > 1)
+    return new_defaults
+
 def killed_handler(n, frame):
     global _RunningJobs
     if _RunningJobs:
@@ -311,6 +353,7 @@ def sate_main(argv=sys.argv):
         (options, args) = parser.parse_args(argv)
     #if options.multilocus:
     #    sys.exit("SATe: Multilocus mode is disabled in this release.")
+    
     config_filenames = list(args)
     for fn in config_filenames:
         if fn[0] == '"' and fn[-1] == '"':
@@ -324,13 +367,35 @@ def sate_main(argv=sys.argv):
     user_config.set_values_from_dict(options.__dict__)
     command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'satejob')
 
+
+    if user_config.commandline.auto:
+        if user_config.commandline.input is None:
+            sys.exit("ERROR: Input file(s) not specified.")
+        from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
+        from sate.alignment import summary_stats_from_parse
+        user_config.commandline.auto = False
+        try:
+            if user_config.commandline.multilocus:
+                fn_list = get_list_of_seq_filepaths_from_dir(user_config.commandline.input)
+            else:
+                fn_list = [user_config.commandline.input]
+            datatype_list = [user_config.commandline.datatype.upper()]
+            summary_stats = summary_stats_from_parse(fn_list, datatype_list)
+        except:
+            MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
+            raise
+        auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
+        user_config.set_values_from_dict(auto_opts['sate'])
+        user_config.set_values_from_dict(auto_opts['commandline'])
+        user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+
     exportconfig = command_line_group.exportconfig
     if exportconfig:
         command_line_group.exportconfig = None
         user_config.save_to_filepath(exportconfig)
 
         ### TODO: wrap up in messaging system
-        sys.stdout.write('Configuration written to "%s". Exiting successfully.' % exportconfig )
+        sys.stdout.write('Configuration written to "%s". Exiting successfully.\n' % exportconfig )
 
         return True, None, None
 

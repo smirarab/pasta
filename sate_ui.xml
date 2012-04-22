@@ -73,7 +73,7 @@
 		<choice value="DNA"></choice>
 		<choice value="RNA" ></choice>
 		<choice value="Protein" ></choice>
-		<help>Specify DNA, RNA, or Protein to indicate what type of data is specified (if the input file format does not identify the datatype).</help>
+		<help>Specify DNA, RNA, or Protein to indicate what type of data is specified.</help>
 	</choice-option>
 	<bool-option name="keeptemp" short="k" default="False" category="commandline">
 		<help>Keep temporary running files?</help>
@@ -89,6 +89,9 @@
 		<choice value="Absent" ></choice>
 		<help>How to deal with missing data symbols. Specify either &quot;Ambiguous&quot; or &quot;Absent&quot; if the input data contains ?-symbols</help>
 	</choice-option>
+    <bool-option name="auto" default="False" category="commandline">
+		<help>If used, then default values for the max_subproblem_size and tools will be used based on the dataset size. WARNING: using this option can cause SATe to override some of the other options that you have supplied; we recommend that you run this option with --exportconfig to see the exact set of options that will be used in your analysis.</help>
+	</bool-option>
 	<int-option name="num_cpus" default="1" min="1" category="sate" subcategory="platform" must-be-valid="True">
 		<help>The number of processing cores that you would like to assign to SATe.  This number should not exceed the number of cores on your machine.</help>
 	</int-option>
@@ -101,7 +104,7 @@
 	<string-option name="merger" default="muscle" category="sate" subcategory="tools">
 		<help>The name of the alignment program to use to merge subproblems.</help>
 	</string-option>
-	<string-option name="tree_estimator" default="raxml" category="sate" subcategory="tools">
+	<string-option name="tree_estimator" default="fasttree" category="sate" subcategory="tools">
 		<help>The name of the tree inference program to use to find trees on fixed alignments.</help>
 	</string-option>
 	<choice-option name="break_strategy" default="centroid" multichoice="True" category="sate" subcategory="decomposition">

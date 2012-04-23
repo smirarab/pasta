@@ -181,12 +181,13 @@ def finish_sate_execution(sate_team,
         prev_signals.append((sig, prev_handler))
 
     try:
-        if tree_file:
+        if (not options.two_phase) and tree_file:
             # getting the newick string here will allow us to get a string that is in terms of the correct taxon labels
             starting_tree_str = starting_tree.compose_newick()
         else:
-            MESSENGER.send_info("Performing initial tree search to get starting tree...")
-            if not options.aligned:
+            if not options.two_phase:
+                MESSENGER.send_info("Performing initial tree search to get starting tree...")
+            if (options.two_phase) or (not options.aligned):
                 MESSENGER.send_info("Performing initial alignment of the entire data matrix...")
                 init_aln_dir = os.path.join(temporaries_dir, 'init_aln')
                 init_aln_dir = sate_team.temp_fs.create_subdir(init_aln_dir)
@@ -246,10 +247,11 @@ def finish_sate_execution(sate_team,
                     new_score=score,
                     curr_timestamp=time.time())
 
-        _RunningJobs = job
-        MESSENGER.send_info("Starting SATe algorithm on initial tree...")
-        job.run(tmp_dir_par=temporaries_dir)
-        _RunningJobs = None
+        if not options.two_phase:
+            _RunningJobs = job
+            MESSENGER.send_info("Starting SATe algorithm on initial tree...")
+            job.run(tmp_dir_par=temporaries_dir)
+            _RunningJobs = None
         job.multilocus_dataset.restore_taxon_names()
         assert len(sate_products.alignment_streams) == len(job.multilocus_dataset)
         for i, alignment in enumerate(job.multilocus_dataset):

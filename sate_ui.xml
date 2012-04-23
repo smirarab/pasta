@@ -69,6 +69,9 @@
 	<bool-option name="aligned" short="a" default="False" category="commandline">
 		<help>If used, then the input file be will treated as aligned for the purposes of the first round of tree inference (the algorithm will start with tree searching on the input before re-aligning). This option only applies if a starting tree is NOT given.</help>
 	</bool-option>
+	<bool-option name="two_phase" default="False" category="commandline">
+		<help>If used, then the program will not perform the SATe algorithm. Instead it will simply call the sequence aligner to align the entire dataset then will call the tree estimator to obtain the tree.</help>
+	</bool-option>
 	<bool-option name="trusted" default="False" category="commandline">
 		<help>If used, then the data in the input file will not be carefully parsed. Using the trusted option will make the initial parsing a bit faster, but it will lead to more cryptic error messages if the input data is not valid.</help>
 	</bool-option>

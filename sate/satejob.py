@@ -56,6 +56,7 @@ class SateTeam (object):
             self.merger = config.create_merger(temp_fs=self._temp_fs)
             self.merger.max_mem_mb = max_mem_mb
             self.tree_estimator = config.create_tree_estimator(temp_fs=self._temp_fs)
+            self.raxml_tree_estimator = config.create_tree_estimator(name='Raxml', temp_fs=self._temp_fs)
         except AttributeError:
             raise
             raise ValueError("config cannot be None unless all of the tools are passed in.")

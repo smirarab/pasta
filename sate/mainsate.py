@@ -387,12 +387,11 @@ def sate_main(argv=sys.argv):
     command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'satejob')
 
 
-    if user_config.commandline.auto:
+    if user_config.commandline.auto or (not user_config.commandline.trusted):
         if user_config.commandline.input is None:
             sys.exit("ERROR: Input file(s) not specified.")
         from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
         from sate.alignment import summary_stats_from_parse
-        user_config.commandline.auto = False
         try:
             if user_config.commandline.multilocus:
                 fn_list = get_list_of_seq_filepaths_from_dir(user_config.commandline.input)
@@ -401,12 +400,21 @@ def sate_main(argv=sys.argv):
             datatype_list = [user_config.commandline.datatype.upper()]
             summary_stats = summary_stats_from_parse(fn_list, datatype_list)
         except:
-            MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
+            if user_config.commandline.auto:
+                MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
+            else:
+                MESSENGER.send_error("Error reading input\n")
             raise
-        auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
-        user_config.set_values_from_dict(auto_opts['sate'])
-        user_config.set_values_from_dict(auto_opts['commandline'])
-        user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+        if user_config.commandline.auto:
+            user_config.commandline.auto = False
+            auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
+            user_config.set_values_from_dict(auto_opts['sate'])
+            user_config.set_values_from_dict(auto_opts['commandline'])
+            user_config.set_values_from_dict(auto_opts['fasttree'])
+            user_config.get('sate').set_values_from_dict(auto_opts['sate'])
+            user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
+            user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+            
 
     exportconfig = command_line_group.exportconfig
     if exportconfig:

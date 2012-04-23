@@ -56,7 +56,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
               "move_to_blind_on_worse_score",  "start_tree_search_from_current",
               "after_blind_iter_without_imp_limit", "max_subproblem_size", 
               "max_subproblem_frac", "num_cpus"],
-    "fasttree" : ["model"]
+    "fasttree" : ["model", "GUI_model']
 
 
     DO NOT delete keys from this dictionary without making sure that the GUI
@@ -80,13 +80,16 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     else:
         new_sate_defaults['max_subproblem_size'] = int(total_num_tax/2.0)
         new_sate_defaults['max_subproblem_frac'] = 0.5
-    #new_sate_defaults[''] =
-    #new_sate_defaults[''] =
-    #new_sate_defaults[''] =
     if datatype.lower() == 'protein':
-        new_defaults['fasttree'] = {'model' : '-wag -gamma'}
+        new_defaults['fasttree'] = {
+            'model' : '-wag -gamma',
+            'GUI_model' : 'WAG+G20'
+            }
     else:
-        new_defaults['fasttree'] = {'model' : '-gtr -gamma'}
+        new_defaults['fasttree'] = {
+            'model' : '-gtr -gamma',
+            'GUI_model' : 'GTR+G20'
+            }
      
     num_cpu = 1
     try:

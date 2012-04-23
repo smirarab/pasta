@@ -25,6 +25,7 @@ import tempfile
 import sys
 import time
 import wx
+import string
 from sate import PROGRAM_AUTHOR
 from sate import PROGRAM_INSTITUTE
 from sate import PROGRAM_DESCRIPTION
@@ -46,15 +47,74 @@ from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimat
 from sate import filemgr
 from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
 from sate.alignment import summary_stats_from_parse
+from sate.mainsate import get_auto_defaults_from_summary_stats
 
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
 GRID_HGAP = 8
 
 PARSING_FILES_IN_GUI = True
+MAX_NUM_CPU = 16
+
+def is_valid_str(s, min_v, max_v):
+    try:
+        i = int(s)
+    except:
+        return False
+    si = str(i)
+    if si != s:
+        return False
+    if min_v is not None and i < min_v:
+        return False
+    if max_v is not None and i > max_v:
+        return False
+    return True
+
+class RangedIntValidator(wx.PyValidator):
+    def __init__(self, min_v, max_v):
+        wx.PyValidator.__init__(self)
+        self.min_v = min_v
+        self.max_v = max_v
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+    def Clone(self):
+        return RangedIntValidator(self.min_v, self.max_v)
+    def is_valid_str(self, s):
+        return is_valid_str(s, self.min_v, self.max_v)
+    def Validate(self, win):
+        v = win.GetValue()
+        return self.is_valid_str(v)
+    def OnChar(self, event):
+        key = event.GetKeyCode()
+        textCtrl = self.GetWindow()
+        former_text = textCtrl.GetValue()
+        sel = textCtrl.GetSelection()
+        prefix = former_text[:sel[0]]
+        suffix = former_text[sel[1]:]
+        if key == wx.WXK_BACK or key == wx.WXK_DELETE:
+            textCtrl.SetBackgroundColour("white")
+            event.Skip()
+            return
+        if key < wx.WXK_SPACE or key > 255:
+            textCtrl.SetBackgroundColour("white")
+            event.Skip()
+            return
+        if chr(key) in string.digits:    
+            textCtrl.SetBackgroundColour("white")
+            event.Skip()
+            return
+        if not wx.Validator_IsSilent():
+            wx.Bell()
+
+        # Returning without calling even.Skip eats the event before it
+        # gets to the text control
+        return
+
+    def TransferToWindow(self):
+         return True
+    def TransferFromWindow(self):
+         return True
 
 class SateFrame(wx.Frame):
-
     def __init__(self, size):
         wx.Frame.__init__(self, None, -1, "SATe - Simultaneous Alignment and Tree Estimation", size=(640,480), style=wx.DEFAULT_FRAME_STYLE)
         self.SetBackgroundColour(wx.LIGHT_GREY)
@@ -130,7 +190,7 @@ class SateFrame(wx.Frame):
         sizer.Add(self.txt_outputdir, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "CPU(s) Available"), (cr,0), flag=wx.ALIGN_LEFT )
-        self.cb_ncpu = wx.ComboBox(self, -1, "1", choices=map(str, range(1,9)), style=wx.CB_READONLY)
+        self.cb_ncpu = wx.ComboBox(self, -1, "1", choices=map(str, range(1, MAX_NUM_CPU + 1)), style=wx.CB_READONLY)
         sizer.Add(self.cb_ncpu, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Maximum MB"), (cr,0), flag=wx.ALIGN_LEFT )
@@ -170,15 +230,15 @@ class SateFrame(wx.Frame):
             self.cb_apply_stop_rule.Enable()
             self.rb_stop2.SetValue(1)
             self.cb_stop1.Disable()
-            self.cb_stop2.Enable()
-            self.cb_stop2.SetValue("10")
+            self.text_stop2.Enable()
+            self.text_stop2.SetValue("10")
             self.cb_apply_stop_rule.SetValue("After Launch")
             if preset_selection == "SATe-II-simple":
                 self.cb_tree_and_alignment.SetValue("Final")
             elif preset_selection == "SATe-II-ML":
                 self.cb_tree_and_alignment.SetValue("Best")
             elif preset_selection == "SATe-II-fast":
-                self.cb_stop2.SetValue("1")
+                self.text_stop2.SetValue("1")
                 self.cb_apply_stop_rule.SetValue("After Blind Mode")
                 self.cb_tree_and_alignment.SetValue("Best")
         else:
@@ -198,7 +258,7 @@ class SateFrame(wx.Frame):
 
         self.raxml_prot_models = [j+i for i in prot_matrix for j in prot_type]
         self.raxml_prot_models.extend([j+i+"F" for i in prot_matrix for j in prot_type])
-        self.fasttree_prot_models = ["JTT+G20", "JTT+CAT"]
+        self.fasttree_prot_models = ["JTT+G20", "JTT+CAT", "WAG+G20", "WAG+CAT"]
 
         if GLOBAL_DEBUG:
             defaults = {"Aligner":"PADALIGNER", "Merger":"PADALIGNER", "TreeEstimator":"RANDTREE"}
@@ -288,9 +348,9 @@ class SateFrame(wx.Frame):
 
         timelimit_list = map(str, [i/100.0 for i in range(1,10)] + [i/10.0 for i in range(1,10)] + range(1,73))
         iterlimit_list = map(str, [1, 5, 10, 20, 50, 100, 200, 500, 1000])
-        self.rb_maxsub1 = wx.RadioButton(self, -1, "Fraction", name="frac", style=wx.RB_GROUP)
+        self.rb_maxsub1 = wx.RadioButton(self, -1, "Percentage", name="frac", style=wx.RB_GROUP)
         self.rb_maxsub2 = wx.RadioButton(self, -1, "Size", name="size")
-        self.cb_maxsub1 = wx.ComboBox(self, -1, "20", choices=map(str, range(1,51)), style=wx.CB_READONLY)
+        self.cb_maxsub1 = wx.ComboBox(self, -1, "50", choices=map(str, range(1,51)), style=wx.CB_READONLY)
         self.cb_maxsub2 = wx.ComboBox(self, -1, "200", choices=map(str, range(1,201)), style=wx.CB_READONLY)
 
         self.ctrls.extend([self.rb_maxsub1,
@@ -302,7 +362,11 @@ class SateFrame(wx.Frame):
         self.rb_stop1 = wx.RadioButton(self, -1, "Time Limit (h)", name="timelimit", style=wx.RB_GROUP)
         self.rb_stop2 = wx.RadioButton(self, -1, "Iteration Limit", name="iterlimit")
         self.cb_stop1 = wx.ComboBox(self, -1, "24", choices=timelimit_list, style=wx.CB_READONLY)
-        self.cb_stop2 = wx.ComboBox(self, -1, "8",choices=iterlimit_list, style=wx.CB_READONLY)
+        self._iter_limits = [1, None]
+        riv = RangedIntValidator(self._iter_limits[0], self._iter_limits[1])
+        self.text_stop2 = wx.TextCtrl(self, -1, "8", validator=riv)
+            
+        self.text_stop2.Bind(wx.EVT_KILL_FOCUS, lambda event : self.validate_iter_limit_text() and event.Skip())
         self.blindmode = wx.CheckBox(self, -1, "Blind Mode Enabled")
 
         apply_stop_rule_choices = ["After Launch", "After Blind Mode"]
@@ -320,7 +384,7 @@ class SateFrame(wx.Frame):
         self.ctrls.extend([self.rb_stop1,
                            self.cb_stop1,
                            self.rb_stop2,
-                           self.cb_stop2,
+                           self.text_stop2,
                            self.blindmode,
                            self.cb_apply_stop_rule,
                            ])
@@ -362,7 +426,7 @@ class SateFrame(wx.Frame):
 
         cr += 1
         sizer.Add(self.rb_stop2, (cr,1), flag=wx.ALIGN_LEFT)
-        sizer.Add(self.cb_stop2, (cr,2), flag=wx.EXPAND)
+        sizer.Add(self.text_stop2, (cr,2), flag=wx.EXPAND)
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Return"), (cr, 0), flag=wx.ALIGN_LEFT )
@@ -374,10 +438,10 @@ class SateFrame(wx.Frame):
         self.cb_maxsub1.Enable()
 
         self.cb_stop1.Disable()
-        self.cb_stop2.Enable()
+        self.text_stop2.Enable()
         if self.blindmode.Value:
             self.rb_stop2.Value = True
-            self.cb_stop2.Value = "100"
+            self.text_stop2.Value = "100"
 
         self.Bind(wx.EVT_COMBOBOX, self.OnSatePresets, self.cb_sate_presets)
         self.OnSatePresets(self.cb_sate_presets)
@@ -390,7 +454,7 @@ class SateFrame(wx.Frame):
         self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_decomp)
         self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_apply_stop_rule)
         self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_stop1)
-        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_stop2)
+        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.text_stop2)
         self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_tree_and_alignment)
 
         #cr += 1
@@ -400,6 +464,17 @@ class SateFrame(wx.Frame):
 
         staticboxsizer.Add(sizer, 0, wx.ALL, 0)
         return staticboxsizer
+    def validate_iter_limit_text(self):
+        field=self.text_stop2
+        t = field.GetValue()
+        if is_valid_str(t, self._iter_limits[0], self._iter_limits[1]):
+            return True
+        field.SetBackgroundColour("red")
+        #wx.MessageBox(message='"Iteration Limit" must contain a positive integer',
+        #                              caption='Input Error', style=wx.OK|wx.ICON_ERROR)
+        field.SetFocus()
+        field.Refresh()
+        return False
 
     def _create_menu(self):
         self.menuBar = wx.MenuBar()
@@ -423,7 +498,6 @@ class SateFrame(wx.Frame):
 
     def OnDataType(self, event):
         self.set_char_model()
-
     def set_char_model(self):
         if self.datatype.Value == "Nucleotide":
             self.cb_tools["model"].Clear()
@@ -481,9 +555,9 @@ class SateFrame(wx.Frame):
         cb = event.GetEventObject()
         if cb.GetName() == "timelimit":
             self.cb_stop1.Enable()
-            self.cb_stop2.Disable()
+            self.text_stop2.Disable()
         elif cb.GetName() == "iterlimit":
-            self.cb_stop2.Enable()
+            self.text_stop2.Enable()
             self.cb_stop1.Disable()
 
     def OnExit(self, event):
@@ -576,12 +650,53 @@ class SateFrame(wx.Frame):
                         self.datatype.SetValue("Protein")
                     else:
                         self.datatype.SetValue("Nucleotide")
+                    # Set defaults from "auto_defaults"
+                    auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
+                    auto_sate_opts = auto_opts["sate"]
+                    te_str = auto_sate_opts["tree_estimator"].upper()
+                    self.cb_tools["treeestimator"].SetStringSelection(te_str)
+                    self.set_char_model()
+                    if te_str == "FASTTREE":
+                        te_opts = auto_opts['fasttree']
+                    self.cb_tools["model"].SetStringSelection(te_opts["GUI_model"])
+                    self.cb_tools["merger"].SetStringSelection(auto_sate_opts["merger"].upper())
+                    self.cb_tools["aligner"].SetStringSelection(auto_sate_opts["aligner"].upper())
+                    self.cb_ncpu.SetStringSelection(str(min(MAX_NUM_CPU, auto_sate_opts["num_cpus"])))
+                    
+                    # Set max decomposition based on data set size (always move to actual # here)
+                    self.rb_maxsub1.Value = False
+                    self.cb_maxsub1.Disable()
+                    self.rb_maxsub2.Value = True
+                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_sate_opts["max_subproblem_size"])))
+                    self.cb_maxsub2.Enable()
+                    
+                    bs = auto_sate_opts["break_strategy"]
+                    bs = bs[0].upper() + bs[1:].lower()
+                    self.cb_decomp.SetValue(bs)
+
+
+                    self.rb_stop1.Value = False
+                    self.cb_stop1.Disable()
+                    self.rb_stop2.Value = True
+                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_sate_opts["max_subproblem_size"])))
+                    self.cb_maxsub2.Enable()
+                    
+                    if auto_sate_opts['move_to_blind_on_worse_score']:
+                        self.blindmode.Value = True
+                    else:
+                        self.blindmode.Value = False
+                        
+                    self.cb_apply_stop_rule.SetValue("After Blind Mode")
+                    after_blind_it_lim = auto_sate_opts['after_blind_iter_without_imp_limit']
+                    self.text_stop2.SetValue(str(after_blind_it_lim))
+                    
+                    
+
                     self.log.AppendText("Read %d file(s) with %s data. Total of %d taxa found.\n" % (len(fn_list), read_type, summary_stats[2]))
                     by_file = summary_stats[1]
                     for n, fn in enumerate(fn_list):
                         t_c_tuple = by_file[n]
                         self.log.AppendText('  Parsing of the file "%s" returned %d sequences, longest length = %d\n' % (fn, t_c_tuple[0], t_c_tuple[1]))
-
                     
                 progress_dialog.Destroy()
         if filepath:
@@ -656,6 +771,10 @@ class SateFrame(wx.Frame):
             self.ctrls[i].Enable(self.prev_ctrls_status[i])
 
     def _OnStart(self):
+        if self.rb_stop2.Value and (not self.validate_iter_limit_text()):
+            self.log.AppendText("Iteration limit is not set correctly. Enter a positive integer in that field.\n")
+            return
+
         if self.process is None:
             cfg_success = self._create_config_file()
             if not cfg_success:
@@ -734,7 +853,11 @@ class SateFrame(wx.Frame):
             elif model_desc == "JTT+G20":
                 cfg.fasttree.model = "-gamma"
             elif model_desc == "JTT":
-                cfg.fasttree.model = "-gtr"
+                cfg.fasttree.model = ""
+            elif model_desc == "WAG+G20":
+                cfg.fasttree.model = "-wag -gamma"
+            elif model_desc == "WAG":
+                cfg.fasttree.model = "-wag"
             else:
                 raise Exception("Unrecognized model: %s" % model_desc)
         cfg.sate.break_strategy = self.cb_decomp.Value
@@ -756,17 +879,17 @@ class SateFrame(wx.Frame):
                 if self.rb_stop1.Value:
                     cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
                 elif self.rb_stop2.Value:
-                    cfg.sate.after_blind_iter_without_imp_limit = float(self.cb_stop2.Value)
+                    cfg.sate.after_blind_iter_without_imp_limit = float(self.text_stop2.Value)
             else:
                 if self.rb_stop1.Value:
                     cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
                 elif self.rb_stop2.Value:
-                    cfg.sate.iter_limit = self.cb_stop2.Value
+                    cfg.sate.iter_limit = self.text_stop2.Value
         else:
             if self.rb_stop1.Value:
                 cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
             elif self.rb_stop2.Value:
-                cfg.sate.iter_limit = self.cb_stop2.Value
+                cfg.sate.iter_limit = self.text_stop2.Value
 
         cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
         cfg.sate.output_directory = self.txt_outputdir.GetValue()

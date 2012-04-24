@@ -141,12 +141,13 @@ class SateFrame(wx.Frame):
         self.sizer_data = self._create_data_sizer()
         self.sizer_sate_settings = self._create_sate_settings_sizer()
         self.sizer_job_settings = self._create_job_settings_sizer()
+        self.sizer_workflow_settings = self._create_workflow_settings_sizer()
 
         sizer1 = wx.BoxSizer(wx.VERTICAL)
 
         sizer1.Add(self.sizer_tool_settings, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT, 5)
         sizer1.Add(self.sizer_data, 0, wx.EXPAND|wx.TOP|wx.RIGHT, 5)
-
+        sizer1.Add(self.sizer_workflow_settings, 0, wx.EXPAND|wx.TOP|wx.RIGHT, 5)
         self.sizer_settings = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer_settings.Add(sizer1, 0, wx.EXPAND|wx.ALL, 0)
 
@@ -328,6 +329,28 @@ class SateFrame(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.OnMultiLocus, self.cb_multilocus)
         return staticboxsizer
 
+    def _create_workflow_settings_sizer(self):
+        """
+        returns a wx.StaticBoxSizer with the widgets that control pre and post
+        processing of SATe output.
+        """
+        staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Workflow Settings"), wx.VERTICAL)
+        sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
+        self.two_phase = wx.CheckBox(self, -1, "Two-Phase (not SATe)")
+        self.two_phase.Value = False
+
+        self.ctrls.extend([self.two_phase,
+                           ])
+
+        cr = 0
+        sizer.Add(wx.StaticText(self, -1, "Algorithm"), (cr,0), flag=wx.ALIGN_LEFT )
+        sizer.Add(self.two_phase, (cr,1), flag=wx.EXPAND)
+
+        self.Bind(wx.EVT_CHECKBOX, self.OnTwoPhase, self.two_phase)
+
+        staticboxsizer.Add(sizer, 0, wx.ALL, 0)
+        return staticboxsizer
+        
     def _create_sate_settings_sizer(self):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "SATe Settings"), wx.VERTICAL)
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
@@ -541,7 +564,9 @@ class SateFrame(wx.Frame):
         elif radio_selected.GetName() == "size":
             self.cb_maxsub2.Enable()
             self.cb_maxsub1.Disable()
-
+    def OnTwoPhase(self, event):
+        print "OnTwoPhase called"
+        
     def OnBlindMode(self, event):
         self._set_custom_sate_settings(event)
         if self.blindmode.Value:

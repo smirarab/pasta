@@ -47,6 +47,22 @@ _RunningJobs = None
 _LOG = get_logger(__name__)
 
 
+def fasttree_to_raxml_model_str(datatype, model_str):
+    dtu = datatype.upper()
+    msu = model_str.upper()
+    if dtu == "PROTEIN":
+        if "-WAG" in msu:
+            if "-GAMMA" in msu:
+                return "PROTGAMMAWAGF"
+            return "PROTCATWAGF"
+        if "-GAMMA" in msu:
+            return "PROTGAMMAJTTF"
+        return "PROTCATJTTF"
+    if "-GAMMA" in msu:
+        return "GTRGAMMA"
+    return "GTRCAT"
+    
+
 def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_num_tax):
     """
     Returns nested dictionaries with the following keys set:
@@ -254,6 +270,41 @@ def finish_sate_execution(sate_team,
             MESSENGER.send_info("Starting SATe algorithm on initial tree...")
             job.run(tmp_dir_par=temporaries_dir, sate_products=sate_products)
             _RunningJobs = None
+            
+            if user_config.commandline.raxml_search_after:
+                raxml_model = user_config.raxml.model.strip()
+                if not raxml_model:
+                    dt = user_config.commandline.datatype
+                    mf = sate_team.tree_estimator.model
+                    ms =  fasttree_to_raxml_model_str(dt, mf)
+                    sate_team.raxml_tree_estimator.model = ms
+                rte = sate_team.raxml_tree_estimator
+                MESSENGER.send_info("Performing post-processing tree search in RAxML...")
+                post_tree_dir = os.path.join(temporaries_dir, 'post_tree')
+                post_tree_dir = sate_team.temp_fs.create_subdir(post_tree_dir)
+                delete_tree_temps = not options.keeptemp
+                post_job = rte.create_job(job.multilocus_dataset,
+                                    starting_tree=job.tree,
+                                    num_cpus=sate_config.num_cpus,
+                                    context_str="postraxtree",
+                                    tmp_dir_par=post_tree_dir,
+                                    delete_temps=delete_tree_temps,
+                                    sate_products=sate_products,
+                                    step_num="postraxtree")
+                _RunningJobs = post_job
+                jobq.put(post_job)
+                post_score, post_tree = post_job.get_results()
+                _RunningJobs = None
+                if delete_tree_temps:
+                    sate_team.temp_fs.remove_dir(post_tree_dir)
+                job.tree_str = post_tree
+                job.score = post_score
+                if post_score > job.best_score:
+                    job.best_tree_str = post_tree
+                    job.best_score = post_score
+
+        
+
         job.multilocus_dataset.restore_taxon_names()
         assert len(sate_products.alignment_streams) == len(job.multilocus_dataset)
         for i, alignment in enumerate(job.multilocus_dataset):
@@ -419,6 +470,10 @@ def sate_main(argv=sys.argv):
             user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
             user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
             
+    
+    if user_config.commandline.raxml_search_after:
+        if user_config.sate.tree_estimator.upper() != 'FASTTREE':
+            sys.exit("ERROR: the 'raxml_search_after' option is only supported when the tree_estimator is FastTree")
 
     exportconfig = command_line_group.exportconfig
     if exportconfig:

@@ -1,4 +1,15 @@
 
+Release 2.2.0
+=============
+
+    - [BUG FIX] No longer uses 'N' for missing taxa in multi-locus mode, which
+                caused problems with multi-locus amino acid analyses with
+                missing taxa.
+    - [CHANGES] Fasttree is now bundled with SATe.
+    - [CHANGES] New option to automatically set defaults based on size of
+                dataset.
+    - [CHANGES] Several default settings changed.
+
 Release 2.1.0
 =============
 

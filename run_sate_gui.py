@@ -687,7 +687,7 @@ class SateFrame(wx.Frame):
             filepath = self.txt_seqfn.GetValue()
         if PARSING_FILES_IN_GUI and filepath:
             confirm_parse_dlg = wx.MessageDialog(parent=self,  
-                                                 message="Do you want SATe to read the data now? (this SATe to customize some of the settings for your data).",
+                                                 message="Do you want SATe to read the data now? (this causes SATe to customize some of the settings for your data).",
                                                  caption="Read input data now?", 
                                                  style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
             result = confirm_parse_dlg.ShowModal()

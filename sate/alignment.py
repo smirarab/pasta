@@ -499,10 +499,10 @@ class MultiLocusDataset(list):
                 if combined_alignment.has_key(k):
                     combined_alignment[k] += a[k]
                 else:
-                    combined_alignment[k] = 'N'*base + a[k]
+                    combined_alignment[k] = '-'*base + a[k]
             for i in combined_alignment.keys():
                 if not a.has_key(i):
-                    combined_alignment[i] += 'N'*this_el_len
+                    combined_alignment[i] += '-'*this_el_len
             base += this_el_len
 
         if len(set([a.datatype for a in self])) == 1:

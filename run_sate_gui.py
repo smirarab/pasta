@@ -338,6 +338,10 @@ class SateFrame(wx.Frame):
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
         self.two_phase = wx.CheckBox(self, -1, "Two-Phase (not SATe)")
         self.two_phase.Value = False
+        self.raxml_after = wx.CheckBox(self, -1, "Extra RAxML Search")
+        self.raxml_after.Value = False
+        self.trusted_data = wx.CheckBox(self, -1, "Trusted Data")
+        self.trusted_data.Value = False
 
         self.ctrls.extend([self.two_phase,
                            ])
@@ -345,6 +349,14 @@ class SateFrame(wx.Frame):
         cr = 0
         sizer.Add(wx.StaticText(self, -1, "Algorithm"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.two_phase, (cr,1), flag=wx.EXPAND)
+
+        cr += 1
+        sizer.Add(wx.StaticText(self, -1, "Post-Processing"), (cr,0), flag=wx.ALIGN_LEFT )
+        sizer.Add(self.raxml_after, (cr,1), flag=wx.EXPAND)
+
+        cr += 1
+        sizer.Add(wx.StaticText(self, -1, "Input Validation"), (cr,0), flag=wx.ALIGN_LEFT )
+        sizer.Add(self.trusted_data, (cr,1), flag=wx.EXPAND)
 
         self.Bind(wx.EVT_CHECKBOX, self.OnTwoPhase, self.two_phase)
 
@@ -416,44 +428,54 @@ class SateFrame(wx.Frame):
         self.cb_decomp = wx.ComboBox(self, -1, "Longest", choices=strategy_list, style=wx.CB_READONLY)
 
         self.ctrls.append(self.cb_decomp)
-
+        self.sate_settings_ctrl_list = []
         cr = 0
 
         sizer.Add(wx.StaticText(self, -1, "Quick Set"), (cr, 0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_sate_presets, (cr, 1), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.append(self.cb_sate_presets)
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Max. Subproblem"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.rb_maxsub1, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_maxsub1, (cr,2), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.rb_maxsub1, self.cb_maxsub1])
 
         cr += 1
         sizer.Add(self.rb_maxsub2, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_maxsub2, (cr,2), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.rb_maxsub2, self.cb_maxsub2])
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Decomposition"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_decomp, (cr,1), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.cb_decomp])
+
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Apply Stop Rule"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_apply_stop_rule, (cr,1), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.cb_apply_stop_rule])
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Stopping Rule"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.blindmode, (cr,1), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.blindmode])
 
         cr += 1
         sizer.Add(self.rb_stop1, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_stop1, (cr,2), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.rb_stop1, self.cb_stop1])
 
         cr += 1
         sizer.Add(self.rb_stop2, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.text_stop2, (cr,2), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.rb_stop2, self.text_stop2])
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Return"), (cr, 0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_tree_and_alignment, (cr, 1), flag=wx.EXPAND)
+        self.sate_settings_ctrl_list.extend([self.cb_tree_and_alignment])
 
         self.cb_maxsub1.Disable()
         self.cb_maxsub2.Disable()
@@ -525,6 +547,7 @@ class SateFrame(wx.Frame):
         if self.datatype.Value == "Nucleotide":
             self.cb_tools["model"].Clear()
             if self.cb_tools["treeestimator"].Value.lower() == "raxml":
+                self.raxml_after.Value = False
                 for model in self.raxml_dna_models:
                     self.cb_tools["model"].Append(model)
                     self.cb_tools["model"].SetStringSelection("GTRCAT")
@@ -535,6 +558,7 @@ class SateFrame(wx.Frame):
         elif self.datatype.Value == "Protein":
             self.cb_tools["model"].Clear()
             if self.cb_tools["treeestimator"].Value.lower() == "raxml":
+                self.raxml_after.Value = False
                 for model in self.raxml_prot_models:
                     self.cb_tools["model"].Append(model)
                     self.cb_tools["model"].SetStringSelection("PROTCATWAGF")
@@ -565,10 +589,43 @@ class SateFrame(wx.Frame):
             self.cb_maxsub2.Enable()
             self.cb_maxsub1.Disable()
     def OnTwoPhase(self, event):
-        print "OnTwoPhase called"
-        
+        """
+        Called every time the 'Two-Phase' checkbox is clicked. The main action
+            that needs to occur is the Disabling/Enabling of the SATe settings 
+            controls
+        """
+        if self.two_phase.Value:
+            for c in self.sate_settings_ctrl_list:
+                c.Disable()
+            self.cb_tools["merger"].Disable()
+            self.tree_btn.Disable()
+            self.txt_treefn.Disable()
+            self.raxml_after.Disable()
+        else:
+            fragile_list = [self.cb_maxsub1, self.cb_maxsub2, self.cb_stop1, self.text_stop2, self.cb_apply_stop_rule]
+            for c in self.sate_settings_ctrl_list:
+                if c not in fragile_list:
+                    c.Enable()
+            if self.rb_maxsub1.Value:
+                self.cb_maxsub1.Enable()
+            else:
+                self.cb_maxsub2.Enable()
+            if self.rb_stop1.Value:
+                self.cb_stop1.Enable()
+            else:
+                self.text_stop2.Enable()
+            if self.blindmode.Value:
+                self.cb_apply_stop_rule.Enable()
+            self.cb_tools["merger"].Enable()
+            self.tree_btn.Enable()
+            self.txt_treefn.Enable()
+            self.raxml_after.Enable()
+      
     def OnBlindMode(self, event):
         self._set_custom_sate_settings(event)
+        self._OnBlindModeDirectEffects()
+
+    def _OnBlindModeDirectEffects(self):
         if self.blindmode.Value:
             self.cb_apply_stop_rule.Enable()
         else:
@@ -861,7 +918,6 @@ class SateFrame(wx.Frame):
         #    cfg.commandline.result = os.path.join(resultdir, basefilename+"_%s.tre" % jobname )
 
         cfg.sate.aligner = self.cb_tools["aligner"].Value
-        cfg.sate.merger = self.cb_tools["merger"].Value
         cfg.sate.tree_estimator = self.cb_tools["treeestimator"].Value
         if self.cb_tools["treeestimator"].Value.lower() == "raxml":
             cfg.raxml.model = self.cb_tools["model"].Value
@@ -885,38 +941,46 @@ class SateFrame(wx.Frame):
                 cfg.fasttree.model = "-wag"
             else:
                 raise Exception("Unrecognized model: %s" % model_desc)
-        cfg.sate.break_strategy = self.cb_decomp.Value
-        cfg.sate.start_tree_search_from_current = True
         cfg.commandline.keeptemp = True
         cfg.commandline.keepalignmenttemps = True
-
-        if self.rb_maxsub1.Value:
-            cfg.sate.max_subproblem_frac = float(self.cb_maxsub1.Value)/100.0
-        elif self.rb_maxsub2.Value:
-            cfg.sate.max_subproblem_size = self.cb_maxsub2.Value
-
+        cfg.commandline.trusted = bool(self.trusted_data.Value)
         if self.cb_multilocus.Value:
             cfg.commandline.multilocus = True
-
-        if self.blindmode.Value:
-            cfg.sate.move_to_blind_on_worse_score = True
-            if self.cb_apply_stop_rule.GetValue() == "After Blind Mode":
-                if self.rb_stop1.Value:
-                    cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
-                elif self.rb_stop2.Value:
-                    cfg.sate.after_blind_iter_without_imp_limit = float(self.text_stop2.Value)
+        
+        if self.two_phase.Value:
+            cfg.commandline.two_phase = True
+            cfg.commandline.raxml_search_after = False
+        else:
+            cfg.commandline.two_phase = False
+            cfg.commandline.raxml_search_after = bool(self.raxml_after.Value)
+            cfg.sate.merger = self.cb_tools["merger"].Value
+            cfg.sate.break_strategy = self.cb_decomp.Value
+            cfg.sate.start_tree_search_from_current = True
+            if self.rb_maxsub1.Value:
+                cfg.sate.max_subproblem_frac = float(self.cb_maxsub1.Value)/100.0
+            elif self.rb_maxsub2.Value:
+                cfg.sate.max_subproblem_size = self.cb_maxsub2.Value
+    
+    
+            if self.blindmode.Value:
+                cfg.sate.move_to_blind_on_worse_score = True
+                if self.cb_apply_stop_rule.GetValue() == "After Blind Mode":
+                    if self.rb_stop1.Value:
+                        cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
+                    elif self.rb_stop2.Value:
+                        cfg.sate.after_blind_iter_without_imp_limit = float(self.text_stop2.Value)
+                else:
+                    if self.rb_stop1.Value:
+                        cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
+                    elif self.rb_stop2.Value:
+                        cfg.sate.iter_limit = self.text_stop2.Value
             else:
                 if self.rb_stop1.Value:
                     cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
                 elif self.rb_stop2.Value:
                     cfg.sate.iter_limit = self.text_stop2.Value
-        else:
-            if self.rb_stop1.Value:
-                cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
-            elif self.rb_stop2.Value:
-                cfg.sate.iter_limit = self.text_stop2.Value
+            cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
 
-        cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
         cfg.sate.output_directory = self.txt_outputdir.GetValue()
         cfg.sate.num_cpus = self.cb_ncpu.Value
         max_mb = self.txt_maxmb.GetValue()

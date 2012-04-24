@@ -265,7 +265,9 @@ def finish_sate_execution(sate_team,
                     new_score=score,
                     curr_timestamp=time.time())
 
-        if not options.two_phase:
+        if options.two_phase:
+            MESSENGER.send_info("Exiting with the initial tree because the SATe algorithm is avoided when the --two-phase option is used.")
+        else:
             _RunningJobs = job
             MESSENGER.send_info("Starting SATe algorithm on initial tree...")
             job.run(tmp_dir_par=temporaries_dir, sate_products=sate_products)

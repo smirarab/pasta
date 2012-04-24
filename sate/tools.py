@@ -25,6 +25,7 @@ import random
 import sys
 import time
 import platform
+import shutil
 
 from alignment import Alignment
 from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB
@@ -76,7 +77,17 @@ def read_internal_alignment(fn,
     else:
         raise ValueError("The alignment file has no sequences. SATe quits." % fn)
 
-def read_raxml_results(dir, dirs_to_delete, temp_fs):
+
+def copy_temp_tree(src_treef, sate_products, step_num):
+    if (sate_products is not None) and (step_num is not None):
+        dest_treef = sate_products.get_abs_path_for_iter_output(step_num, 'tree.tre')
+        if dest_treef and os.path.exists(src_treef):
+            if os.path.exists(dest_treef):
+                _LOG.warn('File "%s" exists. It will not be overwritten' % dest_treef)
+            else:
+                shutil.copy2(src_treef, dest_treef)
+
+def read_raxml_results(dir, dirs_to_delete, temp_fs, sate_products=None, step_num=None):
     flist = os.listdir(dir)
     id = None
     for f in flist:
@@ -91,11 +102,12 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs):
         score = float(open(raxml_log, 'rU').readlines()[-1].split()[1])
     raxml_result = os.path.join(dir, 'RAxML_result.%s' % id)
     tree_str = open(raxml_result, 'rU').read().strip()
+    copy_temp_tree(raxml_result, sate_products, step_num)
     for d in dirs_to_delete:
         temp_fs.remove_dir(d)
     return score, tree_str
 
-def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=False):
+def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=False, sate_products=None, step_num=None):
         toclose.close()
         tree_str = open(fasttree_restults_file, 'rU').read().strip()
         score = None
@@ -109,6 +121,7 @@ def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=
         if score is None:
             message = "FastTree did not report a log-likelhood for the data: the data set is probably too weird"
             raise Exception(message)
+        copy_temp_tree(fasttree_restults_file, sate_products, step_num)
         return score, tree_str
 
 class ExternalTool (object):
@@ -517,6 +530,25 @@ class TreeEstimator(ExternalTool):
     def _read_results(fn):
         raise NotImplmentedError('Abstract TreeEstimator class!')
 
+    def store_input(self, seqfn, **kwargs):
+        """
+        If sate_products and step_num are both found in the `kwargs` then this
+            function will copy `seqfn` to the filepath obtained by a call to
+            sate_products.get_abs_path_for_iter_output
+            with the 'seq_alignment.txt' suffix.
+        """
+        sate_products = kwargs.get('sate_products')
+        if sate_products:
+            step_num = kwargs.get('step_num')
+            if step_num is not None:
+                i_concat_align = sate_products.get_abs_path_for_iter_output(step_num, 'seq_alignment.txt')
+                if i_concat_align and os.path.exists(seqfn):
+                    if os.path.exists(i_concat_align):
+                        _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
+                    else:
+                        shutil.copy2(seqfn, i_concat_align)
+                
+
 class CustomTreeEstimator(TreeEstimator):
     section_name = 'custom tree_estimator'
     url = ''
@@ -537,6 +569,7 @@ class Randtree(TreeEstimator):
         seqfn = os.path.join(scratch_dir, "input.fasta")
         alignment.write_filepath(seqfn, 'FASTA')
         score_fn = os.path.join(scratch_dir, 'scorefile')
+        self.store_input(seqfn, **kwargs)
         return scratch_dir, seqfn, alignment.datatype, score_fn
 
     def __init__(self, temp_fs, **kwargs):
@@ -556,15 +589,20 @@ class Randtree(TreeEstimator):
         if kwargs.get('delete_temps', self.delete_temps):
             dirs_to_delete.append(scratch_dir)
 
+        sate_products = kwargs.get('sate_products')
+        step_num = kwargs.get('step_num')
         def randtree_result_processor(dir=scratch_dir,
                                       to_close=score_fileobj,
                                       score_fn=score_fn,
                                       fn=os.path.join(scratch_dir, 'output.tre'),
                                       dirs_to_delete=dirs_to_delete,
-                                      temp_fs=self.temp_fs):
+                                      temp_fs=self.temp_fs,
+                                      sate_products=sate_products,
+                                      step_num=step_num):
             to_close.close()
             score = float(open(score_fn, 'rU').read().strip())
             tree_str = open(fn, 'rU').read().strip()
+            copy_temp_tree(fn, sate_products, step_num)
             for d in dirs_to_delete:
                 temp_fs.remove_dir(d)
             return (score, tree_str)
@@ -623,6 +661,7 @@ class FastTree(TreeEstimator):
             raise ValueError('Datatype "%s" not recognized by FastTree' % str(alignment.datatype))
 
         options = self.options if self.options is not None else ''
+        self.store_input(seqfn, **kwargs)
 
         return curdir, seqfn, datatype, options
 
@@ -676,7 +715,15 @@ class FastTree(TreeEstimator):
         if kwargs.get('delete_temps', self.delete_temps):
             dirs_to_delete.append(scratch_dir)
 
-        rpc = lambda : read_fasttree_results(results_fileobj, scratch_dir, fasttree_result , log_file, delete_dir=kwargs.get('delete_temps', self.delete_temps))
+        sate_products = kwargs.get('sate_products')
+        step_num = kwargs.get('step_num')
+        rpc = lambda : read_fasttree_results(results_fileobj, 
+                                             scratch_dir,
+                                             fasttree_result,
+                                             log_file,
+                                             delete_dir=kwargs.get('delete_temps', self.delete_temps),
+                                             sate_products=sate_products,
+                                             step_num=step_num)
         job_id = kwargs.get('context_str', '') + '_fasttree'
         job = DispatchableJob(invoc, result_processor=rpc, cwd=scratch_dir, stdout=results_fileobj, context_str=job_id)
         return job
@@ -717,6 +764,8 @@ class Raxml(TreeEstimator):
             raise ValueError('Datatype "%s" not recognized by RAxML' % str(alignment.datatype))
         parfn = os.path.join(scratch_dir, "partition.txt")
         self._write_partition_filepath(parfn, partitions, model)
+        
+        self.store_input(seqfn, **kwargs)
         return scratch_dir, seqfn, parfn, model
 
     def __init__(self, temp_fs, **kwargs):
@@ -763,9 +812,13 @@ class Raxml(TreeEstimator):
         if kwargs.get('delete_temps', self.delete_temps):
             dirs_to_delete.append(scratch_dir)
 
+        sate_products = kwargs.get('sate_products')
+        step_num = kwargs.get('step_num')
         rpc = lambda : read_raxml_results(scratch_dir,
                                           dirs_to_delete=dirs_to_delete,
-                                          temp_fs=self.temp_fs)
+                                          temp_fs=self.temp_fs,
+                                          sate_products=sate_products,
+                                          step_num=step_num)
         job_id = kwargs.get('context_str', '') + '_raxml'
         job = DispatchableJob(invoc, result_processor=rpc, cwd=scratch_dir, context_str=job_id)
         return job

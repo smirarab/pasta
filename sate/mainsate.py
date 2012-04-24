@@ -218,7 +218,9 @@ def finish_sate_execution(sate_team,
                                                     tmp_dir_par=init_tree_dir,
                                                     num_cpus=sate_config.num_cpus,
                                                     context_str="inittree",
-                                                    delete_temps=delete_tree_temps)
+                                                    delete_temps=delete_tree_temps,
+                                                    sate_products=sate_products,
+                                                    step_num='initialsearch')
             _RunningJobs = job
             jobq.put(job)
             score, starting_tree_str = job.get_results()
@@ -250,7 +252,7 @@ def finish_sate_execution(sate_team,
         if not options.two_phase:
             _RunningJobs = job
             MESSENGER.send_info("Starting SATe algorithm on initial tree...")
-            job.run(tmp_dir_par=temporaries_dir)
+            job.run(tmp_dir_par=temporaries_dir, sate_products=sate_products)
             _RunningJobs = None
         job.multilocus_dataset.restore_taxon_names()
         assert len(sate_products.alignment_streams) == len(job.multilocus_dataset)

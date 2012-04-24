@@ -292,7 +292,7 @@ class SateJob (TreeHolder):
         self.last_improvement_time = curr_timestamp
         self.num_iter_since_imp = 0
 
-    def run(self, tmp_dir_par):
+    def run(self, tmp_dir_par, sate_products=None):
         assert(os.path.exists(tmp_dir_par))
 
         self._reset_current_run_settings()
@@ -366,7 +366,9 @@ class SateJob (TreeHolder):
                                                                num_cpus=self.num_cpus,
                                                                context_str=context_str + " tree",
                                                                tmp_dir_par=curr_tmp_dir_par,
-                                                               delete_temps=delete_iteration_temps)
+                                                               delete_temps=delete_iteration_temps,
+                                                               sate_products=sate_products,
+                                                               step_num=self.current_iteration)
                 self.tree_build_job = tbj
                 jobq.put(tbj)
                 new_score, new_tree_str = tbj.get_results()
@@ -413,10 +415,9 @@ class SateJob (TreeHolder):
                 break_strategy_index += 1
 
                 # self.status('current score: %s, best score: %s' % (self.score, self.best_score) )
-
+                
             if not this_iter_score_improved:
                 self.num_iter_since_imp += 1
-
             self.current_iteration += 1
 
         if self._termination_trigger:

@@ -259,10 +259,10 @@ class SateProducts(object):
     """
 
     meta_product_types = {
-            "score": ".score",
+            "score": ".score.txt",
             "tree": ".tre",
-            "run_log" : ".out",
-            "err_log" : ".err"
+            "run_log" : ".out.txt",
+            "err_log" : ".err.txt"
             }
 
     def __init__(self, sate_user_settings):

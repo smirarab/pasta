@@ -424,7 +424,7 @@ class SateJob (TreeHolder):
             _LOG.debug("Termination trigger = %s" % self._termination_trigger)
         record_timestamp(os.path.join(tmp_dir_par, 'end_sateiter_timestamp.txt'))
 
-        ### TODO: if configuration is 'return_final_iter_T&Apair', then skip the following three lines
+        ### TODO: if configuration is 'return_final_iter_TreeAndAlignpair', then skip the following three lines
         if not self.return_final_tree_and_alignment:
             self.multilocus_dataset = self.best_multilocus_dataset.new_with_shared_meta()
             for locus_alignment in self.best_multilocus_dataset:

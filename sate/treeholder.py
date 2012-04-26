@@ -46,13 +46,16 @@ def read_and_encode_splits(dataset, tree_stream):
     delete_outdegree_one(tree_list[0])
     return tree_list
 
-def generate_tree_with_splits_from_str(tree_str, dataset):
+def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=False):
     '''Uses `tree_str` and `dataset` to create a PhylogeneticTree object
     and calls `calc_splits` on the object before returning it.
     '''
     tree_stream = StringIO(tree_str)
     tree_list = read_and_encode_splits(dataset, tree_stream)
-    t = PhylogeneticTree(tree_list[0])
+    t = tree_list[0]
+    if force_fully_resolved:
+        t.resolve_polytomies(update_splits=True)
+    t = PhylogeneticTree(t)
     t.calc_splits()
     return t
 
@@ -60,15 +63,18 @@ class TreeHolder(object):
     '''Uses the tree attribute to provide a `tree_str` property, but also
         enables setting of the `tree_str` to update the tree.
     '''
-    def __init__(self, dataset):
+    def __init__(self, dataset, force_fully_resolved=False):
         self.dataset = dataset
         self.tree = None
+        self._force_fully_resolved=force_fully_resolved
 
     def get_tree_str(self):
         return self.tree.compose_newick() if self.tree else None
 
     def set_tree_str(self, tree_str):
-        self.tree = generate_tree_with_splits_from_str(tree_str, self.dataset)
+        self.tree = generate_tree_with_splits_from_str(tree_str, 
+                                                       self.dataset,
+                                                       self._force_fully_resolved)
 
     tree_str = property(get_tree_str, set_tree_str)
 

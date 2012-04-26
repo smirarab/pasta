@@ -102,7 +102,15 @@ class SateJob (TreeHolder):
         return d
 
     def __init__(self, multilocus_dataset, sate_team, tree=None, name=None, **kwargs):
-        TreeHolder.__init__(self, multilocus_dataset.dataset)
+        """
+        Note that the `tree` will be resolved using DendroPy's resolve_polytomies
+            function.
+        """
+        TreeHolder.__init__(self,
+                            multilocus_dataset.dataset, 
+                            force_fully_resolved=True)
+        if tree is not None:
+            tree.resolve_polytomies(update_splits=True)
 
         self.blind_mode_is_final = True
         self.is_stuck_in_blind = False

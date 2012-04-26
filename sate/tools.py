@@ -35,8 +35,6 @@ from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob
 from cStringIO import StringIO
 from alignment import Alignment
 
-from tree import PhylogeneticTree
-
 _LOG = get_logger(__name__)
 
 def is_file_checker(p):

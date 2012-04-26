@@ -33,7 +33,6 @@ import sate
 from sate import PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_LONG_DESCRIPTION, get_logger, set_timing_log_filepath, TIMING_LOG, MESSENGER
 from sate.alignment import Alignment, SequenceDataset, MultiLocusDataset
 from sate.configure import get_configuration, get_input_source_directory
-from sate.tree import PhylogeneticTree
 from sate.tools import *
 from sate.satejob import *
 from sate.treeholder import read_and_encode_splits

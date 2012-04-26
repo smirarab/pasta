@@ -55,7 +55,7 @@ GRID_HGAP = 8
 
 PARSING_FILES_IN_GUI = True
 MAX_NUM_CPU = 16
-
+SATE_GUI_ONLY_PRINTS_CONFIG = os.environ.get('SATE_GUI_ONLY_PRINTS_CONFIG') == '1'
 def is_valid_str(s, min_v, max_v):
     try:
         i = int(s)
@@ -885,12 +885,21 @@ class SateFrame(wx.Frame):
                 dt = "protein"
             command.extend(["-d", dt])
             command.extend(["%s" % filemgr.quoted_file_path(self.process_cfg_file)])
-            self.process = wx.Process(self)
-            self.process.Redirect()
-            self.pid = wx.Execute( " ".join(command), wx.EXEC_ASYNC, self.process)
-            self.button.SetLabel("Stop")
-            self.statusbar.SetStatusText("SATe Running!")
-            self._FreezeOptions()
+            if SATE_GUI_ONLY_PRINTS_CONFIG:
+                self.log.AppendText("Command is:\n  '%s'\n" % "' '".join(command))
+                self.log.AppendText("config_file:\n#############################################################\n")
+                for line in open(self.process_cfg_file, 'rU'):
+                    self.log.AppendText(line)
+                self.log.AppendText("#############################################################\n")
+                self._remove_config_file()
+                self.statusbar.SetStatusText("\n\nRun emulated!\n\n")
+            else:
+                self.process = wx.Process(self)
+                self.process.Redirect()
+                self.pid = wx.Execute( " ".join(command), wx.EXEC_ASYNC, self.process)
+                self.button.SetLabel("Stop")
+                self.statusbar.SetStatusText("SATe Running!")
+                self._FreezeOptions()
 
         else:
             self.log.AppendText("Job %s is still running!\n" % self.txt_jobname.GetValue())

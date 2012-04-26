@@ -9,7 +9,7 @@
 Simple classes for reading and manipulating sequence data matrices
 """
 
-import re
+import re, os
 from copy import deepcopy
 from sate import get_logger, log_exception, MESSENGER
 from sate.filemgr import open_with_intermediates
@@ -394,6 +394,8 @@ class MultiLocusDataset(list):
                 MESSENGER.send_info("Reading input sequences from '%s'..." % seq_fn)
             sd = SequenceDataset()
             try:
+                if os.path.isdir(seq_fn):
+                    raise Exception('"%s" is a directory. A path to file was expected.\nMake sure that you are using the multilocus mode when the input source is a directory.\nUse the path to a FASTA file if you are running in single-locus mode.' % seq_fn)
                 fileobj = open(seq_fn, 'rU')
                 sd.read(fileobj,
                         file_format=file_format,

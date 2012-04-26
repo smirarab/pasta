@@ -26,7 +26,64 @@ from sate.tree import PhylogeneticTree
 from sate import get_logger
 _LOG = get_logger(__name__)
 
+# Provide a random number generator
+import random
+POLYTOMY_RNG = random.Random()
+
 from dendropy.treesplit import delete_outdegree_one
+
+def resolve_polytomies(tree, update_splits=False, rng=None):
+    """
+    Copied from more recent DendroPy than the version that we bundle...
+    
+    Arbitrarily resolve polytomies using 0-length splits.
+
+    If `rng` is an object with a sample() method then the polytomy will be
+        resolved by sequentially adding (generating all tree topologies
+        equiprobably
+        rng.sample() should behave like random.sample()
+    If `rng` is not passed in, then polytomy is broken deterministically by
+        repeatedly joining pairs of children.
+    """
+    from dendropy import Node
+    polytomies = []
+    if rng is None:
+        rng = POLYTOMY_RNG
+    for node in tree.postorder_node_iter():
+        if len(node.child_nodes()) > 2:
+            polytomies.append(node)
+    for node in polytomies:
+        children = node.child_nodes()
+        nc = len(children)
+        if nc > 2:
+            #if nc == 3 and node.parent_node is None:
+            #    continue
+            to_attach = children[2:]
+            for child in to_attach:
+                node.remove_child(child)
+            attachment_points = children[:2] + [node]
+            while len(to_attach) > 0:
+                next_child = to_attach.pop()
+                next_sib = rng.sample(attachment_points, 1)[0]
+                next_attachment = Node()
+                p = next_sib.parent_node
+                if p is None:
+                    c_list = list(next_sib.child_nodes())
+                    next_sib.add_child(next_attachment)
+                    next_sib.add_child(next_child)
+                    for child in c_list:
+                        next_sib.remove_child(child)
+                        next_attachment.add_child(child)
+                else:
+                
+                    p.add_child(next_attachment)
+                    p.remove_child(next_sib)
+                    next_attachment.add_child(next_sib)
+                    next_attachment.add_child(next_child)
+                attachment_points.append(next_attachment)
+    if update_splits:
+        tree.update_splits()
+
 
 def read_trees_into_dataset(dataset, tree_stream):
     if dataset.taxon_sets:
@@ -54,7 +111,7 @@ def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=F
     tree_list = read_and_encode_splits(dataset, tree_stream)
     t = tree_list[0]
     if force_fully_resolved:
-        t.resolve_polytomies(update_splits=True)
+        resolve_polytomies(t, update_splits=True)
     t = PhylogeneticTree(t)
     t.calc_splits()
     return t

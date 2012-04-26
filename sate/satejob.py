@@ -31,7 +31,7 @@ from threading import Lock
 from sate import get_logger
 _LOG = get_logger(__name__)
 
-from sate.treeholder import TreeHolder
+from sate.treeholder import TreeHolder, resolve_polytomies
 from sate.satealignerjob import SateAlignerJob
 from sate import get_logger
 from sate.utility import record_timestamp
@@ -110,7 +110,7 @@ class SateJob (TreeHolder):
                             multilocus_dataset.dataset, 
                             force_fully_resolved=True)
         if tree is not None:
-            tree.resolve_polytomies(update_splits=True)
+            resolve_polytomies(tree, update_splits=True)
 
         self.blind_mode_is_final = True
         self.is_stuck_in_blind = False

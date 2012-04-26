@@ -465,9 +465,6 @@ def sate_main(argv=sys.argv):
         if user_config.commandline.auto:
             user_config.commandline.auto = False
             auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
-            user_config.set_values_from_dict(auto_opts['sate'])
-            user_config.set_values_from_dict(auto_opts['commandline'])
-            user_config.set_values_from_dict(auto_opts['fasttree'])
             user_config.get('sate').set_values_from_dict(auto_opts['sate'])
             user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
             user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])

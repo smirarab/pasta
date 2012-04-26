@@ -388,7 +388,10 @@ class MultiLocusDataset(list):
             raise Exception("Expecting the datatype to by 'DNA' or 'PROTEIN', but found: %s\n" % datatype)
 
         for seq_fn in seq_filename_list:
-            MESSENGER.send_info("Reading input sequences from '%s'..." % seq_fn)
+            if careful_parse:
+                MESSENGER.send_info("Checking input sequences from '%s'..." % seq_fn)
+            else:
+                MESSENGER.send_info("Reading input sequences from '%s'..." % seq_fn)
             sd = SequenceDataset()
             try:
                 fileobj = open(seq_fn, 'rU')

@@ -96,7 +96,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         new_sate_defaults['max_subproblem_size'] = 200
         new_sate_defaults['max_subproblem_frac'] = 200.0/total_num_tax
     else:
-        new_sate_defaults['max_subproblem_size'] = int(total_num_tax/2.0)
+        new_sate_defaults['max_subproblem_size'] = int(math.ceil(total_num_tax/2.0))
         new_sate_defaults['max_subproblem_frac'] = 0.5
     if datatype.lower() == 'protein':
         new_defaults['fasttree'] = {
@@ -123,6 +123,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         }
     new_commandline_defaults['multilocus'] = bool(len(ntax_nchar_tuple_list) > 1)
     new_defaults['commandline'] = new_commandline_defaults
+    _LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
     return new_defaults
 
 def killed_handler(n, frame):
@@ -204,7 +205,7 @@ def finish_sate_execution(sate_team,
             starting_tree_str = starting_tree.compose_newick()
         else:
             if not options.two_phase:
-                MESSENGER.send_info("Performing initial tree search to get starting tree...")
+                MESSENGER.send_info("Creating a starting tree for the SATe algorithm...")
             if (options.two_phase) or (not options.aligned):
                 MESSENGER.send_info("Performing initial alignment of the entire data matrix...")
                 init_aln_dir = os.path.join(temporaries_dir, 'init_aln')

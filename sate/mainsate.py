@@ -70,7 +70,8 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     "sate" : ["tree_estimator",  "aligner", "merger", "break_strategy",
               "move_to_blind_on_worse_score",  "start_tree_search_from_current",
               "after_blind_iter_without_imp_limit", "max_subproblem_size", 
-              "max_subproblem_frac", "num_cpus"],
+              "max_subproblem_frac", "num_cpus", 
+              "time_limit", "after_blind_time_without_imp_limit"],
     "fasttree" : ["model", "GUI_model']
 
 
@@ -88,6 +89,8 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         'move_to_blind_on_worse_score' : True,
         'start_tree_search_from_current' : True,
         'after_blind_iter_without_imp_limit' : 1,
+        'time_limit' : -1,
+        'after_blind_time_without_imp_limit' : -1
         }
     if total_num_tax > 400:
         new_sate_defaults['max_subproblem_size'] = 200
@@ -110,9 +113,9 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     try:
         import multiprocessing
         num_cpu = multiprocessing.cpu_count()
-        new_sate_defaults['num_cpus'] = num_cpu
     except:
         pass
+    new_sate_defaults['num_cpus'] = num_cpu
         
     new_defaults['sate'] = new_sate_defaults
     new_commandline_defaults = {

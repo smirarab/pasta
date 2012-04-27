@@ -7,7 +7,8 @@ import subprocess
 import logging
 
 import sate
-from sate.test import get_testing_configuration, data_source_path, TestLevel, is_test_enabled, TESTS_DIR
+from sate.test import (get_testing_configuration, data_source_path, TestLevel,
+        is_test_enabled, TESTS_DIR)
 from sate import get_logger
 from sate.filemgr import TempFS
 

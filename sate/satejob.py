@@ -316,7 +316,7 @@ class SateJob (TreeHolder):
         frac_max = int(math.ceil(self.max_subproblem_frac*self.tree.n_leaves))
         if frac_max > self.max_subproblem_size:
             configuration['max_subproblem_size'] = frac_max
-
+        _LOG.debug("configuration['max_subproblem_size'] which will be used is " + str(configuration['max_subproblem_size']) + "\n")
         delete_iteration_temps = not self.keep_iteration_temporaries
         delete_realignment_temps = delete_iteration_temps or (not self.keep_realignment_temporaries)
         configuration['delete_temps'] = delete_realignment_temps

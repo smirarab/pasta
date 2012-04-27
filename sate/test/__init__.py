@@ -150,7 +150,7 @@ def data_source_path(filename=None):
         filename = os.path.sep.join(filename)
     return os.path.join(TESTS_DATA_DIR, filename)
 
-def data_target_patg(filename=None):
+def data_target_path(filename=None):
     if filename is None:
         filename = ""
     elif isinstance(filename, list):

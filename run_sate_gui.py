@@ -216,6 +216,7 @@ class SateFrame(wx.Frame):
             self.cb_decomp.SetValue("Longest")
             self.blindmode.SetValue(1)
             self.cb_apply_stop_rule.Enable()
+            self.checkbox_stop_time.SetValue(False)
             self.checkbox_stop_iter.SetValue(True)
             self.cb_stop1.Disable()
             self.text_stop2.Enable()
@@ -570,6 +571,7 @@ class SateFrame(wx.Frame):
         fc.close()
 
     def OnMaxSubproblem(self, event):
+        self._set_custom_sate_settings(event)
         radio_selected = event.GetEventObject()
         if radio_selected.GetName() == "frac":
             self.cb_maxsub1.Enable()

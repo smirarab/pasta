@@ -110,13 +110,13 @@
 	<string-option name="aligner" default="mafft" category="sate" subcategory="tools">
 		<help>The name of the alignment program to use for subproblems.</help>
 	</string-option>
-	<string-option name="merger" default="muscle" category="sate" subcategory="tools">
+	<string-option name="merger" default="opal" category="sate" subcategory="tools">
 		<help>The name of the alignment program to use to merge subproblems.</help>
 	</string-option>
 	<string-option name="tree_estimator" default="fasttree" category="sate" subcategory="tools">
 		<help>The name of the tree inference program to use to find trees on fixed alignments.</help>
 	</string-option>
-	<choice-option name="break_strategy" default="centroid" multichoice="True" category="sate" subcategory="decomposition">
+	<choice-option name="break_strategy" default="longest" multichoice="True" category="sate" subcategory="decomposition">
 		<choice value="centroid"><help>The edge that comes closest to dividing the tree into two equally sized subtrees (in terms of the number of leaves).</help></choice>
 		<choice value="longest" ><help>Longest edge in the tree</help></choice>
 		<help>The method for choosing an edge when bisecting the tree during decomposition</help>
@@ -148,7 +148,7 @@
 	<int-option name="blind_after_iter_without_imp" default="-1" category="sate" subcategory="acceptance">
 		<help>Maximum number of iterations without an improvement in likelihood score that SATe will run before switching to blind mode.</help>
 	</int-option>
-	<duration-option name="time_limit" default="86400" category="sate" subcategory="termination">
+	<duration-option name="time_limit" default="86400.0" category="sate" subcategory="termination">
 		<help>Maximum time (in seconds) that SATe will continue starting new iterations of realigning and tree searching. If the number is less than 0, then no time limit will be used.</help>
 	</duration-option>
 	<int-option name="iter_limit" default="-1" category="sate" subcategory="termination">
@@ -169,7 +169,7 @@
 	<duration-option name="after_blind_time_without_imp_limit" default="-1" category="sate" subcategory="termination">
 		<help>Maximum time (in seconds) since the last improvement in score that SATe will continue starting new iterations of realigning and tree searching after entering BLIND mode. If the number is less than 0, then no time limit will be used.</help>
 	</duration-option>
-	<int-option name="after_blind_iter_without_imp_limit" default="-1" category="sate" subcategory="termination">
+	<int-option name="after_blind_iter_without_imp_limit" default="1" category="sate" subcategory="termination">
 		<help>The maximum number of iterations without an improvement in score that the SATe algorithm will run after entering BLIND mode.  If the number is less than 1, then no iteration limit will be used.</help>
 	</int-option>
 	<outfile-option name="output_directory" short="o" category="sate" subcategory="output">

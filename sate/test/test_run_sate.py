@@ -64,7 +64,7 @@ class RunSateTest(unittest.TestCase):
                         '-i', self.anolis_file,]
             self._exe_run_sate(arg_list, return_code=0)
 
-    def testMultLocuRun(self):
+    def testMultiLocusRun(self):
         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
                 module_name=".".join([self.__class__.__name__,
                         sys._getframe().f_code.co_name])):

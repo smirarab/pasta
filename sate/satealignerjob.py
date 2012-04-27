@@ -175,6 +175,7 @@ class SateAlignerJob(TreeHolder):
         self.context_str = context_str
         if self.context_str is None:
             self.context_str = ''
+        _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
         if self.expected_number_of_taxa <= self.max_subproblem_size:
             _LOG.debug("%s...Calling Aligner" % prefix)
             aj_list = []

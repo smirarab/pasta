@@ -301,6 +301,23 @@ class SequenceDataset(object):
                 self.dataset.read(file_obj, schema=file_format)
             else:
                 self.dataset.read(file_obj, schema=file_format, row_type='str')
+                # do some cursory checks of the datatype
+                import re
+                if dup == "DNA":
+                    pattern = re.compile(r"([^-ACTGN?RYMKSWHBVD])", re.I)
+                elif dup == "RNA":
+                    pattern = re.compile(r"([^-ACUGN?RYMKSWHBVD])", re.I)
+                elif dup == "PROTEIN":
+                    pattern = re.compile(r"([^-ABCDEFGHIKLMNPQRSTVWY?XZ])", re.I)
+                taxa_block = self.dataset.taxon_sets[0]
+                char_block = self.dataset.char_matrices[0]
+                for taxon in taxa_block:
+                    char_vec = char_block[taxon]
+                    m = pattern.search(char_vec)
+                    if m:
+                        sym = m.groups(1)
+                        raise ValueError("Unexpected symbol %s in file of datatype %s" % (sym, datatype))
+
             n1 = len(self.dataset.taxon_sets[0].labels())
             n2 = len(set(self.dataset.taxon_sets[0].labels()))
             if n1 != n2:
@@ -384,7 +401,7 @@ class MultiLocusDataset(list):
 
         """
         datatype = datatype.upper()
-        if datatype not in ["DNA", "PROTEIN"]:
+        if datatype not in ["DNA", "RNA",  "PROTEIN"]:
             raise Exception("Expecting the datatype to by 'DNA' or 'PROTEIN', but found: %s\n" % datatype)
 
         for seq_fn in seq_filename_list:
@@ -548,7 +565,7 @@ class MultiLocusDataset(list):
     def get_num_loci(self):
         return len(self)
 
-def summary_stats_from_parse(filepath_list, datatype_list):
+def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
     """
     Returns a tuple of information about the datafiles found in `filepath_list`
     `datatype_list` provides the order that datatypes should be checked. The 
@@ -566,7 +583,7 @@ def summary_stats_from_parse(filepath_list, datatype_list):
     for datatype in datatype_list:
         md = MultiLocusDataset()
         try:
-            md.read_files(filepath_list, datatype, careful_parse=True)
+            md.read_files(filepath_list, datatype, careful_parse=careful_parse)
             total_n_leaves = 0
             taxa_char_tuple_list = []
             for element in md:

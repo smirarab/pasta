@@ -328,8 +328,8 @@ class SateFrame(wx.Frame):
         self.two_phase.Value = False
         self.raxml_after = wx.CheckBox(self, -1, "Extra RAxML Search")
         self.raxml_after.Value = False
-        self.trusted_data = wx.CheckBox(self, -1, "Trusted Data")
-        self.trusted_data.Value = False
+        #self.trusted_data = wx.CheckBox(self, -1, "Trusted Data")
+        #self.trusted_data.Value = True
 
         self.ctrls.extend([self.two_phase,
                            ])
@@ -342,9 +342,9 @@ class SateFrame(wx.Frame):
         sizer.Add(wx.StaticText(self, -1, "Post-Processing"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.raxml_after, (cr,1), flag=wx.EXPAND)
 
-        cr += 1
-        sizer.Add(wx.StaticText(self, -1, "Input Validation"), (cr,0), flag=wx.ALIGN_LEFT )
-        sizer.Add(self.trusted_data, (cr,1), flag=wx.EXPAND)
+        #cr += 1
+        #sizer.Add(wx.StaticText(self, -1, "Input Validation"), (cr,0), flag=wx.ALIGN_LEFT )
+        #sizer.Add(self.trusted_data, (cr,1), flag=wx.EXPAND)
 
         self.Bind(wx.EVT_CHECKBOX, self.OnTwoPhase, self.two_phase)
 
@@ -716,7 +716,10 @@ class SateFrame(wx.Frame):
                         datatype_list = ["PROTEIN"]
                     else:
                         datatype_list = ["DNA", "PROTEIN"]
-                    summary_stats = summary_stats_from_parse(fn_list, datatype_list)
+                    careful_parse = not False
+                    summary_stats = summary_stats_from_parse(fn_list, 
+                                                             datatype_list,
+                                                             careful_parse=careful_parse)
                     progress_dialog.Update(100, "Done")
                 except Exception, x:
                     try:
@@ -976,7 +979,7 @@ class SateFrame(wx.Frame):
                 raise Exception("Unrecognized model: %s" % model_desc)
         cfg.commandline.keeptemp = True
         cfg.commandline.keepalignmenttemps = True
-        cfg.commandline.trusted = bool(self.trusted_data.Value)
+        #cfg.commandline.untrusted = not bool(self.trusted_data.Value)
         if self.cb_multilocus.Value:
             cfg.commandline.multilocus = True
         

@@ -447,7 +447,7 @@ def sate_main(argv=sys.argv):
     command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'satejob')
 
 
-    if user_config.commandline.auto or (not user_config.commandline.trusted):
+    if user_config.commandline.auto or (user_config.commandline.untrusted):
         if user_config.commandline.input is None:
             sys.exit("ERROR: Input file(s) not specified.")
         from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
@@ -458,7 +458,8 @@ def sate_main(argv=sys.argv):
             else:
                 fn_list = [user_config.commandline.input]
             datatype_list = [user_config.commandline.datatype.upper()]
-            summary_stats = summary_stats_from_parse(fn_list, datatype_list)
+            careful_parse = user_config.commandline.untrusted
+            summary_stats = summary_stats_from_parse(fn_list, datatype_list, careful_parse=careful_parse)
         except:
             if user_config.commandline.auto:
                 MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")

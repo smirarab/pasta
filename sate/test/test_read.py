@@ -62,5 +62,22 @@ class DiagnoseDatatypeTest(unittest.TestCase):
         _LOG.warn("WARNING: summary_stats_from_parse does not distinguish between all bogus sequences in 'careful' mode") 
         #self.assertRaises(Exception, summary_stats_from_parse, [fp], ["DNA", "RNA", "PROTEIN"], careful_parse=True)
 
+    def testDiagnoseMulti(self):
+        multi_dir = data_source_path('testmulti')
+        fp = os.path.join(multi_dir,'caenophidia_mos.fasta')
+        fp2 = os.path.join(multi_dir,'caenophidia_mos2.fasta')
+        s = summary_stats_from_parse([fp, fp2], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
+        self.assertEqual(s[0], "PROTEIN")
+        self.assertEqual(s[1], [(114, 189), (109, 202)])
+        self.assertEqual(s[2], 116) # two taxa names were changed and 5 were deleted, so the union is 116
+
+        fp3 = data_source_path('smallrna.fasta')
+        s = summary_stats_from_parse([fp3, fp3], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
+        self.assertEqual(s[0], "RNA")
+        self.assertEqual(s[1], [(32, 1650),(32, 1650)])
+        self.assertEqual(s[2], 32) # two taxa names were changed and 5 were deleted, so the union is 116
+        self.assertRaises(Exception, summary_stats_from_parse, [fp, fp3], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
+        _LOG.warn("WARNING: summary_stats_from_parse will read multi with dna and protein as entirely protein. MIXED data type support is needed!") 
+
 if __name__ == "__main__":
     unittest.main()

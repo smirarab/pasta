@@ -63,7 +63,7 @@ class DiagnoseDatatypeTest(unittest.TestCase):
         #self.assertRaises(Exception, summary_stats_from_parse, [fp], ["DNA", "RNA", "PROTEIN"], careful_parse=True)
 
     def testDiagnoseMulti(self):
-        multi_dir = data_source_path('testmulti')
+        multi_dir = data_source_path('testmulti/caenophidia')
         fp = os.path.join(multi_dir,'caenophidia_mos.fasta')
         fp2 = os.path.join(multi_dir,'caenophidia_mos2.fasta')
         s = summary_stats_from_parse([fp, fp2], ["DNA", "RNA", "PROTEIN"], careful_parse=False)

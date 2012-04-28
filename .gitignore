@@ -3,3 +3,4 @@
 SATe.egg-info/
 build/
 bin/
+sate/test/runSateTest*

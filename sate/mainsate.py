@@ -130,8 +130,14 @@ def killed_handler(n, frame):
     global _RunningJobs
     if _RunningJobs:
         MESSENGER.send_warning("signal killed_handler called. Killing running jobs...\n")
-        j = _RunningJobs
-        j.kill()
+        if isinstance(_RunningJobs, list):
+            for j in _RunningJobs:
+                j.kill()
+                MESSENGER.send_warning("kill called...\n")
+        else:
+            j = _RunningJobs
+            j.kill()
+            MESSENGER.send_warning("kill called...\n")
     else:
         MESSENGER.send_warning("signal killed_handler called with no jobs running. Exiting.\n")
     sys.exit()
@@ -212,16 +218,20 @@ def finish_sate_execution(sate_team,
                 init_aln_dir = sate_team.temp_fs.create_subdir(init_aln_dir)
                 delete_aln_temps = not (options.keeptemp and options.keepalignmenttemps)
                 new_alignment_list= []
+                aln_job_list = []
                 for unaligned_seqs in multilocus_dataset:
                     job = sate_team.aligner.create_job(unaligned_seqs,
                                                        tmp_dir_par=init_aln_dir,
                                                        context_str="initalign",
                                                        delete_temps=delete_aln_temps)
-                    _RunningJobs = job
+                    aln_job_list.append(job)
+                _RunningJobs = aln_job_list
+                for job in aln_job_list:
                     jobq.put(job)
+                for job in aln_job_list:
                     new_alignment = job.get_results()
-                    _RunningJobs = None
                     new_alignment_list.append(new_alignment)
+                _RunningJobs = None
                 for locus_index, new_alignment in enumerate(new_alignment_list):
                     multilocus_dataset[locus_index] = new_alignment
                 if delete_aln_temps:

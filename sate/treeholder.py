@@ -66,6 +66,7 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
                 next_child = to_attach.pop()
                 next_sib = rng.sample(attachment_points, 1)[0]
                 next_attachment = Node()
+                next_attachment.edge.length = 0.0
                 p = next_sib.parent_node
                 if p is None:
                     c_list = list(next_sib.child_nodes())

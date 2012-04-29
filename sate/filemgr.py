@@ -401,7 +401,8 @@ class SateProducts(object):
             
         It is not thread-safe.
         """
-        o_path = self.output_prefix + "_iteration_" + str(iter_num) + "_temp_" + out_tag
+        p = "iteration_" + str(iter_num) + '_' + out_tag
+        o_path = self.output_prefix  + "_temp_" + p
         if os.path.exists(o_path):
             n = 1
             while os.path.exists(o_path):
@@ -409,8 +410,28 @@ class SateProducts(object):
                 if n > 100:
                     _LOG.warn('File %s exists iteration-specific output skipped!' % o_path)
                     return None # don't create a huge # of numbered files
-                o_path = self.output_prefix + "_iteration_" + str(iter_num) + t_tag + out_tag
+                o_path = self.output_prefix + t_tag + p
                 n += 1
         return os.path.abspath(o_path)
 
-
+    def get_abs_path_for_tag(self, out_tag):
+        """
+        Returns an absolute path or None for the file with the specificed `out_tag`
+        
+        The function will try to create numbered versions of the files to avoid
+            overwriting an existing file. But it can return None (if numbering
+            exceeds a large # of files).
+            
+        It is not thread-safe.
+        """
+        o_path = self.output_prefix  + "_temp_" + out_tag
+        if os.path.exists(o_path):
+            n = 1
+            while os.path.exists(o_path):
+                t_tag = "_temp%d_" % n
+                if n > 100:
+                    _LOG.warn('File %s exists iteration-specific output skipped!' % o_path)
+                    return None # don't create a huge # of numbered files
+                o_path = self.output_prefix + t_tag + out_tag
+                n += 1
+        return os.path.abspath(o_path)

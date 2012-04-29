@@ -189,6 +189,23 @@ def finish_sate_execution(sate_team,
     #####
     multilocus_dataset.relabel_for_sate()
 
+    export_names = True
+    if export_names:
+        try:
+            name_filename = sate_products.get_abs_path_for_tag('name_translation.txt')
+            name_output = open(name_filename, 'w')
+            safe2real = multilocus_dataset.safe_to_real_names
+            safe_list = safe2real.keys()
+            safe_list.sort()
+            for safe in safe_list:
+                orig = safe2real[safe][0]
+                name_output.write("%s\n%s\n\n" % (safe, orig))
+            name_output.close()
+            MESSENGER.send_info("Name translation information saved to %s as safe name, original name, blank line format." % name_filename)
+        except:
+            MESSENGER.send_info("Error exporting saving name translation to %s" % name_filename)
+            
+
     options.aligned = all( [i.is_aligned() for i in multilocus_dataset] )
 
     ############################################################################

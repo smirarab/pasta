@@ -114,7 +114,7 @@ class RunSateTest(SateTestCase):
                     [seqs_in1_path, seqs_in2_path],
                     [seqs_out1_path, seqs_out2_path])
             concat_out = os.path.join(self.ts.top_level_temp,
-                    'satejob_iteration_0_temp_seq_alignment.txt')
+                    'satejob_temp_iteration_0_seq_alignment.txt')
             self.assertSameConcatenatedSequences(
                     concatenated_file_path=concat_out,
                     file_path_list=[seqs_in1_path, seqs_in2_path])
@@ -145,7 +145,7 @@ class RunSateTest(SateTestCase):
                     [seqs_in1_path, seqs_in2_path],
                     [seqs_out1_path, seqs_out2_path])
             concat_out = os.path.join(self.ts.top_level_temp,
-                    'satejob_iteration_0_temp_seq_alignment.txt')
+                    'satejob_temp_iteration_0_seq_alignment.txt')
             self.assertSameConcatenatedSequences(
                     concatenated_file_path=concat_out,
                     file_path_list=[seqs_in1_path, seqs_in2_path])

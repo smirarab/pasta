@@ -390,7 +390,7 @@ class SateProducts(object):
             # single locus dataset: return directory nanme
             return os.path.dirname(os.path.abspath(options.input))
     
-    def get_abs_path_for_iter_output(self, iter_num, out_tag):
+    def get_abs_path_for_iter_output(self, iter_num, out_tag, allow_existing=False):
         """
         Returns an absolute path or None for the file for an iteration temporary
             file for iteration `iter_num` with the specificed `out_tag`
@@ -403,15 +403,16 @@ class SateProducts(object):
         """
         p = "iteration_" + str(iter_num) + '_' + out_tag
         o_path = self.output_prefix  + "_temp_" + p
-        if os.path.exists(o_path):
-            n = 1
-            while os.path.exists(o_path):
-                t_tag = "_temp%d_" % n
-                if n > 100:
-                    _LOG.warn('File %s exists iteration-specific output skipped!' % o_path)
-                    return None # don't create a huge # of numbered files
-                o_path = self.output_prefix + t_tag + p
-                n += 1
+        if not allow_existing:
+            if os.path.exists(o_path):
+                n = 1
+                while os.path.exists(o_path):
+                    t_tag = "_temp%d_" % n
+                    if n > 100:
+                        _LOG.warn('File %s exists iteration-specific output skipped!' % o_path)
+                        return None # don't create a huge # of numbered files
+                    o_path = self.output_prefix + t_tag + p
+                    n += 1
         return os.path.abspath(o_path)
 
     def get_abs_path_for_tag(self, out_tag):

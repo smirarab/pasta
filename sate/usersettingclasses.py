@@ -291,6 +291,7 @@ def get_list_of_seq_filepaths_from_dir(dir_path):
     seq_filename_list = glob.glob(dot_fas_glob) + glob.glob(dot_fasta_glob)
     if len(seq_filename_list) == 0:
         raise Exception("No files found with extension '.fas' or '.fasta' in directory: '%s'" % dir_path)
+    seq_filename_list.sort()
     return seq_filename_list
 
 class UserSettingsContainer(object):

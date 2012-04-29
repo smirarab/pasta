@@ -40,6 +40,8 @@ If you tell sate to keep its temporary files (-k option), then the configuration
 If configuration files are read in the order they occur as arguments (with values in later files replacing previously read values). Options specified in the command line are read last. Thus these values "overwrite" any settings from the configuration files.
 """
 
+TEMP_SEQ_ALIGNMENT_TAG = "seq_alignment.txt"
+TEMP_TREE_TAG = "tree.tre"
 __all__ = []
 
 import os

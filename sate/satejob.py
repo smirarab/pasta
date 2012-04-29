@@ -37,6 +37,8 @@ from sate import get_logger
 from sate.utility import record_timestamp
 from sate.scheduler import jobq
 from sate.filemgr import  TempFS
+from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
+
 
 class SateTeam (object):
     '''A blob for holding the appropriate merger, alignment, and tree_estimator tools
@@ -149,9 +151,6 @@ class SateJob (TreeHolder):
         self.start_time = None
         self.current_iteration = 0
         self.last_improvement_time = None
-        #self.best_multilocus_dataset = None
-        #self.best_tree_str = self.get_tree_str()
-        #self.best_score = self.score
         self.num_iter_since_imp = 0
         self.is_stuck_in_blind = False
         self.switch_to_blind_iter = None
@@ -160,6 +159,11 @@ class SateJob (TreeHolder):
         self._blindmode_trigger = None
         self._sate_alignment_job = None
         self._tree_build_job = None
+        self.curr_iter_align_tmp_filename = None
+        self.curr_iter_tree_tmp_filename = None
+        self.best_tree_tmp_filename = None
+        self.best_alignment_tmp_filename = None
+
 
     def _reset_jobs(self):
         self.tree_build_job = None
@@ -299,6 +303,8 @@ class SateJob (TreeHolder):
         self.best_score = new_score
         self.last_improvement_time = curr_timestamp
         self.num_iter_since_imp = 0
+        self.best_tree_tmp_filename = self.curr_iter_tree_tmp_filename
+        self.best_alignment_tmp_filename = self.curr_iter_align_tmp_filename
 
     def run(self, tmp_dir_par, sate_products=None):
         assert(os.path.exists(tmp_dir_par))
@@ -377,6 +383,11 @@ class SateJob (TreeHolder):
                                                                delete_temps=delete_iteration_temps,
                                                                sate_products=sate_products,
                                                                step_num=self.current_iteration)
+                prev_curr_align = self.curr_iter_align_tmp_filename
+                prev_curr_tree = self.curr_iter_tree_tmp_filename
+                self.curr_iter_align_tmp_filename = sate_products.get_abs_path_for_iter_output(self.current_iteration, TEMP_SEQ_ALIGNMENT_TAG, allow_existing=True)
+                self.curr_iter_tree_tmp_filename = sate_products.get_abs_path_for_iter_output(self.current_iteration, TEMP_TREE_TAG, allow_existing=True)
+
                 self.tree_build_job = tbj
                 jobq.put(tbj)
                 new_score, new_tree_str = tbj.get_results()
@@ -414,12 +425,18 @@ class SateJob (TreeHolder):
                     self.score = new_score
                     self.multilocus_dataset = new_multilocus_dataset
                     self.tree_str = new_tree_str
-                    self.status('realignment accepted.')
+                    if this_iter_score_improved:
+                        self.status('realignment accepted and score improved.')
+                    else:
+                        self.status('realignment accepted and despite the score not improving.')
                     # we do not want to continue to try different breaking strategies for this iteration so we break
                     self.status('current score: %s, best score: %s' % (self.score, self.best_score) )
                     break
                 else:
                     self.status('realignment NOT accepted.')
+                    self.curr_iter_align_tmp_filename = prev_curr_align
+                    self.curr_iter_tree_tmp_filename = prev_curr_tree 
+
                 break_strategy_index += 1
 
                 # self.status('current score: %s, best score: %s' % (self.score, self.best_score) )

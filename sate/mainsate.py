@@ -40,6 +40,8 @@ from sate.scheduler import start_worker, jobq
 from sate.utility import IndentedHelpFormatterWithNL
 from sate.filemgr import open_with_intermediates
 from sate import filemgr
+from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
+
 
 _RunningJobs = None
 
@@ -171,6 +173,9 @@ def finish_sate_execution(sate_team,
     # We must read the incoming tree in before we call the get_sequences_for_sate
     #   function that relabels that taxa in the dataset
     ######
+    alignment_as_tmp_filename_to_report = None
+    tree_as_tmp_filename_to_report = None
+    
     tree_file = options.treefile
     if tree_file:
         if not os.path.exists(tree_file):
@@ -183,6 +188,7 @@ def finish_sate_execution(sate_team,
             MESSENGER.send_warning('%d starting trees found in "%s". The first tree will be used.' % (len(tree_list), tree_file))
         starting_tree = tree_list[0]
         score = None
+        tree_as_tmp_filename_to_report = tree_file
 
     ############################################################################
     # This will relabel the taxa if they have problematic names
@@ -271,6 +277,8 @@ def finish_sate_execution(sate_team,
             jobq.put(job)
             score, starting_tree_str = job.get_results()
             _RunningJobs = None
+            alignment_as_tmp_filename_to_report = sate_products.get_abs_path_for_iter_output("initialsearch", TEMP_SEQ_ALIGNMENT_TAG, allow_existing=True)
+            tree_as_tmp_filename_to_report = sate_products.get_abs_path_for_iter_output("initialsearch", TEMP_TREE_TAG, allow_existing=True)
             if delete_tree_temps:
                 sate_team.temp_fs.remove_dir(init_tree_dir)
         _LOG.debug('We have the tree and whole_alignment, partitions...')
@@ -289,6 +297,8 @@ def finish_sate_execution(sate_team,
                         score=score,
                         **sate_config_dict)
         job.tree_str = starting_tree_str
+        job.curr_iter_align_tmp_filename = alignment_as_tmp_filename_to_report
+        job.curr_iter_tree_tmp_filename = tree_as_tmp_filename_to_report
         if score is not None:
             job.store_optimum_results(new_multilocus_dataset=multilocus_dataset,
                     new_tree_str=starting_tree_str,
@@ -302,6 +312,11 @@ def finish_sate_execution(sate_team,
             MESSENGER.send_info("Starting SATe algorithm on initial tree...")
             job.run(tmp_dir_par=temporaries_dir, sate_products=sate_products)
             _RunningJobs = None
+
+            if job.return_final_tree_and_alignment:
+                alignment_as_tmp_filename_to_report = job.curr_iter_align_tmp_filename
+            else:
+                alignment_as_tmp_filename_to_report = job.best_alignment_tmp_filename
             
             if user_config.commandline.raxml_search_after:
                 raxml_model = user_config.raxml.model.strip()
@@ -327,6 +342,7 @@ def finish_sate_execution(sate_team,
                 jobq.put(post_job)
                 post_score, post_tree = post_job.get_results()
                 _RunningJobs = None
+                tree_as_tmp_filename_to_report = sate_products.get_abs_path_for_iter_output("postraxtree", TEMP_TREE_TAG, allow_existing=True)
                 if delete_tree_temps:
                     sate_team.temp_fs.remove_dir(post_tree_dir)
                 job.tree_str = post_tree
@@ -334,19 +350,23 @@ def finish_sate_execution(sate_team,
                 if post_score > job.best_score:
                     job.best_tree_str = post_tree
                     job.best_score = post_score
+            else:
+                if job.return_final_tree_and_alignment:
+                    tree_as_tmp_filename_to_report = job.curr_iter_tree_tmp_filename
+                else:
+                    tree_as_tmp_filename_to_report = job.best_tree_tmp_filename
 
-        
 
         job.multilocus_dataset.restore_taxon_names()
         assert len(sate_products.alignment_streams) == len(job.multilocus_dataset)
         for i, alignment in enumerate(job.multilocus_dataset):
             alignment_stream = sate_products.alignment_streams[i]
-            MESSENGER.send_info("Writing final alignment to %s" % alignment_stream.name)
+            MESSENGER.send_info("Writing resulting alignment to %s" % alignment_stream.name)
             alignment.write(alignment_stream, file_format="FASTA")
             alignment_stream.close()
 
 
-        MESSENGER.send_info("Writing final tree to %s" % sate_products.tree_stream.name)
+        MESSENGER.send_info("Writing resulting tree to %s" % sate_products.tree_stream.name)
         tree_str = job.tree.compose_newick()
         sate_products.tree_stream.write("%s;\n" % tree_str)
 
@@ -357,13 +377,19 @@ def finish_sate_execution(sate_team,
         #        outtree_fn = os.path.join(seqdir, "combined_%s.tre" % options.job)
         #    else:
         #        outtree_fn = aln_filename + ".tre"
-        #MESSENGER.send_info("Writing final tree to %s" % outtree_fn)
+        #MESSENGER.send_info("Writing resulting tree to %s" % outtree_fn)
         #tree_str = job.tree.compose_newick()
         #sate_products.tree_stream.write("%s;\n" % tree_str)
 
 
-        MESSENGER.send_info("Writing final likelihood score to %s" % sate_products.score_stream.name)
+        MESSENGER.send_info("Writing resulting likelihood score to %s" % sate_products.score_stream.name)
         sate_products.score_stream.write("%s\n" % job.score)
+        
+        if alignment_as_tmp_filename_to_report is not None:
+            MESSENGER.send_info('The resulting alignment (with the names in a "safe" form) was first written as the file "%s"' % alignment_as_tmp_filename_to_report)
+        if tree_as_tmp_filename_to_report is not None:
+            MESSENGER.send_info('The resulting tree (with the names in a "safe" form) was first written as the file "%s"' % tree_as_tmp_filename_to_report)
+
     finally:
         for el in prev_signals:
             sig, prev_handler = el

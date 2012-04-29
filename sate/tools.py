@@ -29,6 +29,7 @@ import shutil
 
 from alignment import Alignment
 from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB
+from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
 from sate.filemgr import open_with_intermediates
 from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob
 
@@ -78,7 +79,7 @@ def read_internal_alignment(fn,
 
 def copy_temp_tree(src_treef, sate_products, step_num):
     if (sate_products is not None) and (step_num is not None):
-        dest_treef = sate_products.get_abs_path_for_iter_output(step_num, 'tree.tre')
+        dest_treef = sate_products.get_abs_path_for_iter_output(step_num, TEMP_TREE_TAG)
         if dest_treef and os.path.exists(src_treef):
             if os.path.exists(dest_treef):
                 _LOG.warn('File "%s" exists. It will not be overwritten' % dest_treef)
@@ -539,7 +540,7 @@ class TreeEstimator(ExternalTool):
         if sate_products:
             step_num = kwargs.get('step_num')
             if step_num is not None:
-                i_concat_align = sate_products.get_abs_path_for_iter_output(step_num, 'seq_alignment.txt')
+                i_concat_align = sate_products.get_abs_path_for_iter_output(step_num, TEMP_SEQ_ALIGNMENT_TAG)
                 if i_concat_align and os.path.exists(seqfn):
                     if os.path.exists(i_concat_align):
                         _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)

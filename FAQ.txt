@@ -6,7 +6,9 @@ Q: What does "SATe" mean?
 A: Simultaneous Alignment and Tree Estimation.
 
 Q: Where can I find the description of SATe algorithm?
-A: Please refer to Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and Phylogenetic Trees, 2009, Science, 324, 1561-1564
+A: Please refer to Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow,
+   Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and
+   Phylogenetic Trees, 2009, Science, 324, 1561-1564
 
 Q: Which alignment programs are included with SATe distribution?
 A: CLUSTALW 2.0.12
@@ -17,12 +19,64 @@ A: CLUSTALW 2.0.12
 
 Q: Which phylogenetic tree reconstruction programs are in SATe distribution?
    RAxML 7.2.6
+   FastTree 2.1.4
 
 Q: How to cite SATe software?
-A: The primary reference for SATe is the paper <a href="http://www.sciencemag.org/cgi/content/short/324/5934/1561"> Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and Phylogenetic Trees, 2009, Science, 324, 1561-1564</a>
+A: Please cite the software, the papers describing the algorithm, and the
+   appropriate external tools.
 
-This version of the software was written by Jiaye Yu, Mark Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks.  Kevin Liu and Tandy Warnow also contributed bug reports, feature requests, and ideas about the design of the software.
-In addition to the paper reference, you can cite the software as:
+    ALGORITHM CITATIONS:
+    Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, 2009. "Rapid and
+        accurate large scale coestimation of sequence alignments and
+        phylogenetic trees." Science, 324(5934):1561-1564, 19 June 2009,
+        doi: 10.1126/science.1171243
+    Liu, K., T.J. Warnow, M.T. Holder, S. Nelesen, J. Yu, A. Stamatakis, and
+        C.R. Linder. "SATe-II: Very Fast and Accurate Simultaneous Estimation of
+        Multiple Sequence Alignments and Phylogenetic Trees." Systematic
+        Biology. 61(1):90-106
 
-http://phylo.bio.ku.edu/software/sate/sate.html
+    CITATIONS FOR THE SATE SOFTWARE ITSELF AND ITS DEPENDENCIES:
+    Jiaye Yu, and Mark T. Holder "SATe version VERSION_NUMBER_HERE" from
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        version 1.2 or earlier)
+    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATe version
+        VERSION_NUMBER_HERE" from
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        version 1.2.1 to 2.1.0)
+    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks
+        "SATe version VERSION_NUMBER_HERE" from
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        version 2.2.0 or later)
+    Sukumaran, J. and Mark T. Holder. 2010. "DendroPy: A Python library for
+        phylogenetic computing". Bioinformatics 26:1569-1571. (for all SATe
+        versions from this website)
 
+    EXTERNAL TOOL CITATIONS:
+    Please remember to cite the aligner and tree inference tools that you use
+    during the course of a SATe run. The exact citation will depend on what
+    tools you choose to use.
+
+    Mafft: See the References section on
+        http://mafft.cbrc.jp/alignment/software/
+    RAxML: See the Publications section on
+        http://wwwkramer.in.tum.de/exelixis/publications.html
+    Opal: 
+        Wheeler, T.J. and Kececioglu, J.D. "Multiple alignment by aligning
+            alignments," Proceedings of the 15th ISCB Conference on Intelligent
+            Systems for Molecular Biology, Bioinformatics 23, i559-i568, 2007.
+            And see http://opal.cs.arizona.edu/
+    Muscle:
+        Edgar, R.C. (2004) MUSCLE: multiple sequence alignment with high
+            accuracy and high throughput.Nucleic Acids Res. 32(5):1792-1797.
+            doi:10.1093/nar/gkh340
+        Edgar, R.C. (2004) MUSCLE: a multiple sequence alignment method with reduced
+            time and space complexity BMC Bioinformatics, (5) 113.
+            doi:10.1186/1471-2105-5-113.
+        See http://www.drive5.com/muscle/
+    Clustal: See the References section of
+        ftp://ftp.ebi.ac.uk/pub/software/clustalw2/clustalx_help.html
+    Prank: See http://www.ebi.ac.uk/goldman-srv/prank/prank
+    FastTree:
+        Price MN, Dehal PS, Arkin AP. (2010) FastTree 2: Approximately
+            Maximum-Likelihood Trees for Large Alignments. PLoS ONE 5(3): e9490.
+            doi:10.1371/journal.pone.0009490.

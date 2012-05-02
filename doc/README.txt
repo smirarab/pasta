@@ -9,12 +9,6 @@ by iteratively creating alignments using a divide-and-conquer strategy of the ML
 tree from the previous iteration, and then computing a new ML tree on the new
 alignment.
 
-Currently RAxML is used for tree inference from aligned sequences. The 'GTRMIX'
-model option in RAxML (searching under the 'GTRCAT', but scoring the final tree
-under 'GTRGAMMA') is used for DNA sequences, while the 'PROTMIXWAGF' model is
-used for amino acid sequences.
-
-
 The references for the algorithmic approach are:
 
     Kevin Liu, Sindhu Raghavan, Serita Nelesen, C. Randal Linder, and  Tandy
@@ -71,14 +65,21 @@ Starting conditions
 If you give SATe a starting tree, it will go directly to the iterative portion
 of the algorithm.
 
-If you do NOT give it a starting tree sequences, then SATe will use RAxML to
-infer the initial tree.  This requires an alignment.  If all of the input
-sequences are of the same length, then SATe will assume that you are providing
-it with an alignment matrix; it will realign the data during the course of the
-algorithm, but the initial tree search will be conducted on the alignment that
-you supply. If your initial sequences do not have the same length and you do
-not supply a tree, then SATe will use the alignment tool that you have selected
-to produce an initial alignment for the entire dataset (this can be slow).
+If you do NOT give it a starting tree, then SATe will use the specified "Tree
+estimator" external tool to infer the initial tree.  This requires an alignment.
+If all of the input sequences are of the same length, then SATe will assume
+that you are providing it with an alignment matrix; it will realign the data
+during the course of the algorithm, but the initial tree search will be
+conducted on the alignment that you supply. If your initial sequences do not
+have the same length and you do not supply a tree, then SATe will use the
+alignment tool that you have selected to produce an initial alignment for the
+entire dataset (this can be slow).
+
+If the initial alignment is very slow, you might want to use the PartTree tool
+in MAFFT (http://bioinformatics.oxfordjournals.org/content/23/3/372.abstract) to
+estimate a rough starting tree. By providing SATe with the tree estimated by
+PartTree, your analysis will bypass the initial alignment/tree-search, and will
+immediately begin the first iteration of the SATe algorithm.
 
     Soon, we will implement an option that allows you to specify an aligner for
     the initial alignment operation and a different aligner for the subproblem
@@ -105,8 +106,12 @@ tools used for each step:
     * "Merger" is used to select the multiple sequence alignment tool used to
       merge the alignments of subproblems into a larger alignment.
 
-    * "Tree estimator" will allow you to choose the software for tree inference
-      from a fixed alignment (currently only RAxML is supported).
+    * "Tree Estimator" will allow you to choose the software for tree inference
+      from a fixed alignment.
+    
+    * "Model" allows you to select the substitution model that will be used
+      by the tree estimator during tree inference. The options in the drop down
+      are contingent on the specified "Tree Estimator".
 
 ###############################
 Sequences and Tree (lower left)

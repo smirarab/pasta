@@ -77,16 +77,21 @@ if sys.argv[1] == 'py2exe':
 
     bin_win_src = sate.sate_tools_dev_dir()
     bin_win_dest = sate.sate_tools_deploy_subpath()
+    sate_src_root = sate.sate_home_dir()
     my_files = []
     my_files.extend( find_data_files(
-        bin_win_src,
-        bin_win_dest,
-        ['*'] ) )
+            bin_win_src,
+            bin_win_dest,
+            ['*'] ) )
     my_files.extend( find_data_files(
-        os.path.join(bin_win_src, 'real_bin'),
-        os.path.join(bin_win_dest, 'real_bin'),
-        ['*'] ) )
-    my_files.append(['', ['LICENSE.txt', 'AUTHORS.txt', 'FAQ.txt']])
+            os.path.join(bin_win_src, 'real_bin'),
+            os.path.join(bin_win_dest, 'real_bin'),
+            ['*'] ) )
+    my_files.extend( find_data_files(
+            os.path.join(sate_src_root, 'doc'),
+            '',
+            ['*']))
+    # my_files.append(['', ['LICENSE.txt', 'AUTHORS.txt', 'FAQ.txt']])
     my_files.append(['data', [os.path.join('sate', 'test', 'data', f) for f in
             ['small.fasta', 'large.fasta', 'anolis.fasta',]]] )
 

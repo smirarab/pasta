@@ -163,6 +163,9 @@ class SateFrame(wx.Frame):
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_END_PROCESS, self.OnProcessEnded)
         self.Bind(wx.EVT_BUTTON, self.OnButton, self.button)
+        
+        self.set_char_model() # this fixes the model based on the current default tree estimator
+
 
     def _create_job_settings_sizer(self):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Job Settings"), wx.VERTICAL)

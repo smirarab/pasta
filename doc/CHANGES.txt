@@ -1,3 +1,9 @@
+Release 2.2.1
+=============
+
+    - [BUG FIX] Minor fix to initial GUI display. Initial "Model" options now
+                correspond to FastTree options.
+    - [CHANGES] updated documentation in README and FAQ.
 
 Release 2.2.0
 =============

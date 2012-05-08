@@ -173,5 +173,5 @@ if platform.system() != "Windows":
             tdir = tools_bin_srcdir
         for fpath in os.listdir(tdir):
             src_path = os.path.join(tdir, fpath)
-            if os.path.isfile(src_path):
+            if os.path.isfile(src_path) and not src_path.endswith('.txt'):
                 create_symlink(src_path, subdir)

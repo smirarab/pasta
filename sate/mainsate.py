@@ -211,8 +211,9 @@ def finish_sate_execution(sate_team,
         except:
             MESSENGER.send_info("Error exporting saving name translation to %s" % name_filename)
             
-
-    options.aligned = all( [i.is_aligned() for i in multilocus_dataset] )
+    
+    if options.aligned:
+        options.aligned = all( [i.is_aligned() for i in multilocus_dataset] )
 
     ############################################################################
     # Launch threads to do work

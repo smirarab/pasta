@@ -576,9 +576,12 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
         el[1] a list of pairs of number of taxa and max number of sites for each
             datafile read
         el[2] is the total number of taxa encountered (size of the union of all
-            leaf sets.
+            leaf sets).
+        el[3] = True if the sequences appear to be aligned (all have the 
+            sequences have the same length)
     """
     is_multi_locus = len(filepath_list) > 1
+    appears_aligned = True
     caught_exception = None
     for datatype in datatype_list:
         md = MultiLocusDataset()
@@ -589,10 +592,19 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
             for element in md:
                 mat = element.get_character_matrix()
                 ntax = len(mat)
-                nchar = max([len(row) for row in mat.values()])
+                nchar = None
+                for row in mat.values():
+                    ncr = len(row)
+                    if nchar is None:
+                        nchar = ncr
+                    else:
+                        if ncr != nchar:
+                            appears_aligned = False
+                        nchar = max(ncr, nchar)
                 t_c_pair = (ntax, nchar)
                 taxa_char_tuple_list.append(t_c_pair)
-            return (datatype, taxa_char_tuple_list, len(md.dataset.taxon_sets[0]))
+            num_tax_total = len(md.dataset.taxon_sets[0])
+            return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned)
         except Exception, e:
             caught_exception = e
     raise e

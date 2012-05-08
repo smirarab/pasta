@@ -296,14 +296,19 @@ class SateFrame(wx.Frame):
         self.txt_treefn = wx.TextCtrl(self,-1)
 
         self.cb_multilocus = wx.CheckBox(self, -1, "Multi-Locus Data")
-        #self.cb_multilocus.Disable()
+        self.checkbox_aligned = wx.CheckBox(self, -1, "Use for inital tree")
+        self.checkbox_aligned.SetValue(False)
+        self._could_be_aligned = False
+        self.checkbox_aligned.Disable()
 
         sizer.AddMany([ (self.seq_btn, 0, wx.LEFT|wx.EXPAND),
                         (self.txt_seqfn, 0),
                         (wx.StaticText(self, -1, ""), 0, wx.EXPAND),
                         (self.cb_multilocus, 1, wx.EXPAND),
-                        (wx.StaticText(self, -1, "Data Type"), 0, wx.ALIGN_CENTER),
+                        (wx.StaticText(self, -1, "Data Type"), 0, wx.ALIGN_RIGHT),
                         (self.datatype, 0),
+                        (wx.StaticText(self, -1, "Initial Alignment"), 0, wx.ALIGN_RIGHT),
+                        (self.checkbox_aligned, 0),
                         (self.tree_btn, 0, wx.LEFT|wx.EXPAND),
                         (self.txt_treefn, 0),
         ])
@@ -734,6 +739,8 @@ class SateFrame(wx.Frame):
                 if error_msg:
                     self._show_error_dialog(error_msg, caption="Input parsing error")
                     filepath = None
+                    self._could_be_aligned = False
+                    self.refresh_aligned_checkbox()
                 else:
                     read_type = summary_stats[0]
                     if read_type == "PROTEIN":
@@ -742,6 +749,10 @@ class SateFrame(wx.Frame):
                         self.datatype.SetValue("Nucleotide")
                     # Set defaults from "auto_defaults"
                     auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
+
+                    self._could_be_aligned = summary_stats[3]
+                    self.refresh_aligned_checkbox()
+
                     auto_sate_opts = auto_opts["sate"]
                     te_str = auto_sate_opts["tree_estimator"].upper()
                     self.cb_tools["treeestimator"].SetStringSelection(te_str)
@@ -804,11 +815,24 @@ class SateFrame(wx.Frame):
                     self.txt_outputdir.SetValue(os.path.abspath(filepath))
         else:
             self.txt_seqfn.SetValue("")
+            
+    def refresh_aligned_checkbox(self):
+        self.checkbox_aligned.SetValue(self._could_be_aligned)
+        if self._could_be_aligned:
+            treefilename = self.txt_treefn.GetValue()
+            if treefilename and os.path.isfile(treefilename):
+                self.checkbox_aligned.Disable()
+            else:
+                self.checkbox_aligned.Enable()
+        else:
+            self.checkbox_aligned.Disable()
+
 
     def OnChooseTree(self, event):
         dialog = wx.FileDialog(None, "Choose tree...", wildcard = "Tree files (*.tree)|*.tree|Tree files (*.tre)|*.tre|Tree files (*.phy)|*.phy", style=wx.FD_OPEN)
         dialog.ShowModal()
         self.txt_treefn.SetValue( dialog.GetPath() )
+        self.refresh_aligned_checkbox()
 
     def OnIdle(self, evt):
         if self.process is not None:
@@ -982,6 +1006,8 @@ class SateFrame(wx.Frame):
                 raise Exception("Unrecognized model: %s" % model_desc)
         cfg.commandline.keeptemp = True
         cfg.commandline.keepalignmenttemps = True
+        if self.checkbox_aligned.Value:
+            cfg.commandline.aligned = True
         #cfg.commandline.untrusted = not bool(self.trusted_data.Value)
         if self.cb_multilocus.Value:
             cfg.commandline.multilocus = True

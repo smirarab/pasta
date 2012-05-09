@@ -2,28 +2,37 @@
 Frequently Asked Questions for SATe
 ###################################
 
-Q: What does "SATe" mean?
+Q: What does "SATé" mean?
 A: Simultaneous Alignment and Tree Estimation.
 
-Q: Where can I find the description of SATe algorithm?
-A: Please refer to Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow,
-   Rapid and Accurate Large-Scale Coestimation of Sequence Alignments and
-   Phylogenetic Trees, 2009, Science, 324, 1561-1564
+Q: How is "SATé" pronounced?
+A: Sah-tay 
 
-Q: Which alignment programs are included with SATe distribution?
+Q: Where can I find the description of SATé algorithm?
+A: Please refer to:
+      Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, "Rapid and
+      Accurate Large-Scale Co-estimation of Sequence Alignments and Phylogenetic
+      Trees", 2009, Science, 324, 1561-1564.
+   and to:
+      Liu, K., T.J. Warnow, M.T. Holder, S. Nelesen, J. Yu, A. Stamatakis, and
+      C.R. Linder, "SATe-II: Very Fast and Accurate Simultaneous Estimation of
+      Multiple Sequence Alignments and Phylogenetic Trees." Systematic Biology.
+      61(1):90-106.
+
+Q: Which alignment programs are included with SATé distribution?
 A: CLUSTALW 2.0.12
    MAFFT 6.717
    MUSCLE 3.7
    OPAL 1.0.3
    PRANK 100311
 
-Q: Which phylogenetic tree reconstruction programs are in SATe distribution?
+Q: Which phylogenetic tree reconstruction programs are in SATé distribution?
    RAxML 7.2.6
    FastTree 2.1.4
 
-Q: How to cite SATe software?
-A: Please cite the software, the papers describing the algorithm, and the
-   appropriate external tools.
+Q: How to cite SATé software?
+A: Please cite the two algorithm papers, the software, and the appropriate
+   external tools.
 
     ALGORITHM CITATIONS:
     Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, 2009. "Rapid and
@@ -37,15 +46,15 @@ A: Please cite the software, the papers describing the algorithm, and the
 
     CITATIONS FOR THE SATE SOFTWARE ITSELF AND ITS DEPENDENCIES:
     Jiaye Yu, and Mark T. Holder "SATe version VERSION_NUMBER_HERE" from
-        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2 or earlier)
-    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATe version
+    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATé version
         VERSION_NUMBER_HERE" from
-        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2.1 to 2.1.0)
     Jiaye Yu, Mark T. Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks
         "SATe version VERSION_NUMBER_HERE" from
-        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED." (for
+        http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 2.2.0 or later)
     Sukumaran, J. and Mark T. Holder. 2010. "DendroPy: A Python library for
         phylogenetic computing". Bioinformatics 26:1569-1571. (for all SATe
@@ -69,8 +78,8 @@ A: Please cite the software, the papers describing the algorithm, and the
         Edgar, R.C. (2004) MUSCLE: multiple sequence alignment with high
             accuracy and high throughput.Nucleic Acids Res. 32(5):1792-1797.
             doi:10.1093/nar/gkh340
-        Edgar, R.C. (2004) MUSCLE: a multiple sequence alignment method with reduced
-            time and space complexity BMC Bioinformatics, (5) 113.
+        Edgar, R.C. (2004) MUSCLE: a multiple sequence alignment method with 
+            reduced time and space complexity BMC Bioinformatics, (5) 113.
             doi:10.1186/1471-2105-5-113.
         See http://www.drive5.com/muscle/
     Clustal: See the References section of

@@ -53,4 +53,10 @@ directory is hidden by default).
     except Exception, x:
         if _DEVELOPER:
             raise
-        sys.exit("SATe is exiting because of an error:\n%s " % str(x))
+        message = "SATe is exiting because of an error:\n%s " % str(x)
+        try:
+            from sate import MESSENGER
+            MESSENGER.send_error(message)
+        except:
+            sys.stderr.write(message)
+        sys.exit(1)

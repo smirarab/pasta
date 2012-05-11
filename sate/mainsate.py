@@ -182,7 +182,14 @@ def finish_sate_execution(sate_team,
             raise Exception('The tree file "%s" does not exist' % tree_file)
         tree_f = open(tree_file, 'rU')
         MESSENGER.send_info('Reading starting trees from "%s"...' % tree_file)
-        tree_list = read_and_encode_splits(multilocus_dataset.dataset, tree_f)
+        try:
+            tree_list = read_and_encode_splits(multilocus_dataset.dataset, tree_f)
+        except KeyError:
+            MESSENGER.send_error("Error in reading the treefile, probably due to a name in the tree that does not match the names in the input sequence files.\n")
+            raise
+        except:
+            MESSENGER.send_error("Error in reading the treefile.\n")
+            raise
         tree_f.close()
         if len(tree_list) > 1:
             MESSENGER.send_warning('%d starting trees found in "%s". The first tree will be used.' % (len(tree_list), tree_file))

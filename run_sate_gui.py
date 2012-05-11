@@ -798,14 +798,24 @@ class SateFrame(wx.Frame):
                     after_blind_it_lim = auto_sate_opts['after_blind_iter_without_imp_limit']
                     self.text_stop2.SetValue(str(after_blind_it_lim))
                     
+                    if self._could_be_aligned:
+                        a_tag = "aligned"
+                    else:
+                        a_tag = "unaligned"
 
-                    self.log.AppendText("Read %d file(s) with %s data. Total of %d taxa found.\n" % (len(fn_list), read_type, summary_stats[2]))
+                    self.log.AppendText("Read %d file(s) with %s %s data. Total of %d taxa found.\n" % (len(fn_list), a_tag, read_type, summary_stats[2]))
                     by_file = summary_stats[1]
                     for n, fn in enumerate(fn_list):
                         t_c_tuple = by_file[n]
-                        self.log.AppendText('  Parsing of the file "%s" returned %d sequences, longest length = %d\n' % (fn, t_c_tuple[0], t_c_tuple[1]))
+                        if self._could_be_aligned:
+                            self.log.AppendText('  Parsing of the file "%s" returned %d sequences of length = %d\n' % (fn, t_c_tuple[0], t_c_tuple[1]))
+                        else:
+                            self.log.AppendText('  Parsing of the file "%s" returned %d sequences with longest length = %d\n' % (fn, t_c_tuple[0], t_c_tuple[1]))
                     
                 progress_dialog.Destroy()
+            else:
+                self._could_be_aligned = True
+                self.refresh_aligned_checkbox()
         if filepath:
             if not parse_as_multilocus:
                 if filepath and not self.txt_outputdir.GetValue():
@@ -829,7 +839,7 @@ class SateFrame(wx.Frame):
 
 
     def OnChooseTree(self, event):
-        dialog = wx.FileDialog(None, "Choose tree...", wildcard = "Tree files (*.tree)|*.tree|Tree files (*.tre)|*.tre|Tree files (*.phy)|*.phy", style=wx.FD_OPEN)
+        dialog = wx.FileDialog(None, "Choose tree...", wildcard = "Tree files (*.tre)|*.tre|Tree files (*.tree)|*.tree|Tree files (*.phy)|*.phy", style=wx.FD_OPEN)
         dialog.ShowModal()
         self.txt_treefn.SetValue( dialog.GetPath() )
         self.refresh_aligned_checkbox()

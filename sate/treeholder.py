@@ -88,9 +88,9 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
 
 def read_trees_into_dataset(dataset, tree_stream):
     if dataset.taxon_sets:
-        dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0], preserve_underscores=True)
+        dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])
     else:
-        dataset.read_from_stream(tree_stream, schema='NEWICK', preserve_underscores=True)
+        dataset.read_from_stream(tree_stream, schema='NEWICK')
     return  dataset.tree_lists[-1]
 
 def read_and_encode_splits(dataset, tree_stream):

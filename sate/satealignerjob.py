@@ -293,7 +293,7 @@ class SateAlignerJob(TreeHolder):
     def bipartition_by_tree(self, option):
         _LOG.debug("tree before bipartition by %s = %s" % (option, self.tree.compose_newick()))
 
-        tree1, tree2 = bisect_tree(self.tree)
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
         assert tree1.n_leaves > 0
         assert tree2.n_leaves > 0
         assert tree1.n_leaves + tree2.n_leaves == self.tree.n_leaves

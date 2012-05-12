@@ -275,7 +275,6 @@ class SateProducts(object):
         if self.job_name is None:
             self.job_name = "satejob"
         self._job_file_name = get_safe_filename(self.job_name)
-        self._disambiguator_idx = 0
 
         if not self.sate_user_settings.sate.output_directory:
             self._output_directory = self.get_input_source_directory()

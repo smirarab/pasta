@@ -557,6 +557,14 @@ def sate_main(argv=sys.argv):
     user_config.read_seq_filepaths(src=user_config.commandline.input,
             multilocus=user_config.commandline.multilocus)
     sate_products = filemgr.SateProducts(user_config)
+    
+    export_config_as_temp = True
+    if export_config_as_temp:
+        name_cfg = sate_products.get_abs_path_for_tag('sate_config.txt')
+        command_line_group.exportconfig = None
+        user_config.save_to_filepath(name_cfg)
+        MESSENGER.send_info('Configuration written to "%s".\n' % name_cfg )
+         
 
     MESSENGER.run_log_streams.append(sate_products.run_log_stream)
     MESSENGER.err_log_streams.append(sate_products.err_log_stream)

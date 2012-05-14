@@ -521,6 +521,9 @@ class TreeEstimator(ExternalTool):
     def __init__(self, name, temp_fs, **kwargs):
         ExternalTool.__init__(self, name, temp_fs, **kwargs)
         self.model = kwargs.get('model')
+        self.user_opts = None
+        if kwargs.get('args') is not None and len(kwargs.get('args')) != "":
+            self.user_opts = kwargs.get('args').split()
 
     def _prepare_input(self, alignment, **kwargs):
         raise NotImplmentedError('Abstract TreeEstimator class!')
@@ -638,11 +641,11 @@ class FastTree(TreeEstimator):
     section_name = 'fasttree tree_estimator'
     url = 'http://www.microbesonline.org/fasttree/'
     is_bundled_tool = False
-    user_opts = []
 
     def __init__(self, **kwargs):
-        TreeEstimator.__init__(self, 'fasttree', **kwargs)
-        self.options = kwargs.get('options').split()
+        TreeEstimator.__init__(self, 'fasttree', **kwargs)  
+        if kwargs.get('options') is not None and kwargs.get('options') != '':
+            self.user_opts.extend(kwargs.get('options').split())
 
     def _prepare_input(self, multilocus_dataset, **kwargs):
         curdir = self.make_temp_workdir(tmp_dir_par=kwargs.get('tmp_dir_par'))
@@ -659,7 +662,7 @@ class FastTree(TreeEstimator):
         else:
             raise ValueError('Datatype "%s" not recognized by FastTree' % str(alignment.datatype))
 
-        options = self.options if self.options is not None else ''
+        options = self.user_opts if self.user_opts is not None else ''
         self.store_input(seqfn, **kwargs)
 
         return curdir, seqfn, datatype, options
@@ -780,12 +783,15 @@ class Raxml(TreeEstimator):
                 '-s', seqfn,
                 # '-M', # Branch length estimates per partition
                 ]
-        x = open(parfn).readlines()
-        npar = [i.count(',') for i in x]
+        #x = open(parfn).readlines()
+        #npar = [i.count(',') for i in x]
 
         # if npar > 1:
         #   invoc.extend('-M')
 
+        if self.user_opts is not None and len(self.user_opts) >=1 :
+            invoc.extend(self.user_opts)
+            
         if starting_tree is not None:
             if isinstance(starting_tree, str):
                 tree_str = starting_tree

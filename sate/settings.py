@@ -47,7 +47,7 @@ class SateUserSettings(UserSettingsContainer):
         self.raxml.add_option('args', StringUserSetting(name='args', default='', short_name=None, help='Arguments to be passed to RAxML.', subcategory=None))
         self.fasttree.add_option('path', StringUserSetting(name='path', default='', short_name=None, help='Path to FastTree', subcategory=None))
         self.fasttree.add_option('model', StringUserSetting(name='model', default='', short_name=None, help='Substitution model used by FastTree.', subcategory=None))
-        self.fasttree.add_option('options', StringUserSetting(name='options', default='', short_name=None, help='Options to be passed to FastTree (equivalent of options).', subcategory=None))
+        self.fasttree.add_option('options', StringUserSetting(name='options', default='', short_name=None, help='Options to be passed to FastTree (equivalent of args).', subcategory=None))
         self.fasttree.add_option('args', StringUserSetting(name='args', default='', short_name=None, help='Arguments to be passed to FastTree.', subcategory=None))
         self.opal.add_option('path', StringUserSetting(name='path', default='', short_name=None, help='Path to Opal jar file', subcategory=None))
         self.clustalw2.add_option('path', StringUserSetting(name='path', default='', short_name=None, help='Path to clustalw2 exeutable', subcategory=None))

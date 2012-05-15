@@ -175,8 +175,22 @@ class Alignment(dict, object):
         """
         file_obj = open_with_intermediates(filename, 'w')
         for name, seq in self.items():
-            file_obj.write('>%s\n%s\n' % (name, re.sub(_INDEL, '', seq)))
+            new_seq = re.sub(_INDEL, '', seq)
+            if new_seq != '':
+                file_obj.write('>%s\n%s\n' % (name, new_seq))
         file_obj.close()
+
+    def unaligned(self):
+        """
+        Returns a new alignment with all gaps and missing sequences removed.
+        """
+        new_alignment = Alignment()
+        new_alignment.datatype = self.datatype
+        for name, seq in self.iteritems():
+            new_seq = re.sub(_INDEL, '', seq)
+            if new_seq != '':
+                new_alignment[name] = new_seq
+        return new_alignment
 
     def sub_alignment(self, sub_keys):
         "Creates an new alignment with a subset of the taxa."
@@ -402,7 +416,7 @@ class MultiLocusDataset(list):
         """
         datatype = datatype.upper()
         if datatype not in ["DNA", "RNA",  "PROTEIN"]:
-            raise Exception("Expecting the datatype to by 'DNA' or 'PROTEIN', but found: %s\n" % datatype)
+            raise Exception("Expecting the datatype to be 'DNA' or 'PROTEIN', but found: %s\n" % datatype)
 
         for seq_fn in seq_filename_list:
             if careful_parse:

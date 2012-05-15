@@ -171,7 +171,7 @@ class Aligner(ExternalTool):
             raise AssertionError('The tmp_dir_par must be specified when calling create_job or _prepare_input')
         scratch_dir = self.make_temp_workdir(tmp_dir_par=tdp)
         seqfn = os.path.join(scratch_dir, "input.fasta")
-        alignment.write_unaligned_fasta(seqfn)
+        alignment.write_filepath(seqfn, file_format='FASTA')
         alignedfn = os.path.join(scratch_dir, 'input.aligned')
         return scratch_dir, seqfn, alignedfn
 
@@ -210,10 +210,12 @@ class MafftAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_mafft'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
         aligned_fileobj = open_with_intermediates(alignedfn, 'w')
 
         invoc = []
@@ -269,9 +271,12 @@ class OpalAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_opal'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn, '--out', alignedfn, '--quiet']
         invoc.extend(self.user_opts)
@@ -294,9 +299,12 @@ class Clustalw2Aligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_clustalw2'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = [self.exe, '-align', '-infile=%s' % seqfn, '-outfile=%s' % alignedfn, '-output=fasta']
         invoc.extend(self.user_opts)
@@ -318,9 +326,12 @@ class ProbalignAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_probalign'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = [self.exe, '-nuc', "-o", alignedfn, seqfn]
         invoc.extend(self.user_opts)
@@ -343,9 +354,12 @@ class PrankAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_prank'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = [self.exe, '-once', '-noxml', '-notree', '-nopost', '+F', '-quiet', '-matinitsize=5', '-uselogs', '-d=%s' % seqfn, '-o=%s' % alignedfn]
         invoc.extend(self.user_opts)
@@ -381,9 +395,12 @@ class PadAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_padaligner'
-        if alignment.get_num_taxa() == 1:
+        if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = [sys.executable, self.exe, alignment.datatype, seqfn, alignedfn]
 
@@ -423,7 +440,7 @@ class Merger(ExternalTool):
 
 
 class CustomMerger(Merger):
-    section_name = 'custom aligner'
+    section_name = 'custom merger'
     url = ''
 
     def __init__(self, name, temp_fs, **kwargs):
@@ -433,33 +450,35 @@ class CustomMerger(Merger):
         raise NotImplementedError('User-provided Merger NOT supported yet.')
 
 class FakeMerger(Merger):
-    section_name = 'fakealigner'
+    section_name = 'fakemerger'
     url = ''
     is_bundled = True
 
     def __init__(self, temp_fs, **kwargs):
-        Merger.__init__(self, 'fakealigner', temp_fs, **kwargs)
+        Merger.__init__(self, 'fakemerger', temp_fs, **kwargs)
 
     def create_job(self, alignment1, alignment2, **kwargs):
         alignment1.update(alignment2)
-        job_id = kwargs.get('context_str', '') + '_fakealigner'
+        job_id = kwargs.get('context_str', '') + '_fakemerger'
         return FakeJob(alignment1, context_str=job_id)
 
 
 class PadMerger(Merger):
-    section_name = 'padaligner'
+    section_name = 'padmerger'
     url = ''
     is_bundled = True
 
     def __init__(self, temp_fs, **kwargs):
-        Merger.__init__(self, 'padaligner', temp_fs, **kwargs)
+        Merger.__init__(self, 'padmerger', temp_fs, **kwargs)
 
     def create_job(self, alignment1, alignment2, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_padmerger'
+        if (alignment1.get_num_taxa() < 1) or (alignment2.get_num_taxa() < 1):
+            alignment1.update(alignment2)
+            return FakeJob(alignment1, context_str=job_id)
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
 
         invoc = [sys.executable, self.exe, alignment1.datatype, seqfn1, seqfn2, outfn]
-
-        job_id = kwargs.get('context_str', '') + '_padaligner'
 
         return self._finish_standard_job(alignedfn=outfn,
                                          datatype=alignment1.datatype,
@@ -477,11 +496,13 @@ class MuscleMerger (Merger):
         Merger.__init__(self, 'muscle', temp_fs, **kwargs)
 
     def create_job(self, alignment1, alignment2, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_muscle'
+        if (alignment1.get_num_taxa() < 1) or (alignment2.get_num_taxa() < 1):
+            alignment1.update(alignment2)
+            return FakeJob(alignment1, context_str=job_id)
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
 
         invoc = [self.exe, '-in1', seqfn1, '-in2', seqfn2, '-out', outfn, '-quiet', '-profile']
-
-        job_id = kwargs.get('context_str', '') + '_muscle'
 
         return self._finish_standard_job(alignedfn=outfn,
                                          datatype=alignment1.datatype,
@@ -504,11 +525,14 @@ class OpalMerger (Merger):
         self.max_mem_mb = kwargs.get("max_mem_mb", DEFAULT_MAX_MB)
 
     def create_job(self, alignment1, alignment2, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_opal'
+        if (alignment1.get_num_taxa() < 1) or (alignment2.get_num_taxa() < 1):
+            alignment1.update(alignment2)
+            return FakeJob(alignment1, context_str=job_id)
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
         assert(alignment1.datatype == alignment2.datatype)
 
         invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
-        job_id = kwargs.get('context_str', '') + '_opal'
 
         return self._finish_standard_job(alignedfn=outfn,
                                          datatype=alignment1.datatype,

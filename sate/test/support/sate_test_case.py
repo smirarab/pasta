@@ -20,22 +20,34 @@ class SateTestCase(unittest.TestCase):
             l = line.strip()
             if l.startswith('>'):
                 if name:
-                    data[name] = seq.getvalue().replace('-','').upper()
+                    data[name] = seq.getvalue().upper()
                 name = l[1:]
                 seq = StringIO()
             else:
                 seq.write(l)
         if name:
-            data[name] = seq.getvalue().replace('-','').upper()
+            data[name] = seq.getvalue().upper()
         file_stream.close()
         return data
 
-    def concatenate_sequences(self, file_path_list):
+    def parseSequenceArg(self, seq_arg):
+        if isinstance(seq_arg, dict):
+            return seq_arg
+        else:
+            return self.parse_fasta_file(seq_arg)
+
+    def remove_gaps(self, sequence_dict):
+        sd = self.parseSequenceArg(sequence_dict)
+        new_seqs = dict(sd)
+        for name, seq in sd.iteritems():
+            new_seqs[name] = seq.replace('-','')
+        return new_seqs
+
+    def concatenate_sequences(self, seq_data_list):
         taxa = set()
         data_sets = []
-        file_path_list.sort()
-        for f in file_path_list:
-            seqs = self.parse_fasta_file(f)
+        for f in seq_data_list:
+            seqs = self.parseSequenceArg(f)
             taxa.update(seqs.keys())
             data_sets.append(seqs)
         data = {}
@@ -46,29 +58,65 @@ class SateTestCase(unittest.TestCase):
                 data[name] += ds.get(name, '')
         return data
 
-    def assertSameTaxa(self, sequence_dict1, sequence_dict2):
-        self.assertEqual(sequence_dict1.keys().sort(), 
-                         sequence_dict2.keys().sort())
+    def assertSameTaxa(self, seq_data_list):
+        if len(seq_data_list) < 2:
+            return
+        seqs1 = self.parseSequenceArg(seq_data_list[0])
+        for i in range(1, len(seq_data_list)):
+            seqs2 = self.parseSequenceArg(seq_data_list[i])
+            self.assertEqual(sorted(seqs1.keys()), 
+                             sorted(seqs2.keys()))
 
-    def assertSameSequences(self, sequence_dict1, sequence_dict2):
-        self.assertEqual(sequence_dict1.values().sort(), 
-                         sequence_dict2.values().sort())
+    def assertSameSequences(self, seq_data_list):
+        seqs1 = self.parseSequenceArg(seq_data_list[0])
+        sd1 = self.remove_gaps(seqs1)
+        for i in range(1, len(seq_data_list)):
+            seqs2 = self.parseSequenceArg(seq_data_list[i])
+            sd2 = self.remove_gaps(seqs2)
+            self.assertEqual(sorted(sd1.values()), 
+                             sorted(sd2.values()))
 
-    def assertSameDataSet(self, sequence_dict1, sequence_dict2):
-        self.assertSameTaxa(sequence_dict1, sequence_dict2)
-        self.assertSameSequences(sequence_dict1, sequence_dict2)
-        for name, seq in sequence_dict1.iteritems():
-            self.assertEqual(seq, sequence_dict2[name])
+    def assertSameDataSet(self, seq_data_list):
+        seqs1 = self.parseSequenceArg(seq_data_list[0])
+        sd1 = self.remove_gaps(seqs1)
+        for i in range(1, len(seq_data_list)):
+            seqs2 = self.parseSequenceArg(seq_data_list[i])
+            sd2 = self.remove_gaps(seqs2)
+            self.assertSameTaxa([sd1, sd2])
+            self.assertSameSequences([sd1, sd2])
+            for name, seq in sd1.iteritems():
+                self.assertEqual(seq, sd2[name])
 
     def assertSameInputOutputSequenceData(self, 
-            file_path_list1, file_path_list2):
-        for i in range(len(file_path_list1)):
-            seqs1 = self.parse_fasta_file(file_path_list1[i])
-            seqs2 = self.parse_fasta_file(file_path_list2[i])
-            self.assertSameDataSet(seqs1, seqs2)
+            seq_data_list1, seq_data_list2):
+        for i in range(len(seq_data_list1)):
+            seqs1 = self.parseSequenceArg(seq_data_list1[i])
+            seqs2 = self.parseSequenceArg(seq_data_list2[i])
+            sd1 = self.remove_gaps(seqs1)
+            sd2 = self.remove_gaps(seqs2)
+            self.assertSameDataSet([sd1, sd2])
 
     def assertSameConcatenatedSequences(self, 
-            concatenated_file_path, file_path_list):
-        concat_in = self.concatenate_sequences(file_path_list)
-        concat_out = self.parse_fasta_file(concatenated_file_path)
-        self.assertSameSequences(concat_in, concat_out)
+            concatenated_data, seq_data_list):
+        concat_in = self.concatenate_sequences(sorted(seq_data_list))
+        concat_out = self.parseSequenceArg(concatenated_data)
+        sd_in = self.remove_gaps(concat_in)
+        sd_out = self.remove_gaps(concat_out)
+        self.assertSameSequences([sd_in, sd_out])
+
+    def assertNoGapColumns(self, seq_data_list):
+        for seq_data in seq_data_list:
+            sd = self.parseSequenceArg(seq_data)
+            columns_to_taxa = {}
+            for name, seq in sd.iteritems():
+                for column_index, residue in enumerate(seq):
+                    if residue == '-':
+                        if column_index not in columns_to_taxa.keys():
+                            columns_to_taxa[column_index] = [name]
+                        else:
+                            columns_to_taxa[column_index].append(name)
+            self.assertEqual(len(columns_to_taxa.keys()), len(set(columns_to_taxa.keys())))
+            for col, name_list in columns_to_taxa.iteritems():
+                self.assertEqual(len(name_list), len(set(name_list)))
+                self.assertNotEqual(len(name_list), len(sd.keys()))
+

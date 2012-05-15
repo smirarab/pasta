@@ -71,6 +71,8 @@ class RunSateTest(SateTestCase):
                     [self.anolis_file],
                     [os.path.join(self.ts.top_level_temp,
                             'satejob.marker001.anolis.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    'satejob.marker001.anolis.aln')])
 
     def testSingleAminoAcidLocusRun(self):
         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
@@ -89,6 +91,8 @@ class RunSateTest(SateTestCase):
                     [self.caenophidia_file],
                     [os.path.join(self.ts.top_level_temp,
                             'satejob.marker001.caenophidia_mos.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    'satejob.marker001.caenophidia_mos.aln')])
 
     def testMultiDnaLocusRun(self):
         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
@@ -116,8 +120,9 @@ class RunSateTest(SateTestCase):
             concat_out = os.path.join(self.ts.top_level_temp,
                     'satejob_temp_iteration_0_seq_alignment.txt')
             self.assertSameConcatenatedSequences(
-                    concatenated_file_path=concat_out,
-                    file_path_list=[seqs_in1_path, seqs_in2_path])
+                    concatenated_data=concat_out,
+                    seq_data_list=[seqs_in1_path, seqs_in2_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path])
 
     def testMultiAminoAcidLocusRun(self):
         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
@@ -147,8 +152,9 @@ class RunSateTest(SateTestCase):
             concat_out = os.path.join(self.ts.top_level_temp,
                     'satejob_temp_iteration_0_seq_alignment.txt')
             self.assertSameConcatenatedSequences(
-                    concatenated_file_path=concat_out,
-                    file_path_list=[seqs_in1_path, seqs_in2_path])
+                    concatenated_data=concat_out,
+                    seq_data_list=[seqs_in1_path, seqs_in2_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path])
 
 if __name__ == "__main__":
     unittest.main()

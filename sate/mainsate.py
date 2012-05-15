@@ -338,8 +338,11 @@ def finish_sate_execution(sate_team,
                 post_tree_dir = os.path.join(temporaries_dir, 'post_tree')
                 post_tree_dir = sate_team.temp_fs.create_subdir(post_tree_dir)
                 delete_tree_temps = not options.keeptemp
+                starting_tree = None
+                if user_config.sate.start_tree_search_from_current:
+                    starting_tree = job.tree
                 post_job = rte.create_job(job.multilocus_dataset,
-                                    starting_tree=job.tree,
+                                    starting_tree=starting_tree,
                                     num_cpus=sate_config.num_cpus,
                                     context_str="postraxtree",
                                     tmp_dir_par=post_tree_dir,

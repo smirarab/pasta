@@ -23,6 +23,24 @@ import sate
 
 script_name = 'run_sate.py'
 gui_script_name = 'run_sate_gui.py'
+DATA_FILES = [
+        'small.fasta',
+        'large.fasta',
+        'anolis.fasta',
+        'pythonidae.fasta',] + \
+        [os.path.join('testmulti', 'hummingbirds', f) for f in [
+                'AK1.fasta',
+                'M3354.nexorg.txt',
+                'bfib.fasta',
+                'nd2.fasta',
+                'nd4.fasta',
+                'starting.tre',]] + \
+        [os.path.join('testmulti', 'figwasps', f) for f in [
+                'M1504.fasta',
+                'M1504.nex.txt',
+                'M1505.fasta',
+                'M1505.nex.txt',
+                'starting.tre',]]
 
 def compose_build_distribution_name(build_type):
     return "sate%s-v%s-%s" % (build_type, sate.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
@@ -57,24 +75,6 @@ param = {
 if sys.argv[1] == 'py2exe':
     import glob
     import py2exe
-    DATA_FILES = [
-            'small.fasta',
-            'large.fasta',
-            'anolis.fasta',
-            'pythonidae.fasta',] + \
-            [os.path.join('testmulti', 'hummingbirds', f) for f in [
-                    'AK1.fasta',
-                    'M3354.nexorg.txt',
-                    'bfib.fasta',
-                    'nd2.fasta',
-                    'nd4.fasta',
-                    'starting.tre',]] + \
-            [os.path.join('testmulti', 'figwasps', f) for f in [
-                    'M1504.fasta',
-                    'M1504.nex.txt',
-                    'M1505.fasta',
-                    'M1505.nex.txt',
-                    'starting.tre',]]
     DATA_FILE_PATHS = [os.path.join('sate', 'test', 'data', f) for f in DATA_FILES]
     PY2EXE_DIST_DIR = compose_build_distribution_name("win")
     if not platform.system() == 'Windows':

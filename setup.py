@@ -78,14 +78,11 @@ if sys.argv[1] == 'py2exe':
     def extend_files(file_list, dirname, filenames):
         l = dirname.split(os.path.sep)
         target_list = l[l.index('data'):]
-        src_list = l[l.index('sate'):]
-        src = os.path.join(*src_list)
         target = os.path.join(*target_list)
         file_list.append((target,
                 [os.path.join(dirname,
                         f) for f in filenames if not os.path.isdir(
                                 os.path.join(dirname, f))]))
-        return file_list
 
     bin_win_src = sate.sate_tools_dev_dir()
     bin_win_dest = sate.sate_tools_deploy_subpath()

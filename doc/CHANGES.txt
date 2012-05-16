@@ -1,3 +1,21 @@
+Release 2.2.2
+=============
+    - [BUG FIX] Previous version had used the "Centroid" decomposition even when
+                the user specified "Longest."
+    - [BUG FIX] Multiple issues dealing the handling very small subsets of taxa.
+                These arise frequently in the "longest" edge decomposition, but
+                are rare when using centroid decomposition.
+    - [BUG FIX] Input sequences with all gaps no longer create problems (this
+                can reasonably occur in multi-locus runs).
+    - [CHANGES] FastTree binary in Mac bundle is compiled for more
+                architectures.
+    - [CHANGES] Updated documentation.
+    - [CHANGES] RAxML user-specified arguments implemented in CLI.
+    - [CHANGES] Post-processing RAxML search now uses
+                start_tree_search_from_current boolean to determine whether to
+                use the tree resulting from the SATe algorithm as starting tree.
+    - [CHANGES] Updated bundled data.
+    
 Release 2.2.1
 =============
 

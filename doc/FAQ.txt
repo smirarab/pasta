@@ -2,13 +2,13 @@
 Frequently Asked Questions for SATe
 ###################################
 
-Q: What does "SATé" mean?
+Q: What does "SATe" mean?
 A: Simultaneous Alignment and Tree Estimation.
 
-Q: How is "SATé" pronounced?
+Q: How is "SATe" pronounced?
 A: Sah-tay 
 
-Q: Where can I find the description of SATé algorithm?
+Q: Where can I find the description of SATe algorithm?
 A: Please refer to:
       Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, "Rapid and
       Accurate Large-Scale Co-estimation of Sequence Alignments and Phylogenetic
@@ -19,18 +19,18 @@ A: Please refer to:
       Multiple Sequence Alignments and Phylogenetic Trees." Systematic Biology.
       61(1):90-106.
 
-Q: Which alignment programs are included with SATé distribution?
+Q: Which alignment programs are included with SATe distribution?
 A: CLUSTALW 2.0.12
    MAFFT 6.717
    MUSCLE 3.7
    OPAL 1.0.3
    PRANK 100311
 
-Q: Which phylogenetic tree reconstruction programs are in SATé distribution?
+Q: Which phylogenetic tree reconstruction programs are in SATe distribution?
    RAxML 7.2.6
    FastTree 2.1.4
 
-Q: How to cite SATé software?
+Q: How to cite SATe software?
 A: Please cite the two algorithm papers, the software, and the appropriate
    external tools.
 
@@ -48,7 +48,7 @@ A: Please cite the two algorithm papers, the software, and the appropriate
     Jiaye Yu, and Mark T. Holder "SATe version VERSION_NUMBER_HERE" from
         http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2 or earlier)
-    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATé version
+    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATe version
         VERSION_NUMBER_HERE" from
         http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2.1 to 2.1.0)

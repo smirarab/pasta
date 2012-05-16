@@ -1,5 +1,5 @@
 We would like to thank everyone who contributed suggestions and bug reports,
-especiallyy J. S. Denton, Elizabeth Kim, Haiwei Luo, Nam Nguyen, Jay R.
+especially J. S. Denton, Elizabeth Kim, Haiwei Luo, Nam Nguyen, Jay R.
 Reichman, and Tandy Warnow.
 
 

@@ -3,7 +3,12 @@
 import os
 import unittest
 import itertools
+import re
 from cStringIO import StringIO
+
+from sate import get_logger
+
+_LOG = get_logger(__name__)
 
 class SateTestCase(unittest.TestCase):
 
@@ -38,10 +43,12 @@ class SateTestCase(unittest.TestCase):
 
     def remove_gaps(self, sequence_dict):
         sd = self.parseSequenceArg(sequence_dict)
-        new_seqs = dict(sd)
+        new_sd = {}
         for name, seq in sd.iteritems():
-            new_seqs[name] = seq.replace('-','')
-        return new_seqs
+            new_seq = re.sub(r'[-?]', '', seq)
+            if new_seq != '':
+                new_sd[name] = new_seq
+        return new_sd
 
     def concatenate_sequences(self, seq_data_list):
         taxa = set()
@@ -90,11 +97,11 @@ class SateTestCase(unittest.TestCase):
     def assertSameInputOutputSequenceData(self, 
             seq_data_list1, seq_data_list2):
         for i in range(len(seq_data_list1)):
+            _LOG.debug("comparing %s to %s" % (seq_data_list1[i],
+                    seq_data_list2[i]))
             seqs1 = self.parseSequenceArg(seq_data_list1[i])
             seqs2 = self.parseSequenceArg(seq_data_list2[i])
-            sd1 = self.remove_gaps(seqs1)
-            sd2 = self.remove_gaps(seqs2)
-            self.assertSameDataSet([sd1, sd2])
+            self.assertSameDataSet([seqs1, seqs2])
 
     def assertSameConcatenatedSequences(self, 
             concatenated_data, seq_data_list):

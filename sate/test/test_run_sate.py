@@ -26,6 +26,8 @@ class RunSateTest(SateTestCase):
         self.caenophidia_file = data_source_path('caenophidia_mos.fasta')
         self.multi_dir = data_source_path('testmulti/')
         self.multi_aa_dir = os.path.join(self.multi_dir, 'caenophidia')
+        self.figwasp_dir = os.path.join(self.multi_dir, 'figwasps')
+        self.hummingbird_dir = os.path.join(self.multi_dir, 'hummingbirds')
 
     def tearDown(self):
         dir_list = self.ts.get_remaining_directories()
@@ -43,6 +45,11 @@ class RunSateTest(SateTestCase):
                 stderr=subprocess.PIPE)
         o, e = p.communicate()
         exit_code = p.wait()
+        if exit_code != return_code:
+            _LOG.error("exit code (%s) did not match %s" % (exit_code,
+                    return_code))
+            _LOG.error("here is the stdout:\n%s" % o)
+            _LOG.error("here is the stderr:\n%s" % e)
         self.assertEquals(exit_code, return_code)
         if stdout != None:
             self.assertEquals(o, stdout)
@@ -122,7 +129,8 @@ class RunSateTest(SateTestCase):
             self.assertSameConcatenatedSequences(
                     concatenated_data=concat_out,
                     seq_data_list=[seqs_in1_path, seqs_in2_path])
-            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path,
+                    concat_out])
 
     def testMultiAminoAcidLocusRun(self):
         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
@@ -154,7 +162,97 @@ class RunSateTest(SateTestCase):
             self.assertSameConcatenatedSequences(
                     concatenated_data=concat_out,
                     seq_data_list=[seqs_in1_path, seqs_in2_path])
-            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path,
+                    concat_out])
+
+    def testFigWaspDataRun(self):
+         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'dna',
+                        '-j', 'satejob',
+                        '--keepalignmenttemps',
+                        '--keeptemp',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '--start-tree-search-from-current',
+                        '--treefile=%s' % os.path.join(
+                                self.figwasp_dir,
+                                'starting.tre'),
+                        '--merger=muscle',
+                        '--tree-estimator=fasttree',
+                        '-m',
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.figwasp_dir,]
+            self._exe_run_sate(arg_list, return_code=0)
+            seqs_in1_path = os.path.join(self.figwasp_dir,
+                    'M1504.fasta')
+            seqs_in2_path = os.path.join(self.figwasp_dir,
+                    'M1505.fasta')
+            seqs_out1_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker001.M1504.aln')
+            seqs_out2_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker002.M1505.aln')
+            self.assertSameInputOutputSequenceData(
+                    [seqs_in1_path, seqs_in2_path],
+                    [seqs_out1_path, seqs_out2_path])
+            concat_out = os.path.join(self.ts.top_level_temp,
+                    'satejob_temp_iteration_0_seq_alignment.txt')
+            self.assertSameConcatenatedSequences(
+                    concatenated_data=concat_out,
+                    seq_data_list=[seqs_in1_path, seqs_in2_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path,
+                    concat_out])       
+
+    def testHummingBirdDataRun(self):
+         if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'dna',
+                        '-j', 'satejob',
+                        '--keepalignmenttemps',
+                        '--keeptemp',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '--start-tree-search-from-current',
+                        '--treefile=%s' % os.path.join(
+                                self.hummingbird_dir,
+                                'starting.tre'),
+                        '--merger=muscle',
+                        '--tree-estimator=fasttree',
+                        '-m',
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.hummingbird_dir,]
+            self._exe_run_sate(arg_list, return_code=0)
+            seqs_in1_path = os.path.join(self.hummingbird_dir,
+                    'AK1.fasta')
+            seqs_in2_path = os.path.join(self.hummingbird_dir,
+                    'bfib.fasta')
+            seqs_in3_path = os.path.join(self.hummingbird_dir,
+                    'nd2.fasta')
+            seqs_in4_path = os.path.join(self.hummingbird_dir,
+                    'nd4.fasta')
+            seqs_out1_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker001.AK1.aln')
+            seqs_out2_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker002.bfib.aln')
+            seqs_out3_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker003.nd2.aln')
+            seqs_out4_path = os.path.join(self.ts.top_level_temp,
+                    'satejob.marker004.nd4.aln')
+            self.assertSameInputOutputSequenceData(
+                    [seqs_in1_path, seqs_in2_path,
+                     seqs_in3_path, seqs_in4_path],
+                    [seqs_out1_path, seqs_out2_path,
+                     seqs_out3_path, seqs_out4_path])
+            concat_out = os.path.join(self.ts.top_level_temp,
+                    'satejob_temp_iteration_0_seq_alignment.txt')
+            self.assertSameConcatenatedSequences(
+                    concatenated_data=concat_out,
+                    seq_data_list=[seqs_in1_path, seqs_in2_path,
+                            seqs_in3_path, seqs_in4_path])
+            self.assertNoGapColumns([seqs_out1_path, seqs_out2_path,
+                    seqs_out3_path, seqs_out4_path, concat_out])       
 
 if __name__ == "__main__":
     unittest.main()

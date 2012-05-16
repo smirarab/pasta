@@ -75,9 +75,18 @@ if sys.argv[1] == 'py2exe':
                     ret.setdefault(path,[]).append(filename)
         return sorted(ret.items())
 
+    def extend_files(file_list, dirname, filenames):
+        l = dirname.split(os.path.sep)
+        target_list = l[l.index('data'):]
+        src_list = l[l.index('sate'):]
+        src = os.path.join(*src_list)
+        target = os.path.join(*target_list)
+        file_list.append([target, [os.path.join(src, f) for f in filenames]])
+
     bin_win_src = sate.sate_tools_dev_dir()
     bin_win_dest = sate.sate_tools_deploy_subpath()
     sate_src_root = sate.sate_home_dir()
+    data_dir = os.path.join(sate_src_root, 'data')
     my_files = []
     my_files.extend( find_data_files(
             bin_win_src,
@@ -92,9 +101,10 @@ if sys.argv[1] == 'py2exe':
             'doc',
             ['*']))
     my_files.extend( find_data_files(
-            os.path.join(sate_src_root, 'data'),
+            data_dir,
             'data',
             ['*']))
+    os.path.walk(data_dir, extend_files, my_files)
 
     PY2EXE_OPTIONS = {
         "unbuffered": True,

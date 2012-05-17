@@ -1,0 +1,43 @@
+[commandline]
+aligned = False
+auto = False
+datatype = dna
+input = .
+job = satejob
+keepalignmenttemps = True
+keeptemp = True
+multilocus = True
+raxml_search_after = False
+temporaries = sateout
+timesfile = time.txt
+treefile = starting.tre
+two_phase = False
+untrusted = False
+
+[sate]
+after_blind_iter_term_limit = -1
+after_blind_iter_without_imp_limit = 1
+after_blind_time_term_limit = -1.0
+after_blind_time_without_imp_limit = -1.0
+aligner = mafft
+blind_after_iter_without_imp = -1
+blind_after_time_without_imp = -1.0
+blind_after_total_iter = -1
+blind_after_total_time = -1.0
+blind_mode_is_final = True
+break_strategy = longest
+iter_limit = -1
+iter_without_imp_limit = -1
+max_mem_mb = 2048
+max_subproblem_frac = 0.5
+max_subproblem_size = 82
+merger = muscle
+move_to_blind_on_worse_score = True
+num_cpus = 1
+output_directory = sateout
+return_final_tree_and_alignment = False
+start_tree_search_from_current = True
+time_limit = -1.0
+time_without_imp_limit = -1.0
+tree_estimator = fasttree
+

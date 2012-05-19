@@ -1,36 +1,41 @@
 ###################################
-Frequently Asked Questions for SATe
+Frequently Asked Questions for SATé
 ###################################
 
-Q: What does "SATe" mean?
+Q: What does "SATé" mean?
 A: Simultaneous Alignment and Tree Estimation.
 
-Q: How is "SATe" pronounced?
+Q: How is "SATé" pronounced?
 A: Sah-tay 
 
-Q: Where can I find the description of SATe algorithm?
+Q: What formats does SATé use?
+A: FASTA for sequences, and Phylip for trees (if you are using RAxML, then some
+    of the temporary files that are saved will be in the relaxed phylip format).
+
+Q: Where can I find the description of SATé algorithm?
 A: Please refer to:
       Liu, K., S. Raghavan, S. Nelesen, C. R. Linder, T. Warnow, "Rapid and
       Accurate Large-Scale Co-estimation of Sequence Alignments and Phylogenetic
       Trees", 2009, Science, 324, 1561-1564.
-   and to:
+   for a description of the first variant of the algorithm.  The current 
+   implementation is most similar to:
       Liu, K., T.J. Warnow, M.T. Holder, S. Nelesen, J. Yu, A. Stamatakis, and
-      C.R. Linder, "SATe-II: Very Fast and Accurate Simultaneous Estimation of
+      C.R. Linder, "SATé-II: Very Fast and Accurate Simultaneous Estimation of
       Multiple Sequence Alignments and Phylogenetic Trees." Systematic Biology.
       61(1):90-106.
 
-Q: Which alignment programs are included with SATe distribution?
+Q: Which alignment programs are included with SATé distribution?
 A: CLUSTALW 2.0.12
    MAFFT 6.717
    MUSCLE 3.7
    OPAL 1.0.3
    PRANK 100311
 
-Q: Which phylogenetic tree reconstruction programs are in SATe distribution?
+Q: Which phylogenetic tree reconstruction programs are in SATé distribution?
    RAxML 7.2.6
    FastTree 2.1.4
 
-Q: How to cite SATe software?
+Q: How to cite SATé software?
 A: Please cite the two algorithm papers, the software, and the appropriate
    external tools.
 
@@ -40,29 +45,29 @@ A: Please cite the two algorithm papers, the software, and the appropriate
         phylogenetic trees." Science, 324(5934):1561-1564, 19 June 2009,
         doi: 10.1126/science.1171243
     Liu, K., T.J. Warnow, M.T. Holder, S. Nelesen, J. Yu, A. Stamatakis, and
-        C.R. Linder. "SATe-II: Very Fast and Accurate Simultaneous Estimation of
+        C.R. Linder. "SATé-II: Very Fast and Accurate Simultaneous Estimation of
         Multiple Sequence Alignments and Phylogenetic Trees." Systematic
         Biology. 61(1):90-106
 
-    CITATIONS FOR THE SATE SOFTWARE ITSELF AND ITS DEPENDENCIES:
-    Jiaye Yu, and Mark T. Holder "SATe version VERSION_NUMBER_HERE" from
+    CITATIONS FOR THE SATé SOFTWARE ITSELF AND ITS DEPENDENCIES:
+    Jiaye Yu, and Mark T. Holder "SATé version VERSION_NUMBER_HERE" from
         http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2 or earlier)
-    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATe version
+    Jiaye Yu, Mark T. Holder, Jeet Sukumaran, and Siavash Mirarab "SATé version
         VERSION_NUMBER_HERE" from
         http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 1.2.1 to 2.1.0)
     Jiaye Yu, Mark T. Holder, Jeet Sukumaran, Siavash Mirarab, and Jamie Oaks
-        "SATe version VERSION_NUMBER_HERE" from
+        "SATé version VERSION_NUMBER_HERE" from
         http://phylo.bio.ku.edu/software/sate/sate.html DATE DOWNLOADED. (for
         version 2.2.0 or later)
     Sukumaran, J. and Mark T. Holder. 2010. "DendroPy: A Python library for
-        phylogenetic computing". Bioinformatics 26:1569-1571. (for all SATe
+        phylogenetic computing". Bioinformatics 26:1569-1571. (for all SATé
         versions from this website)
 
     EXTERNAL TOOL CITATIONS:
     Please remember to cite the aligner and tree inference tools that you use
-    during the course of a SATe run. The exact citation will depend on what
+    during the course of a SATé run. The exact citation will depend on what
     tools you choose to use.
 
     Mafft: See the References section on
@@ -89,3 +94,16 @@ A: Please cite the two algorithm papers, the software, and the appropriate
         Price MN, Dehal PS, Arkin AP. (2010) FastTree 2: Approximately
             Maximum-Likelihood Trees for Large Alignments. PLoS ONE 5(3): e9490.
             doi:10.1371/journal.pone.0009490.
+
+Q: What is going on if I see a message like: 
+    "SATe ERROR: Error in reading the treefile, probably due to a name in the
+    tree that does not match the names in the input sequence files.
+
+    SATe ERROR: SATe is exiting because of an error:
+    'Taxon "Urochroa_bougueri" not in TaxonSet, and cannot be created because
+    TaxonSet is immutable' 
+    "?
+A: This indicates that the names of the sequences (aka 'taxa') in the tree did
+    not match the names found in the FASTA file. Check the FASTA file for the
+    name that appears in single quotes in the error message (this is a name 
+    that was found in the tree).

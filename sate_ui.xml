@@ -122,7 +122,7 @@
 	<string-option name="tree_estimator" default="fasttree" category="sate" subcategory="tools">
 		<help>The name of the tree inference program to use to find trees on fixed alignments.</help>
 	</string-option>
-	<choice-option name="break_strategy" default="longest" multichoice="True" category="sate" subcategory="decomposition">
+	<choice-option name="break_strategy" default="centroid" multichoice="True" category="sate" subcategory="decomposition">
 		<choice value="centroid"><help>The edge that comes closest to dividing the tree into two equally sized subtrees (in terms of the number of leaves).</help></choice>
 		<choice value="longest" ><help>Longest edge in the tree</help></choice>
 		<help>The method for choosing an edge when bisecting the tree during decomposition</help>

@@ -216,7 +216,7 @@ class SateFrame(wx.Frame):
         #wx.MessageBox("Preset Selected (Binding 1)", "Info")
         preset_selection = self.cb_sate_presets.GetValue()
         if preset_selection != "(custom)":
-            self.cb_decomp.SetValue("Longest")
+            self.cb_decomp.SetValue("Centroid")
             self.blindmode.SetValue(1)
             self.cb_apply_stop_rule.Enable()
             self.checkbox_stop_time.SetValue(False)
@@ -421,7 +421,7 @@ class SateFrame(wx.Frame):
                            ])
 
         strategy_list = ["Centroid", "Longest"]
-        self.cb_decomp = wx.ComboBox(self, -1, "Longest", choices=strategy_list, style=wx.CB_READONLY)
+        self.cb_decomp = wx.ComboBox(self, -1, "Centroid", choices=strategy_list, style=wx.CB_READONLY)
 
         self.ctrls.append(self.cb_decomp)
         self.sate_settings_ctrl_list = []

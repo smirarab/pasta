@@ -87,7 +87,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         'tree_estimator' : 'fasttree',
         'aligner' : 'mafft',
         'merger' : 'muscle',
-        'break_strategy' : 'longest',
+        'break_strategy' : 'centroid',
         'move_to_blind_on_worse_score' : True,
         'start_tree_search_from_current' : True,
         'after_blind_iter_without_imp_limit' : 1,

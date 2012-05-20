@@ -12,7 +12,7 @@ Functions for configuring a runtime logger for the sate module.
 PROGRAM_NAME = "SATe"
 PROGRAM_AUTHOR = ["Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Siavash Mirarab", "Jamie Oaks"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "2.2.2"
+PROGRAM_VERSION = "2.2.3"
 PROGRAM_YEAR = "2009-2012"
 PROGRAM_DESCRIPTION = "Simultaneous Alignment and Tree Estimation"
 PROGRAM_WEBSITE = "http://phylo.bio.ku.edu/software/sate/sate.html"

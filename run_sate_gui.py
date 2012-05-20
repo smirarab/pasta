@@ -255,7 +255,7 @@ class SateFrame(wx.Frame):
         if GLOBAL_DEBUG:
             defaults = {"Aligner":"PADALIGNER", "Merger":"PADALIGNER", "TreeEstimator":"RANDTREE"}
         else:
-            defaults = {"Aligner":"MAFFT", "Merger":"OPAL", "TreeEstimator":"FASTTREE"}
+            defaults = {"Aligner":"MAFFT", "Merger":"MUSCLE", "TreeEstimator":"FASTTREE"}
         self.cb_tools = {}
         for item_idx, item in enumerate(items):
             text = wx.StaticText(self, -1, "Tree Estimator") if item == "TreeEstimator" else wx.StaticText(self, -1, item)

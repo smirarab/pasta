@@ -1,3 +1,9 @@
+Release 2.2.3
+=============
+    - [CHANGES] MUSCLE is now the default merger tool.
+    - [CHANGES] Centroid is now the default decomposition strategy.
+    - [CHANGES] More sample data and output files bundled.
+
 Release 2.2.2
 =============
     - [BUG FIX] Previous version had used the "Centroid" decomposition even when

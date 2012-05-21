@@ -88,6 +88,7 @@ if sys.argv[1] == 'py2exe':
     bin_win_dest = sate.sate_tools_deploy_subpath()
     sate_src_root = sate.sate_home_dir()
     data_dir = os.path.join(sate_src_root, 'data')
+    sample_output_dir = os.path.join(sate_src_root, 'sample-output')
     my_files = []
     my_files.extend( find_data_files(
             bin_win_src,
@@ -102,6 +103,7 @@ if sys.argv[1] == 'py2exe':
             'doc',
             ['*']))
     os.path.walk(data_dir, extend_files, my_files)
+    os.path.walk(sample_output_dir, extend_files, my_files)
 
     PY2EXE_OPTIONS = {
         "unbuffered": True,

@@ -1,0 +1,82 @@
+[faketree]
+path = 
+
+[raxml]
+model = 
+args = 
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/raxml
+
+[probalign]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/probalign
+
+[commandline]
+keepalignmenttemps = True
+two_phase = False
+datatype = dna
+auto = False
+untrusted = False
+treefile = /Users/mholder/Desktop/a_sate_test/data/hummingbirds/starting.tre
+multilocus = True
+job = satejob
+keeptemp = True
+input = /Users/mholder/Desktop/a_sate_test/data/hummingbirds
+aligned = True
+raxml_search_after = False
+
+[fakealigner]
+path = 
+
+[mafft]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/mafft
+
+[fasttree]
+model = -gtr -gamma
+args = 
+options = 
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/fasttree
+
+[sate]
+time_limit = -1.0
+iter_without_imp_limit = -1
+time_without_imp_limit = -1.0
+break_strategy = longest
+start_tree_search_from_current = True
+blind_after_iter_without_imp = -1
+max_mem_mb = 1024
+blind_mode_is_final = True
+blind_after_time_without_imp = -1.0
+max_subproblem_size = 82
+merger = OPAL
+num_cpus = 1
+after_blind_time_without_imp_limit = -1.0
+max_subproblem_frac = 0.5
+blind_after_total_time = -1.0
+after_blind_time_term_limit = -1.0
+aligner = MAFFT
+output_directory = /Users/mholder/Desktop/a_sate_test/data/hummingbirds
+iter_limit = -1
+blind_after_total_iter = -1
+tree_estimator = FASTTREE
+after_blind_iter_term_limit = -1
+return_final_tree_and_alignment = False
+move_to_blind_on_worse_score = True
+after_blind_iter_without_imp_limit = 3
+
+[randtree]
+path = 
+
+[padaligner]
+path = 
+
+[clustalw2]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/clustalw2
+
+[muscle]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/muscle
+
+[opal]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/opal.jar
+
+[prank]
+path = /Users/mholder/Desktop/a_sate_test/SATe.app/Contents/Resources/bin/prank
+

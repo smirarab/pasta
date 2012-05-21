@@ -1,0 +1,37 @@
+SATe INFO: Reading input sequences from '/Users/mholder/Desktop/sate/data/BBA0067-half.input.fasta'...
+SATe INFO: Directory for temporary files created at /Users/mholder/.sate/satejob/tempDHwchB
+SATe INFO: Reading starting trees from "/Users/mholder/Desktop/sate/data/BBA0067-half.startingtree.tre"...
+SATe INFO: Name translation information saved to /Users/mholder/Desktop/sate/data/satejob_temp_name_translation.txt as safe name, original name, blank line format.
+SATe INFO: Starting SATe algorithm on initial tree...
+SATe INFO: Step 0. Realigning with decomposition strategy set to longest
+SATe INFO: Step 0. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and score improved.
+SATe INFO: current score: -164015.111, best score: -164015.111
+SATe INFO: Step 1. Realigning with decomposition strategy set to longest
+SATe INFO: Step 1. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and score improved.
+SATe INFO: current score: -162478.164, best score: -162478.164
+SATe INFO: Step 2. Realigning with decomposition strategy set to longest
+SATe INFO: Step 2. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and despite the score not improving.
+SATe INFO: current score: -162616.367, best score: -162478.164
+SATe INFO: Writing resulting alignment to /Users/mholder/Desktop/sate/data/satejob.marker001.BBA0067-half.input.aln
+SATe INFO: Writing resulting tree to /Users/mholder/Desktop/sate/data/satejob.tre
+SATe INFO: Writing resulting likelihood score to /Users/mholder/Desktop/sate/data/satejob.score.txt
+SATe INFO: The resulting alignment (with the names in a "safe" form) was first written as the file "/Users/mholder/Desktop/sate/data/satejob_temp_iteration_1_seq_alignment.txt"
+SATe INFO: The resulting tree (with the names in a "safe" form) was first written as the file "/Users/mholder/Desktop/sate/data/satejob_temp_iteration_1_tree.tre"
+SATe INFO: Total time spent: 633.68664813s
+SATe INFO: Note that temporary files from the run have not been deleted, they can be found in:
+   '/Users/mholder/.sate/satejob/tempDHwchB'
+
+SATe INFO: 
+If you cannot see this directory in the Finder application, you may want to use
+the 'open' command executed from a Terminal.  You can do this by launching the
+/Applications/Utilities/Terminal program and then typing
+
+open '/Users/mholder/.sate/satejob/tempDHwchB'
+
+followed by a return at the prompt. If the argument to the open command is a
+directory, then it should open a Finder window in the directory (even if that
+directory is hidden by default).
+

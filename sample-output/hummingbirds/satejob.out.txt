@@ -1,0 +1,55 @@
+SATe INFO: Reading input sequences from '/Users/mholder/Desktop/a_sate_test/data/hummingbirds/AK1.fasta'...
+SATe INFO: Reading input sequences from '/Users/mholder/Desktop/a_sate_test/data/hummingbirds/bfib.fasta'...
+SATe INFO: Reading input sequences from '/Users/mholder/Desktop/a_sate_test/data/hummingbirds/nd2.fasta'...
+SATe INFO: Reading input sequences from '/Users/mholder/Desktop/a_sate_test/data/hummingbirds/nd4.fasta'...
+SATe INFO: Directory for temporary files created at /Users/mholder/.sate/satejob/temp_W1lRY
+SATe INFO: Reading starting trees from "/Users/mholder/Desktop/a_sate_test/data/hummingbirds/starting.tre"...
+SATe INFO: Name translation information saved to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob_temp_name_translation.txt as safe name, original name, blank line format.
+SATe INFO: Starting SATe algorithm on initial tree...
+SATe INFO: Step 0. Realigning with decomposition strategy set to longest
+SATe INFO: Step 0. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and score improved.
+SATe INFO: current score: -97090.491, best score: -97090.491
+SATe INFO: Step 1. Realigning with decomposition strategy set to longest
+SATe INFO: Step 1. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and despite the score not improving.
+SATe INFO: current score: -97144.062, best score: -97090.491
+SATe INFO: Step 2. Realigning with decomposition strategy set to longest
+SATe INFO: Step 2. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and score improved.
+SATe INFO: current score: -97085.882, best score: -97085.882
+SATe INFO: Step 3. Realigning with decomposition strategy set to longest
+SATe INFO: Step 3. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and despite the score not improving.
+SATe INFO: current score: -97106.156, best score: -97085.882
+SATe INFO: Step 4. Realigning with decomposition strategy set to longest
+SATe INFO: Step 4. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and despite the score not improving.
+SATe INFO: current score: -97088.824, best score: -97085.882
+SATe INFO: Step 5. Realigning with decomposition strategy set to longest
+SATe INFO: Step 5. Alignment obtained. Tree inference beginning...
+SATe INFO: realignment accepted and despite the score not improving.
+SATe INFO: current score: -97089.407, best score: -97085.882
+SATe INFO: Writing resulting alignment to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.marker001.AK1.aln
+SATe INFO: Writing resulting alignment to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.marker002.bfib.aln
+SATe INFO: Writing resulting alignment to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.marker003.nd2.aln
+SATe INFO: Writing resulting alignment to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.marker004.nd4.aln
+SATe INFO: Writing resulting tree to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.tre
+SATe INFO: Writing resulting likelihood score to /Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob.score.txt
+SATe INFO: The resulting alignment (with the names in a "safe" form) was first written as the file "/Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob_temp_iteration_2_seq_alignment.txt"
+SATe INFO: The resulting tree (with the names in a "safe" form) was first written as the file "/Users/mholder/Desktop/a_sate_test/data/hummingbirds/satejob_temp_iteration_2_tree.tre"
+SATe INFO: Total time spent: 2835.00782895s
+SATe INFO: Note that temporary files from the run have not been deleted, they can be found in:
+   '/Users/mholder/.sate/satejob/temp_W1lRY'
+
+SATe INFO: 
+If you cannot see this directory in the Finder application, you may want to use
+the 'open' command executed from a Terminal.  You can do this by launching the
+/Applications/Utilities/Terminal program and then typing
+
+open '/Users/mholder/.sate/satejob/temp_W1lRY'
+
+followed by a return at the prompt. If the argument to the open command is a
+directory, then it should open a Finder window in the directory (even if that
+directory is hidden by default).
+

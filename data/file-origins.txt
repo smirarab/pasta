@@ -1,0 +1,3 @@
+The BBA0067 files are from BAliBASE.
+The figwasp and hummingbirds files are from treebase (see the *nex.txt files 
+    in those directory).

@@ -75,9 +75,18 @@ if sys.argv[1] == 'py2exe':
                     ret.setdefault(path,[]).append(filename)
         return sorted(ret.items())
 
-    def extend_files(file_list, dirname, filenames):
+    def extend_data_files(file_list, dirname, filenames):
         l = dirname.split(os.path.sep)
         target_list = l[l.index('data'):]
+        target = os.path.join(*target_list)
+        file_list.append((target,
+                [os.path.join(dirname,
+                        f) for f in filenames if not os.path.isdir(
+                                os.path.join(dirname, f))]))
+
+    def extend_output_files(file_list, dirname, filenames):
+        l = dirname.split(os.path.sep)
+        target_list = l[l.index('sample-output'):]
         target = os.path.join(*target_list)
         file_list.append((target,
                 [os.path.join(dirname,
@@ -102,8 +111,8 @@ if sys.argv[1] == 'py2exe':
             os.path.join(sate_src_root, 'doc'),
             'doc',
             ['*']))
-    os.path.walk(data_dir, extend_files, my_files)
-    os.path.walk(sample_output_dir, extend_files, my_files)
+    os.path.walk(data_dir, extend_data_files, my_files)
+    os.path.walk(sample_output_dir, extend_output_files, my_files)
 
     PY2EXE_OPTIONS = {
         "unbuffered": True,

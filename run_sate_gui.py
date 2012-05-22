@@ -724,7 +724,7 @@ class SateFrame(wx.Frame):
                         datatype_list = ["PROTEIN"]
                     else:
                         datatype_list = ["DNA", "PROTEIN"]
-                    careful_parse = not False
+                    careful_parse = False
                     summary_stats = summary_stats_from_parse(fn_list, 
                                                              datatype_list,
                                                              careful_parse=careful_parse)

@@ -139,12 +139,20 @@ class DispatchableJob(JobBase):
             _LOG.debug('launching %s.\n setting event' % " ".join(self._invocation))
             proc_cwd = self._kwargs.get('cwd', os.curdir)
             k = dict(self._kwargs)
-            if 'stdout' not in self._kwargs:
+            stdout_file_path = self._kwargs.get('stdout', None)
+            stderr_file_path = self._kwargs.get('stderr', None)
+            if stdout_file_path:
+                self._stdout_fo = open_with_intermediates(
+                        stdout_file_path, 'w')
+            else:
                 self._stdout_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stdout.txt'), 'w')
-                k['stdout'] = self._stdout_fo
-            if 'stderr' not in self._kwargs:
+            k['stdout'] = self._stdout_fo
+            if stderr_file_path:
+                self._stderr_fo = open_with_intermediates(
+                        stderr_file_path, 'w')
+            else:
                 self._stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
-                k['stderr'] = self._stderr_fo
+            k['stderr'] = self._stderr_fo
             self.process = Popen(self._invocation, stdin = PIPE, **k)
             self.set_id(self.process.pid)
             #f = open('.%s.pid' % self.get_id(), 'w')
@@ -213,14 +221,10 @@ class DispatchableJob(JobBase):
 
                     try:
                         self.return_code = self.process.wait()
-                        if self._stdout_fo:
-                            self._stdout_fo.close()
-                        if self._stderr_fo:
-                            self._stderr_fo.close()
-                        if hasattr(self._kwargs.get('stdout', None), 'close'):
-                            self._kwargs.get('stdout').close()
-                        if hasattr(self._kwargs.get('stderr', None), 'close'):
-                            self._kwargs.get('stderr').close()
+                        # if self._stdout_fo:
+                        self._stdout_fo.close()
+                        # if self._stderr_fo:
+                        self._stderr_fo.close()
                         if self.return_code:
                             errorFromFile = self.read_stderr()
                             if errorFromFile:

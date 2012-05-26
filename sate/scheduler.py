@@ -221,9 +221,7 @@ class DispatchableJob(JobBase):
 
                     try:
                         self.return_code = self.process.wait()
-                        # if self._stdout_fo:
                         self._stdout_fo.close()
-                        # if self._stderr_fo:
                         self._stderr_fo.close()
                         if self.return_code:
                             errorFromFile = self.read_stderr()

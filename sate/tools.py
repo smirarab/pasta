@@ -225,7 +225,6 @@ class MafftAligner(Aligner):
         if new_alignment.get_num_taxa() < 2:
             return FakeJob(new_alignment, context_str=job_id)
         scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
-        # aligned_fileobj = open_with_intermediates(alignedfn, 'w')
 
         invoc = []
         if platform.system() == "Windows":
@@ -604,7 +603,6 @@ class Randtree(TreeEstimator):
                 dt,
                 os.path.join(scratch_dir, 'output.tre'),
                 ]
-        # score_fileobj = open_with_intermediates(score_fn, 'w')
 
         dirs_to_delete = []
         if kwargs.get('delete_temps', self.delete_temps):
@@ -706,7 +704,6 @@ class FastTree(TreeEstimator):
             invoc.extend(options)
 
         fasttree_result = os.path.join(scratch_dir, 'results')
-        # results_fileobj = open_with_intermediates(fasttree_result, 'w')
 
         if starting_tree is not None:
             if isinstance(starting_tree, str):

@@ -217,6 +217,10 @@ class DispatchableJob(JobBase):
                             self._stdout_fo.close()
                         if self._stderr_fo:
                             self._stderr_fo.close()
+                        if hasattr(self._kwargs.get('stdout', None), 'close'):
+                            self._kwargs.get('stdout').close()
+                        if hasattr(self._kwargs.get('stderr', None), 'close'):
+                            self._kwargs.get('stderr').close()
                         if self.return_code:
                             errorFromFile = self.read_stderr()
                             if errorFromFile:

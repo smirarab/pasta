@@ -106,8 +106,7 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs, sate_products=None, step_nu
         temp_fs.remove_dir(d)
     return score, tree_str
 
-def read_fasttree_results(toclose, dir, fasttree_restults_file, log, delete_dir=False, sate_products=None, step_num=None):
-        toclose.close()
+def read_fasttree_results(dir, fasttree_restults_file, log, delete_dir=False, sate_products=None, step_num=None):
         tree_str = open(fasttree_restults_file, 'rU').read().strip()
         score = None
         for line in reversed(open(log, 'rU').readlines()):
@@ -178,7 +177,7 @@ class Aligner(ExternalTool):
     def create_job(self, *args, **kwargs):
         raise NotImplementedError('Abstract Aligner class cannot spawn jobs.')
 
-    def _finish_standard_job(self, alignedfn, datatype, invoc, scratch_dir, job_id, delete_temps):
+    def _finish_standard_job(self, alignedfn, datatype, invoc, scratch_dir, job_id, delete_temps, stdout=None):
         dirs_to_delete = []
         if delete_temps:
             dirs_to_delete = [scratch_dir]
@@ -187,7 +186,17 @@ class Aligner(ExternalTool):
                                                datatype=datatype,
                                                dirs_to_delete=dirs_to_delete,
                                                temp_fs=self.temp_fs)
-        job = DispatchableJob(invoc, result_processor=rpc,  cwd=scratch_dir, context_str=job_id)
+        if stdout:
+            job = DispatchableJob(invoc,
+                                  result_processor=rpc,
+                                  cwd=scratch_dir,
+                                  stdout=stdout,
+                                  context_str=job_id)
+        else:
+            job = DispatchableJob(invoc,
+                                  result_processor=rpc,
+                                  cwd=scratch_dir,
+                                  context_str=job_id)
         return job
 
 class CustomAligner(Aligner):
@@ -233,27 +242,13 @@ class MafftAligner(Aligner):
         # The MAFFT job creation is slightly different from the other
         #   aligners because we redirect and read standard output.
 
-        dirs_to_delete = []
-        if kwargs.get('delete_temps', self.delete_temps):
-            dirs_to_delete.append(scratch_dir)
-
-        def mafft_result_processor(to_close=aligned_fileobj,
-                                    fn=alignedfn,
-                                    datatype=alignment.datatype,
-                                    dirs_to_delete=dirs_to_delete,
-                                    temp_fs=self.temp_fs):
-            to_close.close()
-            return read_internal_alignment(fn=alignedfn,
-                                           datatype=datatype,
-                                           dirs_to_delete=dirs_to_delete,
-                                           temp_fs=temp_fs)
-
-        job = DispatchableJob(invoc,
-                              result_processor=mafft_result_processor,
-                              cwd=scratch_dir,
-                              stdout=aligned_fileobj,
-                              context_str=job_id)
-        return job
+        return self._finish_standard_job(alignedfn=alignedfn,
+                datatype=alignment.datatype,
+                invoc=invoc,
+                scratch_dir=scratch_dir,
+                job_id=job_id,
+                delete_temps=kwargs.get('delete_temps', self.delete_temps),
+                stdout=aligned_fileobj)
 
 
 class OpalAligner(Aligner):
@@ -618,14 +613,12 @@ class Randtree(TreeEstimator):
         sate_products = kwargs.get('sate_products')
         step_num = kwargs.get('step_num')
         def randtree_result_processor(dir=scratch_dir,
-                                      to_close=score_fileobj,
                                       score_fn=score_fn,
                                       fn=os.path.join(scratch_dir, 'output.tre'),
                                       dirs_to_delete=dirs_to_delete,
                                       temp_fs=self.temp_fs,
                                       sate_products=sate_products,
                                       step_num=step_num):
-            to_close.close()
             score = float(open(score_fn, 'rU').read().strip())
             tree_str = open(fn, 'rU').read().strip()
             copy_temp_tree(fn, sate_products, step_num)
@@ -743,8 +736,7 @@ class FastTree(TreeEstimator):
 
         sate_products = kwargs.get('sate_products')
         step_num = kwargs.get('step_num')
-        rpc = lambda : read_fasttree_results(results_fileobj, 
-                                             scratch_dir,
+        rpc = lambda : read_fasttree_results(scratch_dir,
                                              fasttree_result,
                                              log_file,
                                              delete_dir=kwargs.get('delete_temps', self.delete_temps),

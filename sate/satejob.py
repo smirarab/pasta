@@ -355,7 +355,7 @@ class SateJob (TreeHolder):
                 aligner = SateAlignerJob(multilocus_dataset=self.multilocus_dataset,
                                          sate_team=self.sate_team,
                                          tree=tree_for_aligner,
-                                         tmp_dir_par=curr_tmp_dir_par,
+                                         tmp_base_dir=curr_tmp_dir_par,
                                          **configuration)
                 self.sate_aligner_job = aligner
                 aligner.launch_alignment(break_strategy=break_strategy,

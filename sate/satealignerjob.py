@@ -62,7 +62,9 @@ class SateAlignerJob(TreeHolder):
                 multilocus_dataset, 
                 sate_team, 
                 tree,
-                tmp_dir_par,
+                tmp_base_dir,
+                recursion_index=0,
+                tmp_dir_par=None,
                 **kwargs):
         self._job_lock = Lock()
         TreeHolder.__init__(self, multilocus_dataset.dataset)
@@ -77,10 +79,14 @@ class SateAlignerJob(TreeHolder):
         self._subjob2 = None
         self._align_job_list = None
         self._merge_job_list = None
-        self.tmp_dir_par = tmp_dir_par
+        self.tmp_base_dir = tmp_base_dir
         self.context_str = ''
         self.killed = False
         self._dirs_to_cleanup = []
+        self.recursion_index = recursion_index
+        self.tmp_dir_par = tmp_dir_par
+        if self.tmp_dir_par == None:
+            self.tmp_dir_par = self.tmp_base_dir
 
     def configuration(self):
         d = {}
@@ -143,9 +149,10 @@ class SateAlignerJob(TreeHolder):
         Called in bipartition_by_tree, and the directories are cleaned up
         at the end of _start_merger.
         '''
-        assert(self.tmp_dir_par)
+        assert(self.tmp_base_dir)
+        rn = "r%d" % self.recursion_index
         dn = "d%d" % num
-        sd = os.path.join(self.tmp_dir_par, dn)
+        sd = os.path.join(self.tmp_base_dir, rn, dn)
         full_path_to_new_dir = self.sate_team.temp_fs.create_subdir(sd)
         self._dirs_to_cleanup.append(full_path_to_new_dir)
         return full_path_to_new_dir
@@ -305,15 +312,20 @@ class SateAlignerJob(TreeHolder):
         multilocus_dataset2 = self.multilocus_dataset.sub_alignment(tree2.leaf_node_names())
         sd1 = self._get_subjob_dir(1)
         sd2 = self._get_subjob_dir(2)
+        self.recursion_index += 1
         configuration = self.configuration()
         return [SateAlignerJob(multilocus_dataset=multilocus_dataset1,
                                 sate_team=self.sate_team,
                                 tree=tree1,
+                                tmp_base_dir=self.tmp_base_dir,
+                                recursion_index=self.recursion_index,
                                 tmp_dir_par=sd1,
                                 **configuration),
                 SateAlignerJob(multilocus_dataset=multilocus_dataset2,
                                 sate_team=self.sate_team,
                                 tree=tree2,
+                                tmp_base_dir=self.tmp_base_dir,
+                                recursion_index=self.recursion_index,
                                 tmp_dir_par=sd2,
                                 **configuration)]
 

@@ -1,3 +1,14 @@
+Release 2.2.4
+=============
+    - [BUG FIX] Fixed temp directory path depth problem in Windows when using
+                "longest" decomposition. Previous versions created a nested
+                temp file directory that mirrored the tree decomposition. In
+                Windows, if the tree had enough long terminal branches, the
+                temp files got too long for the OS. The temp file structure
+                has been changed to avoid this problem.
+    - [BUG FIX] Fixed problem with too many open files when multi-locus
+                analyses had many loci.
+
 Release 2.2.3
 =============
     - [CHANGES] MUSCLE is now the default merger tool.

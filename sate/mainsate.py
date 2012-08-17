@@ -490,12 +490,24 @@ def sate_main(argv=sys.argv):
     command_line_group.add_to_optparser(parser)
     sate_group = user_config.get('sate')
     sate_group.add_to_optparser(parser)
+    
+    group = optparse.OptionGroup(parser, "SATe tools extra options")
+    group.add_option('--tree-estimator-model', type='string',
+            dest='tree_estimator_model',
+            help='Do not use this option.')
+    parser.add_option_group(group)
+    
     if argv == sys.argv:
         (options, args) = parser.parse_args(argv[1:])
     else:
         (options, args) = parser.parse_args(argv)
     #if options.multilocus:
     #    sys.exit("SATe: Multilocus mode is disabled in this release.")
+    if options.tree_estimator_model and options.tree_estimator:
+        if options.tree_estimator.lower == 'raxml':
+            user_config.raxml.model = options.tree_estimator_model
+        elif options.tree_estimator.lower == 'fasttree':
+            user_config.fasttree.model = options.tree_estimator_model
     
     config_filenames = list(args)
     for fn in config_filenames:

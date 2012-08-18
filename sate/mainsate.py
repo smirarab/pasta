@@ -504,11 +504,11 @@ def sate_main(argv=sys.argv):
     #if options.multilocus:
     #    sys.exit("SATe: Multilocus mode is disabled in this release.")
     if options.tree_estimator_model and options.tree_estimator:
-        if options.tree_estimator.lower == 'raxml':
+        if options.tree_estimator.lower() == 'raxml':
             user_config.raxml.model = options.tree_estimator_model
-        elif options.tree_estimator.lower == 'fasttree':
+        elif options.tree_estimator.lower() == 'fasttree':
             user_config.fasttree.model = options.tree_estimator_model
-    
+
     config_filenames = list(args)
     for fn in config_filenames:
         if fn[0] == '"' and fn[-1] == '"':

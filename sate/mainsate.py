@@ -503,7 +503,7 @@ def sate_main(argv=sys.argv):
         (options, args) = parser.parse_args(argv)
     #if options.multilocus:
     #    sys.exit("SATe: Multilocus mode is disabled in this release.")
-    if options.tree_estimator_model and options.tree_estimator:
+    if options.tree_estimator_model and options.tree_estimator and len(args) == 0:
         if options.tree_estimator.lower() == 'raxml':
             user_config.raxml.model = options.tree_estimator_model
         elif options.tree_estimator.lower() == 'fasttree':

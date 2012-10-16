@@ -58,12 +58,12 @@ class SateAlignerJob(TreeHolder):
     BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['centroid']) ,
                             'max_subproblem_size' : 50,
                             'delete_temps' : True}
+    RECURSION_INDEX = 0
     def __init__(self, 
                 multilocus_dataset, 
                 sate_team, 
                 tree,
                 tmp_base_dir,
-                recursion_index=0,
                 tmp_dir_par=None,
                 **kwargs):
         self._job_lock = Lock()
@@ -83,7 +83,6 @@ class SateAlignerJob(TreeHolder):
         self.context_str = ''
         self.killed = False
         self._dirs_to_cleanup = []
-        self.recursion_index = recursion_index
         self.tmp_dir_par = tmp_dir_par
         if self.tmp_dir_par == None:
             self.tmp_dir_par = self.tmp_base_dir
@@ -150,7 +149,7 @@ class SateAlignerJob(TreeHolder):
         at the end of _start_merger.
         '''
         assert(self.tmp_base_dir)
-        rn = "r%d" % self.recursion_index
+        rn = "r%d" % SateAlignerJob.RECURSION_INDEX
         dn = "d%d" % num
         sd = os.path.join(self.tmp_base_dir, rn, dn)
         full_path_to_new_dir = self.sate_team.temp_fs.create_subdir(sd)
@@ -312,20 +311,18 @@ class SateAlignerJob(TreeHolder):
         multilocus_dataset2 = self.multilocus_dataset.sub_alignment(tree2.leaf_node_names())
         sd1 = self._get_subjob_dir(1)
         sd2 = self._get_subjob_dir(2)
-        self.recursion_index += 1
+        SateAlignerJob.RECURSION_INDEX += 1
         configuration = self.configuration()
         return [SateAlignerJob(multilocus_dataset=multilocus_dataset1,
                                 sate_team=self.sate_team,
                                 tree=tree1,
                                 tmp_base_dir=self.tmp_base_dir,
-                                recursion_index=self.recursion_index,
                                 tmp_dir_par=sd1,
                                 **configuration),
                 SateAlignerJob(multilocus_dataset=multilocus_dataset2,
                                 sate_team=self.sate_team,
                                 tree=tree2,
                                 tmp_base_dir=self.tmp_base_dir,
-                                recursion_index=self.recursion_index,
                                 tmp_dir_par=sd2,
                                 **configuration)]
 

@@ -65,6 +65,7 @@ class SateAlignerJob(TreeHolder):
                 tree,
                 tmp_base_dir,
                 tmp_dir_par=None,
+                reset_recursion_index=False,
                 **kwargs):
         self._job_lock = Lock()
         TreeHolder.__init__(self, multilocus_dataset.dataset)
@@ -86,6 +87,8 @@ class SateAlignerJob(TreeHolder):
         self.tmp_dir_par = tmp_dir_par
         if self.tmp_dir_par == None:
             self.tmp_dir_par = self.tmp_base_dir
+        if reset_recursion_index:
+            self.__class__.RECURSION_INDEX = 0
 
     def configuration(self):
         d = {}

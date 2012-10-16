@@ -356,6 +356,7 @@ class SateJob (TreeHolder):
                                          sate_team=self.sate_team,
                                          tree=tree_for_aligner,
                                          tmp_base_dir=curr_tmp_dir_par,
+                                         reset_recursion_index=True,
                                          **configuration)
                 self.sate_aligner_job = aligner
                 aligner.launch_alignment(break_strategy=break_strategy,

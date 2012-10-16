@@ -154,7 +154,10 @@ class SateAlignerJob(TreeHolder):
         assert(self.tmp_base_dir)
         rn = "r%d" % SateAlignerJob.RECURSION_INDEX
         dn = "d%d" % num
-        sd = os.path.join(self.tmp_base_dir, rn, dn)
+        r_dir = os.path.join(self.tmp_base_dir, rn)
+        sd = os.path.join(r_dir, dn)
+        if not os.path.exists(r_dir):
+            self.sate_team.temp_fs.create_subdir(r_dir)
         full_path_to_new_dir = self.sate_team.temp_fs.create_subdir(sd)
         self._dirs_to_cleanup.append(full_path_to_new_dir)
         return full_path_to_new_dir

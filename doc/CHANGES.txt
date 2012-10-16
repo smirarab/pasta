@@ -1,3 +1,15 @@
+Release 2.2.5
+=============
+    - [BUG FIX] Fixed directory cleanup error messages introduced with release
+                2.2.4. SATe can now remove temporary directories without these
+                annoying error messages. This bug did not affect analyses.
+    - [BUG FIX] Fixed tree-decomposition recursion bug introduced with release
+                2.2.4. During some recursions, multiple sate aligner jobs would
+                attempt to create the same temp directory, causing the analysis
+                to exit with an error. This release corrects this problem. Any
+                results obtained from 2.2.4 should not be effected by the bug,
+                because this bug always resulted in a crash.
+
 Release 2.2.4
 =============
     - [BUG FIX] Fixed temp directory path depth problem in Windows when using
@@ -54,15 +66,19 @@ Release 2.2.0
 Release 2.1.0
 =============
 
-    - [BUG FIX] No longer write out duplicate sequence entries in final alignment output.
-    - [CHANGES] Do not clean up files and directories in temporary working directory not created by SATe.
-    - [BUG FIX] Check for gamma score in output file before using value in log file.
+    - [BUG FIX] No longer write out duplicate sequence entries in final
+                alignment output.
+    - [CHANGES] Do not clean up files and directories in temporary working
+                directory not created by SATe.
+    - [BUG FIX] Check for gamma score in output file before using value in log
+                file.
 
 Release 2.0.3
 =============
 
     - Fix for not terminating correctly in SATE-II-fast mode.
-    - Allow specification of memory to be allocated to JVM when running Opal [NOTE: default memory allocation is now 1024MB instead of 2048MB].
+    - Allow specification of memory to be allocated to JVM when running Opal
+      [NOTE: default memory allocation is now 1024MB instead of 2048MB].
     - Default to SATE-II-fast mode instead of SATE-II-ML.
     - SATE-II-ML defaults to 10 iterations instead of 100.
 

@@ -219,7 +219,7 @@ class Alignment(dict, object):
             return len(self.values()[0])
 
     def max_sequence_length(self):
-        return max(len(v) for v in self.values())
+        return max(len(re.sub(_INDEL, '', v)) for v in self.values())
 
 
 class SequenceDataset(object):

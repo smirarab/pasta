@@ -38,6 +38,14 @@ class AlignmentTest(unittest.TestCase):
         a.read_filepath(filename1, 'FASTA')
         b.read_filepath(filename2, 'FASTA')
 
+    def testMaxSequenceLength(self):
+        a = Alignment()
+        a['1'] = 'A--CG--T'
+        a['2'] = 'AC----GT'
+        a['3'] = 'A-C-G-T-'
+        a['4'] = 'ACGT---T'
+        self.assertEqual(a.max_sequence_length(), 5)
+
 class SeqDatasetTest(unittest.TestCase):
 
     #def testTaxonRelabeling(self):

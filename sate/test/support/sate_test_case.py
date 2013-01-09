@@ -1,16 +1,79 @@
 #! /usr/bin/env python
 
 import os
+import sys
 import unittest
 import itertools
 import re
+import subprocess
+import random
+import string
 from cStringIO import StringIO
 
+import sate
 from sate import get_logger
+from sate.test import TESTS_DIR
+from sate.filemgr import TempFS
+from sate.mainsate import sate_main
 
 _LOG = get_logger(__name__)
 
 class SateTestCase(unittest.TestCase):
+
+    def set_up(self):
+        self.ts = TempFS()
+        self.ts.create_top_level_temp(prefix='runSateTest',
+                parent=TESTS_DIR)
+        self.job_name = 'satejob' + self.random_id(8)
+
+    def tear_down(self):
+        self.register_files()
+        self.ts.remove_dir(self.ts.top_level_temp)
+
+    def _main_execution(self, args, stdout=None, stderr=None, rc=0):
+        try:
+            cmd = "import sys; from sate.mainsate import sate_main; sate_main(%s)[0] or sys.exit(1)" % repr(args)
+            invoc = [sys.executable, '-c', cmd]
+            _LOG.debug("Command:\n\tpython -c " + repr(cmd))
+            p = subprocess.Popen(invoc,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            (o, e) = p.communicate()
+            r = p.wait()
+            self.assertEquals(r, rc)
+            if stderr is not None:
+                self.assertEquals(e, stderr)
+            if stdout is not None:
+                self.assertEquals(o, stdout)
+        except Exception, v:
+            #self.assertEquals(str(v), 5)
+            raise
+
+    def _exe_run_sate(self, args, stdout=None, stderr=None, rc=0):
+        script_path = os.path.join(sate.sate_home_dir(), 'run_sate.py')
+        if isinstance(args, str):
+            arg_list = args.split()
+        else:
+            arg_list = args
+        cmd = ['python', script_path] + arg_list
+        _LOG.debug("Command:\n\t" + " ".join(cmd))
+        p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        o, e = p.communicate()
+        exit_code = p.wait()
+        if exit_code != rc:
+            _LOG.error("exit code (%s) did not match %s" % (exit_code,
+                    rc))
+            _LOG.error("here is the stdout:\n%s" % o)
+            _LOG.error("here is the stderr:\n%s" % e)
+        self.assertEquals(exit_code, rc)
+        if stdout != None:
+            self.assertEquals(o, stdout)
+        if stderr != None:
+            self.assertEquals(e, stderr)
+
+    def _exe(self, args):
+        sate_main(args)
 
     def parse_fasta_file(self, file):
         if isinstance(file, str):
@@ -126,4 +189,20 @@ class SateTestCase(unittest.TestCase):
             for col, name_list in columns_to_taxa.iteritems():
                 self.assertEqual(len(name_list), len(set(name_list)))
                 self.assertNotEqual(len(name_list), len(sd.keys()))
+
+    def random_id(self, length=8,
+            char_pool=string.ascii_letters + string.digits):
+        return ''.join(random.choice(char_pool) for i in range(length))
+
+    def register_files(self):
+        self.ts._register_created_dir(os.path.join(
+                self.ts.top_level_temp, self.job_name))
+        for path, dirs, files in os.walk(self.ts.top_level_temp):
+            for f in files:
+                if f.startswith(self.job_name):
+                    self.ts.run_generated_filenames.append(
+                            os.path.join(path, f))
+            for d in dirs:
+                if d.startswith(self.job_name):
+                    self.ts._register_created_dir(d)
 

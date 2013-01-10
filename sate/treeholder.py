@@ -105,7 +105,9 @@ def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
                 'In tree, not sequences: {0}\n'
                 'In sequences, not tree: {1}\n'.format(','.join(extra),
                         ','.join(missing)))
-    if dataset.taxon_sets:
+        dataset.read_from_string(ds.as_string(schema='NEWICK'),
+                schema='NEWICK', taxon_set=dataset.taxon_sets[0])
+    elif dataset.taxon_sets:
         dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])
     else:
         dataset.read_from_stream(tree_stream, schema='NEWICK')

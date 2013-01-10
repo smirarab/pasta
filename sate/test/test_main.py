@@ -6,6 +6,7 @@ import os, sys
 
 from sate.test import is_test_enabled, TestLevel, data_source_path
 from sate.test.support.sate_test_case import SateTestCase
+from sate.errors import TaxaLabelsMismatchError
 from sate import get_logger
 
 _LOG = get_logger(__name__)
@@ -31,6 +32,25 @@ class MainTest(SateTestCase):
                     '--temporaries=%s' % self.ts.top_level_temp,
                     '-j', self.job_name,
                     '--iter-limit=1'])
+
+class TestTaxonLabelMismatch(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        self.data = data_source_path('tiny.fasta')
+        self.tree = data_source_path('tiny_name_mismatch.tre')
+
+    def tearDown(self):
+        self.tear_down()
+
+    def testStartingTreeLabelMismatch(self):
+        cmd = ['-i', self.data,
+               '-t', self.tree,
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self.assertRaises(TaxaLabelsMismatchError, self._exe, cmd)
+
 
 if __name__ == "__main__":
     unittest.main()

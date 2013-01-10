@@ -183,7 +183,8 @@ def finish_sate_execution(sate_team,
         tree_f = open(tree_file, 'rU')
         MESSENGER.send_info('Reading starting trees from "%s"...' % tree_file)
         try:
-            tree_list = read_and_encode_splits(multilocus_dataset.dataset, tree_f)
+            tree_list = read_and_encode_splits(multilocus_dataset.dataset, tree_f,
+                    starting_tree=True)
         except KeyError:
             MESSENGER.send_error("Error in reading the treefile, probably due to a name in the tree that does not match the names in the input sequence files.\n")
             raise

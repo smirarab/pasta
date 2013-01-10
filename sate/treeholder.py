@@ -20,9 +20,11 @@
 
 # Jiaye Yu and Mark Holder, University of Kansas
 
+import dendropy
 
 from cStringIO import StringIO
 from sate.tree import PhylogeneticTree
+from sate.errors import TaxaLabelsMismatchError
 from sate import get_logger
 _LOG = get_logger(__name__)
 
@@ -85,21 +87,38 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
     if update_splits:
         tree.update_splits()
 
+def check_taxon_labels(taxon_set, dataset):
+    ts = set([i for tset in dataset.taxon_sets for i in tset.labels()])
+    extra = [l for l in taxon_set.labels() if l not in ts]
+    missing = [l for l in ts if l not in taxon_set.labels()]
+    return extra, missing
 
-def read_trees_into_dataset(dataset, tree_stream):
+def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
+    if starting_tree:
+        ds = dendropy.DataSet()
+        ds.read_from_stream(tree_stream, schema='NEWICK')
+        extra, missing = check_taxon_labels(ds.tree_lists[-1].taxon_set, dataset)
+        if extra or missing:
+            raise TaxaLabelsMismatchError(
+                'There are taxon label mismatches between the starting tree '
+                'and sequences...\n'
+                'In tree, not sequences: {0}\n'
+                'In sequences, not tree: {1}\n'.format(','.join(extra),
+                        ','.join(missing)))
     if dataset.taxon_sets:
         dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])
     else:
         dataset.read_from_stream(tree_stream, schema='NEWICK')
     return  dataset.tree_lists[-1]
 
-def read_and_encode_splits(dataset, tree_stream):
+def read_and_encode_splits(dataset, tree_stream, starting_tree=False):
     """Reads the file-like object `tree_stream` as a source of trees for the
     the taxa found in dataset. and then encodes the splits of the nodes of the trees.
     This is a convenience function that bridges between dendropy 2 and 3 API's
     """
     _LOG.debug("NOT covered in tests")
-    tree_list = read_trees_into_dataset(dataset, tree_stream)
+    tree_list = read_trees_into_dataset(dataset, tree_stream,
+            starting_tree=starting_tree)
     assert len(tree_list) == 1
     delete_outdegree_one(tree_list[0])
     return tree_list

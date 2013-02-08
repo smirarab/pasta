@@ -37,7 +37,7 @@ from sate import get_logger
 from sate.utility import record_timestamp
 from sate.scheduler import jobq
 from sate.filemgr import  TempFS
-from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
+from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
 
 class SateTeam (object):
@@ -322,7 +322,19 @@ class SateJob (TreeHolder):
         frac_max = int(math.ceil(self.max_subproblem_frac*self.tree.n_leaves))
         if frac_max > self.max_subproblem_size:
             configuration['max_subproblem_size'] = frac_max
-        _LOG.debug("configuration['max_subproblem_size'] which will be used is " + str(configuration['max_subproblem_size']) + "\n")
+        MESSENGER.send_info('Max subproblem set to {0}'.format(
+                configuration['max_subproblem_size']))
+        if configuration['max_subproblem_size'] >= self.tree.n_leaves:
+            MESSENGER.send_warning('''\n
+WARNING: you have specified a max subproblem ({0}) that is equal to or greater
+    than the number of taxa ({0}). Thus, the SATe algorithm will not be invoked
+    under the current configuration (i.e., no tree decomposition will occur).
+    If you did not intend for this behavior (which you probably did not since
+    you are using SATe) please adjust your settings for the max subproblem and
+    try running SATe again. If you intended to use SATe to align your data with
+    the specified aligner tool *without* any decomposition, you can ignore this
+    message.\n'''.format(configuration['max_subproblem_size'],
+                       self.tree.n_leaves))
         delete_iteration_temps = not self.keep_iteration_temporaries
         delete_realignment_temps = delete_iteration_temps or (not self.keep_realignment_temporaries)
         configuration['delete_temps'] = delete_realignment_temps

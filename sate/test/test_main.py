@@ -51,6 +51,21 @@ class TestTaxonLabelMismatch(SateTestCase):
                '--iter-limit=1']
         self.assertRaises(TaxaLabelsMismatchError, self._exe, cmd)
 
+class TestLowerCaseCharacters(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        self.data = data_source_path('tiny.lowercase.fasta')
+
+    def tearDown(self):
+        self.tear_down()
+
+    def testLowerCaseData(self):
+        cmd = ['-i', self.data,
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self._main_execution(cmd, rc=0)
 
 if __name__ == "__main__":
     unittest.main()

@@ -40,6 +40,11 @@ class SateTestCase(unittest.TestCase):
                                  stdout=subprocess.PIPE)
             (o, e) = p.communicate()
             r = p.wait()
+            if r != rc:
+                _LOG.error("exit code (%s) did not match %s" % (r,
+                        rc))
+                _LOG.error("here is the stdout:\n%s" % o)
+                _LOG.error("here is the stderr:\n%s" % e)
             self.assertEquals(r, rc)
             if stderr is not None:
                 self.assertEquals(e, stderr)

@@ -67,5 +67,65 @@ class TestLowerCaseCharacters(SateTestCase):
                '--iter-limit=1']
         self._main_execution(cmd, rc=0)
 
+class TestUnicodePathCharacters(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        data_file = data_source_path('tiny.fasta')
+        unicode_name = u'm\xe9ss\xfdp\xe4th'
+        self.tmp_sub_dir = self.ts.create_temp_subdir(
+                parent=self.ts.top_level_temp,
+                prefix=unicode_name)
+        self.data_path = os.path.join(self.tmp_sub_dir,
+                self.job_name + unicode_name + '.fasta')
+        src = open(data_file, 'rU')
+        out = open(self.data_path, 'w')
+        for line in src:
+            out.write(line)
+        src.close()
+        out.close()
+    
+    def tearDown(self):
+        self.register_files()
+        self.ts.remove_dir(self.tmp_sub_dir)
+        self.tear_down()
+
+    def testUnicodePath(self):
+        cmd = ['-i', self.data_path,
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self._exe_run_sate(cmd, rc=0)
+
+class TestSpacesInPath(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        data_file = data_source_path('tiny.fasta')
+        space_name = 'a path with a lot of spaces'
+        self.tmp_sub_dir = self.ts.create_temp_subdir(
+                parent=self.ts.top_level_temp,
+                prefix=space_name)
+        self.data_path = os.path.join(self.tmp_sub_dir,
+                self.job_name + space_name + '.fasta')
+        src = open(data_file, 'rU')
+        out = open(self.data_path, 'w')
+        for line in src:
+            out.write(line)
+        src.close()
+        out.close()
+    
+    def tearDown(self):
+        self.register_files()
+        self.ts.remove_dir(self.tmp_sub_dir)
+        self.tear_down()
+
+    def testUnicodePath(self):
+        cmd = ['-i', self.data_path,
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self._exe_run_sate(cmd, rc=0)
+
 if __name__ == "__main__":
     unittest.main()

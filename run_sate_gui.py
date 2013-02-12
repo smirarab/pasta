@@ -692,14 +692,14 @@ class SateFrame(wx.Frame):
             dialog = wx.FileDialog(None, "Choose sequences...", wildcard = "FASTA files (*.fasta)|*.fasta|FASTA files (*.fas)|*.fas|FASTA files (*)|*", style=wx.FD_OPEN)
             dialog.ShowModal()
             self.txt_seqfn.SetValue( dialog.GetPath() )
-            filepath = self.txt_seqfn.GetValue()
+            filepath = self._encode_arg(self.txt_seqfn.GetValue())
             if filepath and not self.txt_outputdir.GetValue():
                 self.txt_outputdir.SetValue(os.path.dirname(os.path.abspath(filepath)))
         else:
             dialog = wx.DirDialog(None, "Choose directory for multiple sequence files", style=wx.FD_OPEN)
             dialog.ShowModal()
             self.txt_seqfn.SetValue( dialog.GetPath() )
-            filepath = self.txt_seqfn.GetValue()
+            filepath = self._encode_arg(self.txt_seqfn.GetValue())
         if PARSING_FILES_IN_GUI and filepath:
             confirm_parse_dlg = wx.MessageDialog(parent=self,  
                                                  message="Do you want SATe to read the data now? (this causes SATe to customize some of the settings for your data).",

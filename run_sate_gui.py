@@ -911,7 +911,7 @@ class SateFrame(wx.Frame):
             if self.checkbox_stop_iter.Value and (not self.validate_iter_limit_text()):
                 self._show_error_dialog("Iteration limit is not set correctly. Enter a positive integer in that field.\n", caption="SATe Settings Error")
                 return
-            input_filename = self.txt_seqfn.GetValue()            
+            input_filename = self._encode_arg(self.txt_seqfn.GetValue())
             if not input_filename:
                 self._show_error_dialog("Input sequence file(s) are required.\n", caption="SATe Settings Error")
                 return
@@ -926,14 +926,13 @@ class SateFrame(wx.Frame):
                 self._show_error_dialog('Input sequence file must be a file when single-locus mode used.\n', caption="SATe Settings Error")
                 return
 
-            
             cfg_success = self._create_config_file()
             if not cfg_success:
                 return
             #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_sate_command()]
             command = get_invoke_run_sate_command()
-            treefilename = self.txt_treefn.GetValue()
-            jobname = self.txt_jobname.GetValue()
+            treefilename = self._encode_arg(self.txt_treefn.GetValue())
+            jobname = self._encode_arg(self.txt_jobname.GetValue())
             if not jobname:
                 wx.MessageBox("Job name cannot be empty, it is REQUIRED by SATe!", "WARNING", wx.OK|wx.ICON_WARNING)
                 self._remove_config_file()
@@ -978,6 +977,11 @@ class SateFrame(wx.Frame):
             self.statusbar.SetStatusText("SATe Ready!")
         else:
             self.log.AppendText("No active SATe jobs to terminate!\n")
+
+    def _encode_arg(self, arg, encoding='utf-8'):
+        if isinstance(arg, unicode):
+            return arg.encode(encoding)
+        return arg
 
     def _create_config_file(self):
         from sate.configure import get_configuration
@@ -1060,7 +1064,7 @@ class SateFrame(wx.Frame):
                     cfg.sate.iter_limit = int(self.text_stop2.Value)
             cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
 
-        cfg.sate.output_directory = self.txt_outputdir.GetValue()
+        cfg.sate.output_directory = self._encode_arg(self.txt_outputdir.GetValue())
         cfg.sate.num_cpus = self.cb_ncpu.Value
         max_mb = self.txt_maxmb.GetValue()
         if not self.validate_max_mb(max_mb):

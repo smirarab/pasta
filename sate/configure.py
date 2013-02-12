@@ -48,7 +48,9 @@ def get_invoke_run_sate_command():
         else:
             raise OSError('SATe is not frozen for %s' % platform.system())
     else:
-        return [filemgr.quoted_file_path(sys.executable), filemgr.quoted_file_path('run_sate.py')]
+        return [filemgr.quoted_file_path(sys.executable),
+                filemgr.quoted_file_path(os.path.join(sate.sate_home_dir(),
+                        'run_sate.py'))]
 
 _DEFAULT_TOOLS_PATH = None
 

@@ -525,19 +525,23 @@ class MultiLocusDataset(list):
     def _convert_rna_to_dna(self, reverse=False):
         if reverse:
             match_char, replace_char = 'T', 'U'
+            new_datatype = 'RNA'
         else:
             match_char, replace_char = 'U', 'T'
+            new_datatype = 'DNA'
 
         for n, element in enumerate(self):
-            if not isinstance(element, SequenceDataset):
-                raise ValueError("Expecting all elements of MultiLocusDataset "
-                        "to be SequenceDataset objects when convert_rna_to_dna "
-                        "is called!")
             if element.datatype.upper() != 'RNA':
-                continue
-            char_matrix = element.dataset.char_matrices[0]
-            for taxon, char_vec in char_matrix.iteritems():
-                char_matrix[taxon] = char_vec.replace(match_char, replace_char)
+               continue
+            if isinstance(element, SequenceDataset):
+                char_matrix = element.dataset.char_matrices[0]
+                for taxon, seq in char_matrix.iteritems():
+                    char_matrix[taxon] = seq.replace(match_char, replace_char)
+            else:
+                for taxon, seq in element.iteritems():
+                    element[taxon] = seq.replace(match_char, replace_char)
+            element.datatype = new_datatype
+
 
     def convert_rna_to_dna(self):
         self._convert_rna_to_dna(reverse=False)

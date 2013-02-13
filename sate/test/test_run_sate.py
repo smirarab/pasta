@@ -22,6 +22,10 @@ class RunSateTest(SateTestCase):
         self.multi_aa_dir = os.path.join(self.multi_dir, 'caenophidia')
         self.figwasp_dir = os.path.join(self.multi_dir, 'figwasps')
         self.hummingbird_dir = os.path.join(self.multi_dir, 'hummingbirds')
+        self.ambig_dna = data_source_path('small.ambiguities.fasta')
+        self.ambig_dna_tree = data_source_path('small.tree')
+        self.ambig_aa = data_source_path('caenophidia_mos.ambiguities.fasta')
+        self.ambig_aa_tree = data_source_path('caenophidia_mos.tre')
 
     def tearDown(self):
         self.tear_down()
@@ -212,5 +216,96 @@ class RunSateTest(SateTestCase):
             self.assertNoGapColumns([seqs_out1_path, seqs_out2_path,
                     seqs_out3_path, seqs_out4_path, concat_out])       
 
+    def testDnaAmbiguousCharactersMafftFasttreeTrusted(self):
+        if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'dna',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '-j', self.job_name,
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.ambig_dna,
+                        '-t', self.ambig_dna_tree,
+                        '--aligner=mafft',
+                        '--merger=muscle',
+                        '--tree-estimator=fasttree',]
+            self._exe_run_sate(arg_list, rc=0)
+            self.assertSameInputOutputSequenceData(
+                    [self.ambig_dna],
+                    [os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.small.ambiguities.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    self.job_name + '.marker001.small.ambiguities.aln')])
+
+    def testDnaAmbiguousCharactersClustalRaxmlUntrusted(self):
+        if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'dna',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '-j', self.job_name,
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.ambig_dna,
+                        '-t', self.ambig_dna_tree,
+                        '--aligner=clustalw2',
+                        '--merger=muscle',
+                        '--tree-estimator=raxml',
+                        '--untrusted',]
+            self._exe_run_sate(arg_list, rc=0)
+            self.assertSameInputOutputSequenceData(
+                    [self.ambig_dna],
+                    [os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.small.ambiguities.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    self.job_name + '.marker001.small.ambiguities.aln')])
+
+    def testProteinAmbiguousCharactersMafftFasttreeTrusted(self):
+        if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'protein',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '-j', self.job_name,
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.ambig_aa,
+                        '-t', self.ambig_aa_tree,
+                        '--aligner=mafft',
+                        '--merger=muscle',
+                        '--tree-estimator=fasttree',]
+            self._exe_run_sate(arg_list, rc=0)
+            self.assertSameInputOutputSequenceData(
+                    [self.ambig_aa],
+                    [os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.caenophidia_mos.ambiguities.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    self.job_name + '.marker001.caenophidia_mos.ambiguities.aln')])
+
+    def testProteinAmbiguousCharactersClustalRaxmlUntrusted(self):
+        if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+                module_name=".".join([self.__class__.__name__,
+                        sys._getframe().f_code.co_name])):
+            arg_list = ['-d', 'protein',
+                        '--temporaries=%s' % self.ts.top_level_temp,
+                        '--iter-limit=1',
+                        '-j', self.job_name,
+                        '-o', self.ts.top_level_temp,
+                        '-i', self.ambig_aa,
+                        '-t', self.ambig_aa_tree,
+                        '--aligner=clustalw2',
+                        '--merger=muscle',
+                        '--tree-estimator=raxml',
+                        '--untrusted',]
+            self._exe_run_sate(arg_list, rc=0)
+            self.assertSameInputOutputSequenceData(
+                    [self.ambig_aa],
+                    [os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.caenophidia_mos.ambiguities.aln')])
+            self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                    self.job_name + '.marker001.caenophidia_mos.ambiguities.aln')])
+
 if __name__ == "__main__":
     unittest.main()
+

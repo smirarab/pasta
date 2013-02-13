@@ -7,10 +7,11 @@ import os
 
 from cStringIO import StringIO
 from sate import get_logger
-from sate.alignment import Alignment, SequenceDataset
+from sate.alignment import Alignment, SequenceDataset, MultiLocusDataset
 from sate.treeholder import read_and_encode_splits
 
 from sate.test import get_testing_configuration, data_source_path, TestLevel, is_test_enabled
+from sate.test.support.sate_test_case import SateTestCase
 
 from dendropy import treesplit
 import dendropy
@@ -129,6 +130,75 @@ class SeqDatasetTest(unittest.TestCase):
     #    ambig_aln = sd.relabel_for_sate()
     #    for k, v in aln.iteritems():
     #        self.assertEqual(v.upper(), ambig_aln[k].upper())
+
+class MultiLocusDatasetTest(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        self.tmp_sub_dir = self.ts.create_temp_subdir(
+                parent=self.ts.top_level_temp,
+                prefix='MultiLocusDatasetTest')
+        self.data_path = os.path.join(self.tmp_sub_dir,
+                self.job_name + '_test.fasta')
+        self.mlds = MultiLocusDataset()
+    
+    def tearDown(self):
+        self.register_files()
+        self.ts.remove_dir(self.tmp_sub_dir)
+        self.tear_down()
+
+    def _create_seq_file(self, seq_str):
+        out = open(self.data_path, 'w')
+        out.write(seq_str)
+        out.close()
+
+    def _parse_seq_dataset(self, sd):
+        d = {}
+        for taxon, char_vec in sd.dataset.char_matrices[0].iteritems():
+            d[taxon.label] = ''.join([i for i in char_vec])
+        return d
+
+    def _convert_rna(self, seq_dict, reverse=False):
+        d = {}
+        for taxon, seq in seq_dict.iteritems():
+            if reverse:
+                d[taxon] = seq.replace('T', 'U')
+            else:
+                d[taxon] = seq.replace('U', 'T')
+        return d
+
+    def testRNAConversion(self):
+        sf = StringIO()
+        sf.write('>a\nAUGCAUGC\n')
+        sf.write('>b\nAUGCAUGC\n')
+        self._create_seq_file(sf.getvalue())
+        sf.seek(0)
+        seqs = self.parse_fasta_file(sf)
+        self.mlds.read_files([self.data_path],
+                datatype='RNA',
+                file_format='FASTA')
+        self.assertEqual(len(self.mlds), 1)
+        self.assertSameDataSet([seqs, self._parse_seq_dataset(self.mlds[0])])
+        self.mlds.convert_rna_to_dna()
+        seqs = self._convert_rna(seqs)
+        for k, v in seqs.iteritems():
+            self.assertTrue('T' in v)
+        self.assertSameDataSet([seqs,
+                self._parse_seq_dataset(self.mlds[0])])
+        self.mlds.convert_rna_to_dna()
+        self.assertSameDataSet([seqs,
+                self._parse_seq_dataset(self.mlds[0])])
+        self.mlds.convert_dna_to_rna()
+        seqs = self._convert_rna(seqs, reverse=True)
+        for k, v in seqs.iteritems():
+            self.assertFalse('T' in v)
+        self.assertSameDataSet([seqs,
+                self._parse_seq_dataset(self.mlds[0])])
+        self.mlds.convert_rna_to_dna()
+        seqs = self._convert_rna(seqs)
+        for k, v in seqs.iteritems():
+            self.assertTrue('T' in v)
+        self.assertSameDataSet([seqs,
+                self._parse_seq_dataset(self.mlds[0])])
 
 if __name__ == "__main__":
     unittest.main()

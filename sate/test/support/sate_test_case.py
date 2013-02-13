@@ -97,7 +97,7 @@ class SateTestCase(unittest.TestCase):
                 name = l[1:]
                 seq = StringIO()
             else:
-                seq.write(l)
+                seq.write(l.replace(' ', ''))
         if name:
             data[name] = seq.getvalue().upper()
         file_stream.close()

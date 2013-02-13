@@ -203,6 +203,12 @@ def finish_sate_execution(sate_team,
     #####
     multilocus_dataset.relabel_for_sate()
 
+    ############################################################################
+    # This ensures all nucleotide data is DNA internally
+    #####
+    if user_config.commandline.datatype.upper() == 'RNA':
+        multilocus_dataset.convert_rna_to_dna()
+
     export_names = True
     if export_names:
         try:
@@ -369,7 +375,13 @@ def finish_sate_execution(sate_team,
                     tree_as_tmp_filename_to_report = job.best_tree_tmp_filename
 
 
+        #######################################################################
+        # Restore original taxon names and RNA characters
+        #####
         job.multilocus_dataset.restore_taxon_names()
+        if user_config.commandline.datatype.upper() == 'RNA':
+            job.multilocus_dataset.convert_dna_to_rna()
+
         assert len(sate_products.alignment_streams) == len(job.multilocus_dataset)
         for i, alignment in enumerate(job.multilocus_dataset):
             alignment_stream = sate_products.alignment_streams[i]

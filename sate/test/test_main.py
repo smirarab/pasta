@@ -119,7 +119,7 @@ class TestSpacesInPath(SateTestCase):
         self.ts.remove_dir(self.tmp_sub_dir)
         self.tear_down()
 
-    def testUnicodePath(self):
+    def testSpaces(self):
         cmd = ['-i', self.data_path,
                '-o', self.ts.top_level_temp,
                '--temporaries=%s' % self.ts.top_level_temp,

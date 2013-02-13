@@ -522,6 +522,29 @@ class MultiLocusDataset(list):
         for a in alignment_list:
             self.append(a)
 
+    def _convert_rna_to_dna(self, reverse=False):
+        if reverse:
+            match_char, replace_char = 'T', 'U'
+        else:
+            match_char, replace_char = 'U', 'T'
+
+        for n, element in enumerate(self):
+            if not isinstance(element, SequenceDataset):
+                raise ValueError("Expecting all elements of MultiLocusDataset "
+                        "to be SequenceDataset objects when convert_rna_to_dna "
+                        "is called!")
+            if element.datatype.upper() != 'RNA':
+                continue
+            char_matrix = element.dataset.char_matrices[0]
+            for taxon, char_vec in char_matrix.iteritems():
+                char_matrix[taxon] = char_vec.replace(match_char, replace_char)
+
+    def convert_rna_to_dna(self):
+        self._convert_rna_to_dna(reverse=False)
+
+    def convert_dna_to_rna(self):
+        self._convert_rna_to_dna(reverse=True)
+
     def concatenate_alignments(self):
         _LOG.debug('Inside concatenate_alignments')
         combined_alignment = Alignment()

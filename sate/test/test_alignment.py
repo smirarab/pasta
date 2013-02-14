@@ -157,15 +157,6 @@ class MultiLocusDatasetTest(SateTestCase):
             d[taxon.label] = ''.join([i for i in char_vec])
         return d
 
-    def _convert_rna(self, seq_dict, reverse=False):
-        d = {}
-        for taxon, seq in seq_dict.iteritems():
-            if reverse:
-                d[taxon] = seq.replace('T', 'U')
-            else:
-                d[taxon] = seq.replace('U', 'T')
-        return d
-
     def testRNAConversion(self):
         sf = StringIO()
         sf.write('>a\nAUGCAUGC\n')
@@ -179,7 +170,7 @@ class MultiLocusDatasetTest(SateTestCase):
         self.assertEqual(len(self.mlds), 1)
         self.assertSameDataSet([seqs, self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_rna_to_dna()
-        seqs = self._convert_rna(seqs)
+        seqs = self.convert_rna_to_dna(seqs)
         for k, v in seqs.iteritems():
             self.assertTrue('T' in v)
         self.assertSameDataSet([seqs,
@@ -188,13 +179,13 @@ class MultiLocusDatasetTest(SateTestCase):
         self.assertSameDataSet([seqs,
                 self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_dna_to_rna()
-        seqs = self._convert_rna(seqs, reverse=True)
+        seqs = self.convert_rna_to_dna(seqs, reverse=True)
         for k, v in seqs.iteritems():
             self.assertFalse('T' in v)
         self.assertSameDataSet([seqs,
                 self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_rna_to_dna()
-        seqs = self._convert_rna(seqs)
+        seqs = self.convert_rna_to_dna(seqs)
         for k, v in seqs.iteritems():
             self.assertTrue('T' in v)
         self.assertSameDataSet([seqs,

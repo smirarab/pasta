@@ -525,13 +525,15 @@ class MultiLocusDataset(list):
     def _convert_rna_to_dna(self, reverse=False):
         if reverse:
             match_char, replace_char = 'T', 'U'
+            current_datatype = 'DNA'
             new_datatype = 'RNA'
         else:
             match_char, replace_char = 'U', 'T'
+            current_datatype = 'RNA'
             new_datatype = 'DNA'
 
         for n, element in enumerate(self):
-            if element.datatype.upper() != 'RNA':
+            if element.datatype.upper() != current_datatype:
                continue
             if isinstance(element, SequenceDataset):
                 char_matrix = element.dataset.char_matrices[0]

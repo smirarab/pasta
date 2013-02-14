@@ -127,5 +127,75 @@ class TestSpacesInPath(SateTestCase):
                '--iter-limit=1']
         self._exe_run_sate(cmd, rc=0)
 
+class TestRnaData(SateTestCase):
+    def setUp(self):
+        self.set_up()
+        self.tiny_rna = data_source_path('tinyrna.fasta')
+        self.small_rna = data_source_path('smallrna.fasta')
+
+    def tearDown(self):
+        self.tear_down()
+
+    def testDefaultError(self):
+        cmd = ['-i', self.tiny_rna,
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self.assertRaises(Exception, self._exe, cmd)
+
+    def testDnaTypeError(self):
+        cmd = ['-i', self.tiny_rna,
+               '-d', 'dna',
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self.assertRaises(Exception, self._exe, cmd)
+
+    def testProteinTypeError(self):
+        cmd = ['-i', self.tiny_rna,
+               '-d', 'protein',
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self.assertRaises(Exception, self._exe, cmd)
+
+    def testTinyRna(self):
+        cmd = ['-i', self.tiny_rna,
+               '-d', 'rna',
+               '-o', self.ts.top_level_temp,
+               '--temporaries=%s' % self.ts.top_level_temp,
+               '-j', self.job_name,
+               '--iter-limit=1']
+        self._exe(cmd)
+        self.assertSameInputOutputSequenceData(
+                [self.tiny_rna],
+                [os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.tinyrna.aln')])
+        self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+                        self.job_name + '.marker001.tinyrna.aln')])
+
+
+
+    # def testSingleDnaLocusRun(self):
+    #     if is_test_enabled(TestLevel.EXHAUSTIVE, _LOG,
+    #             module_name=".".join([self.__class__.__name__,
+    #                     sys._getframe().f_code.co_name])):
+    #         arg_list = ['-d', 'dna',
+    #                     '--temporaries=%s' % self.ts.top_level_temp,
+    #                     '--iter-limit=1',
+    #                     '-j', self.job_name,
+    #                     '-o', self.ts.top_level_temp,
+    #                     '-i', self.anolis_file,]
+    #         self._exe_run_sate(arg_list, rc=0)
+    #         self.assertSameInputOutputSequenceData(
+    #                 [self.anolis_file],
+    #                 [os.path.join(self.ts.top_level_temp,
+    #                         self.job_name + '.marker001.anolis.aln')])
+    #         self.assertNoGapColumns([os.path.join(self.ts.top_level_temp,
+    #                 self.job_name + '.marker001.anolis.aln')])
+
 if __name__ == "__main__":
     unittest.main()

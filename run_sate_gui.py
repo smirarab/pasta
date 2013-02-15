@@ -288,7 +288,7 @@ class SateFrame(wx.Frame):
     def _create_data_sizer(self):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Sequences and Tree"), wx.VERTICAL)
         sizer = wx.FlexGridSizer(0, 2, GRID_VGAP, GRID_HGAP)
-        self.datatype = wx.ComboBox(self, -1, "Nucleotide", (-1, -1), (-1, -1), ["DNA", "RNA", "Protein"], wx.CB_READONLY)
+        self.datatype = wx.ComboBox(self, -1, "DNA", (-1, -1), (-1, -1), ["DNA", "RNA", "Protein"], wx.CB_READONLY)
         self.seq_btn = wx.Button(self, label="Sequence file ..." )
         self.tree_btn = wx.Button(self, label="Tree file (optional) ..." )
 

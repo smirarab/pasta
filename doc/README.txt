@@ -147,9 +147,9 @@ Sequences and Tree (middle left)
       slow, specifying a starting tree can dramatically reduce the running time.
 
     * Use the "Data type" drop down menu to specify whether the data should be
-      treated as DNA or amino acid sequences (because of the 15 IUPAC codes for
-      ambiguous states for DNA, it can be difficult to detect the datatype with
-      absolute certainty).
+      treated as DNA, RNA, or amino acid sequences (because of the 15 IUPAC
+      codes for ambiguous states for DNA, it can be difficult to detect the
+      datatype with absolute certainty).
 
 
 ##############################

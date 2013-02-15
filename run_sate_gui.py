@@ -288,7 +288,7 @@ class SateFrame(wx.Frame):
     def _create_data_sizer(self):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Sequences and Tree"), wx.VERTICAL)
         sizer = wx.FlexGridSizer(0, 2, GRID_VGAP, GRID_HGAP)
-        self.datatype = wx.ComboBox(self, -1, "Nucleotide", (-1, -1), (-1, -1), ["Nucleotide", "Protein"], wx.CB_READONLY)
+        self.datatype = wx.ComboBox(self, -1, "Nucleotide", (-1, -1), (-1, -1), ["DNA", "RNA", "Protein"], wx.CB_READONLY)
         self.seq_btn = wx.Button(self, label="Sequence file ..." )
         self.tree_btn = wx.Button(self, label="Tree file (optional) ..." )
 
@@ -542,7 +542,7 @@ class SateFrame(wx.Frame):
     def OnDataType(self, event):
         self.set_char_model()
     def set_char_model(self):
-        if self.datatype.Value == "Nucleotide":
+        if self.datatype.Value == "DNA" or self.datatype.Value == "RNA":
             self.cb_tools["model"].Clear()
             if self.cb_tools["treeestimator"].Value.lower() == "raxml":
                 self.raxml_after.Value = False
@@ -723,7 +723,7 @@ class SateFrame(wx.Frame):
                     if self.datatype.Value == "Protein":
                         datatype_list = ["PROTEIN"]
                     else:
-                        datatype_list = ["DNA", "PROTEIN"]
+                        datatype_list = ["DNA", "RNA", "PROTEIN"]
                     careful_parse = False
                     summary_stats = summary_stats_from_parse(fn_list, 
                                                              datatype_list,
@@ -746,7 +746,7 @@ class SateFrame(wx.Frame):
                     if read_type == "PROTEIN":
                         self.datatype.SetValue("Protein")
                     else:
-                        self.datatype.SetValue("Nucleotide")
+                        self.datatype.SetValue(read_type)
                     # Set defaults from "auto_defaults"
                     auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
 
@@ -942,8 +942,10 @@ class SateFrame(wx.Frame):
             if treefilename and os.path.isfile(treefilename):
                 command.extend(["-t", filemgr.quoted_file_path(treefilename)])
             command.extend(["-j", filemgr.quoted_file_path(jobname) ])
-            if self.datatype.Value == "Nucleotide":
+            if self.datatype.Value == "DNA":
                 dt = "dna"
+            elif self.datatype.Value == "RNA":
+                dt = "rna"
             else:
                 dt = "protein"
             command.extend(["-d", dt])

@@ -1,3 +1,26 @@
+Release 2.2.6
+=============
+    - [CHANGES] RNA sequence data is now fully supported. There was some
+                inconsistency in previous versions as to whether RNA data was
+                allowed to run (under some versions and configurations it was
+                allowed to run as DNA data). This version internally converts
+                RNA input to DNA and then converts the final results back to
+                RNA.
+    - [CHANGES] Updated the alignment length check that determines which
+                MAFFT algorithm to use for alignment. Previously this checked
+                the alignment length, it now uses the maximum unaligned
+                sequence length.
+    - [CHANGES] Better error messaging when input sequence labels conflict
+                with tip labels of a user-provided starting tree. The error
+                message now reports the problem and lists all of the mismatched
+                labels.
+    - [CHANGES] This version gives explicit warning messages when the user
+                specifies a max subproblem argument that is equal to or greater
+                than the number of tips. Under these conditions, the SATe
+                algorithm is not invoked. The warning makes this more clear to
+                the user.
+    - [CHANGES] Many tests added to the test suite.
+
 Release 2.2.5
 =============
     - [BUG FIX] Fixed directory cleanup error messages introduced with release

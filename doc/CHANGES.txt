@@ -1,3 +1,18 @@
+Release 2.2.7
+=============
+    - [BUG FIX] More intuitive behavior for the maximum subproblem option from
+                the GUI. There are two controls for the maximum subproblem
+                used during tree decomposition, frac and size. Both of these
+                have default values, and the larger of the two is used to
+                determine the maximum subset size during decomposition. This
+                caused confusion when using the GUI, because the selected
+                option was ignored if it was smaller than the default for
+                the alternative option. The GUI now explicitly configures
+                BOTH options as per the user's radio-button selection, so
+                that what the user sees is what they get. In short, always
+                check the configuration file reported by SATe! This will
+                tell you exactly what SATe is doing.
+
 Release 2.2.6
 =============
     - [CHANGES] RNA sequence data is now fully supported. There was some

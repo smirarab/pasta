@@ -1039,8 +1039,10 @@ class SateFrame(wx.Frame):
             cfg.sate.start_tree_search_from_current = True
             if self.rb_maxsub1.Value:
                 cfg.sate.max_subproblem_frac = float(self.cb_maxsub1.Value)/100.0
+                cfg.sate.max_subproblem_size = 0
             elif self.rb_maxsub2.Value:
                 cfg.sate.max_subproblem_size = self.cb_maxsub2.Value
+                cfg.sate.max_subproblem_frac = 0.0
     
     
             cfg.sate.time_limit = -1

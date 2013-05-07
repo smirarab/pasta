@@ -129,7 +129,7 @@ class PhylogeneticTree(object):
         grandparent_nd = potentially_deleted_nd.parent_node
         e.tail_node.remove_child(nr, suppress_deg_two=True)
 
-        nr.edge.length = None
+        nr.edge.length = None # Length of bisected edge
         nr.parent_node = None
         convert_node_to_root_polytomy(nr)
         t1 = PhylogeneticTree(Tree(seed_node=nr))

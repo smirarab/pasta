@@ -29,16 +29,18 @@ import sys
 import copy
 from threading import Lock
 from sate import get_logger
+from dendropy.dataobject.taxon import Taxon
 _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder, resolve_polytomies
-from sate.satealignerjob import SateAlignerJob
+from sate.satealignerjob import SateAlignerJob, Sate3MergerJob
 from sate import get_logger
 from sate.utility import record_timestamp
 from sate.scheduler import jobq
 from sate.filemgr import  TempFS
 from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
+from collections import defaultdict
 
 class SateTeam (object):
     '''A blob for holding the appropriate merger, alignment, and tree_estimator tools
@@ -59,6 +61,7 @@ class SateTeam (object):
             self.merger.max_mem_mb = max_mem_mb
             self.tree_estimator = config.create_tree_estimator(temp_fs=self._temp_fs)
             self.raxml_tree_estimator = config.create_tree_estimator(name='Raxml', temp_fs=self._temp_fs)
+            self.subsets = {}
         except AttributeError:
             raise
             raise ValueError("config cannot be None unless all of the tools are passed in.")
@@ -131,6 +134,7 @@ class SateJob (TreeHolder):
         self._tree_build_job = None
         self._sate_decomp_job = None
         self._reset_jobs()
+        self.sate3merge = True
 
         self._status_message_func = kwargs.get('status_messages')
 
@@ -306,6 +310,76 @@ class SateJob (TreeHolder):
         self.best_tree_tmp_filename = self.curr_iter_tree_tmp_filename
         self.best_alignment_tmp_filename = self.curr_iter_align_tmp_filename
 
+    def build_subsets_tree(self, curr_tmp_dir_par):
+        subsets_tree = self.get_tree_copy()                    
+        #First label leaves based on their subsets
+        for node in subsets_tree._tree.leaf_iter():
+            nalsj = self.sate_team.subsets[node.taxon.label]
+            node.alignment_subset_job = set([nalsj])
+            # the following is just for logging purposes
+            node.taxon = Taxon(label=nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:])
+        subsets_tree._tree.infer_taxa()                   
+        #Then make sure the tree is rooted at a branch (not at a node). 
+        if len(subsets_tree._tree.seed_node.child_nodes()) >2:
+            subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
+        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick()))
+        # Then label internal branches based on their children, and collapse redundant edges. 
+        for node in subsets_tree._tree.postorder_internal_node_iter():
+            # my label is the intersection of my children, 
+            # unless the intersection is empty, in which case it is the union
+            if not hasattr(node, "alignment_subset_job") or node.alignment_subset_job is None:
+                node.alignment_subset_job = set.intersection(*[c.alignment_subset_job for c in node.child_nodes()])
+                if not node.alignment_subset_job:
+                    node.alignment_subset_job = set.union(*[c.alignment_subset_job for c in node.child_nodes()])
+            # Now go ahead and prune any child whose label encompasses my label. 
+            # Use indexing instead of iteration, because with each collapse, 
+            # new children can be added, and we want to process them as well.                         
+            i = 0;
+            while i < len(node.child_nodes()):                                
+                c = node.child_nodes()[i]
+                if node.alignment_subset_job.issubset(c.alignment_subset_job):
+                    # Dendropy does not collapsing and edge that leads to a tip. Remove instead
+                    if c.child_nodes():
+                        c.edge.collapse()                                    
+                    else:
+                        node.remove_child(c)
+                else:
+                    i += 1
+            
+        # Now, the remaining edges have multiple labels. These need to
+        # be further resolved. Do it by minimum length
+        #   First find all candidate edges that we might want to contract
+        candidate_edges = set()
+        for e in subsets_tree._tree.postorder_edge_iter():
+            if e.tail_node and e.head_node.alignment_subset_job.intersection(e.tail_node.alignment_subset_job):
+                candidate_edges.add( (e.length,e) )
+        #   Then sort the edges, and start removing them one by one
+        #   only if an edge is still having intersecting labels at the two ends                                                    
+        candidate_edges = sorted(candidate_edges)        
+        for (el, edge) in candidate_edges:
+            I = edge.tail_node.alignment_subset_job.intersection(edge.head_node.alignment_subset_job)
+            if I:
+                edge.tail_node.alignment_subset_job = I 
+                if edge.head_node.child_nodes():
+                    edge.collapse()
+                else:
+                    edge.tail_node.remove_child(edge.head_node)
+        # Make sure the tree is correct, remove the actual jobs
+        # from nodes (can cause deep-copy problems), assign a label to each
+        # node, and keep a mapping between the labels and actual alignment job objects
+        self.sate_team.subsets = {} # Let this now map from subset labels to the actual alignment jobs
+        for node in subsets_tree._tree.postorder_node_iter():
+            assert len(node.alignment_subset_job) == 1
+            nalsj = node.alignment_subset_job.pop()
+            node.alignment_subset_job = None 
+            node.label = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]
+            self.sate_team.subsets[node.label] = nalsj
+            if node.is_leaf():
+                # Add a dummy taxon, or else dendropy can get confused
+                node.taxon = Taxon(label=node.label)
+        subsets_tree._tree.infer_taxa()
+        return subsets_tree
+        
     def run(self, tmp_dir_par, sate_products=None):
         assert(os.path.exists(tmp_dir_par))
 
@@ -363,21 +437,38 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 if self.killed:
                     raise RuntimeError("SATe Job killed")
                 tree_for_aligner = self.get_tree_copy()
-                tree_for_aligner = self.get_tree_copy()
                 aligner = SateAlignerJob(multilocus_dataset=self.multilocus_dataset,
                                          sate_team=self.sate_team,
                                          tree=tree_for_aligner,
                                          tmp_base_dir=curr_tmp_dir_par,
                                          reset_recursion_index=True,
+                                         skip_merge=self.sate3merge,
                                          **configuration)
                 self.sate_aligner_job = aligner
                 aligner.launch_alignment(break_strategy=break_strategy,
-                                         context_str=context_str)
-
-                new_multilocus_dataset = aligner.get_results()
+                                         context_str=context_str)                
+                if self.sate3merge:
+                    subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
+                    if len(self.sate_team.subsets.values()) == 1:
+                        # can happen if there are no decompositions
+                        new_multilocus_dataset = self.sate_team.subsets.values()[0].get_results()
+                    else:
+                        pariwise_tmp_dir_par = os.path.join(curr_tmp_dir_par, "pw")
+                        pariwise_tmp_dir_par = self.sate_team.temp_fs.create_subdir(pariwise_tmp_dir_par)    
+                        pmj = Sate3MergerJob(multilocus_dataset=self.multilocus_dataset,
+                                             sate_team=self.sate_team,
+                                             tree=subsets_tree,
+                                             tmp_base_dir=pariwise_tmp_dir_par,
+                                             reset_recursion_index=True,   
+                                             #delete_temps2=False,                                      
+                                             **configuration)
+                        pmj.launch_alignment(context_str=context_str)
+                        new_multilocus_dataset = pmj.get_results()                                                                    
+                else:          
+                    new_multilocus_dataset = aligner.get_results()
+                    
                 self.sate_aligner_job = None
                 del aligner
-
 
                 record_timestamp(os.path.join(curr_tmp_dir_par, 'start_treeinference_timestamp.txt'))
                 # Tree inference

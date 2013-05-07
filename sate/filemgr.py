@@ -210,7 +210,7 @@ class TempFS(object):
             else:
                 raise ValueError("'%s' is not registered as a temporary directory that was created by this process!" % real_path)
         finally:
-             self._directories_created_lock.release()
+            self._directories_created_lock.release()
         _LOG.debug("Cleaning temp dir: '%s'" % real_path)
         if os.path.exists(real_path):
             for path in os.listdir(real_path):

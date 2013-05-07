@@ -74,7 +74,7 @@ def set_configuration_from_defaults(cfg):
     global _DEFAULT_TOOLS_PATH
     if _DEFAULT_TOOLS_PATH is None:
         init_sate()
-    for name, path in _DEFAULT_TOOLS_PATH.items():
+    for name, path in _DEFAULT_TOOLS_PATH.items():        
         x = getattr(cfg, name)
         x.path = path
 

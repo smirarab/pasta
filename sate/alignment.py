@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from random import random
 
 #############################################################################
 ##  this file is part of sate.
@@ -651,3 +652,61 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
         except Exception, e:
             caught_exception = e
     raise e
+
+def get_insertion_columns(shared,alg):
+    n = len(alg.values()[0])
+    insertions = range(0,n)
+    for s in shared:
+        seq = alg[s]
+        insertions = filter(lambda c: seq[c] == "-", insertions)
+        if not insertions:
+            break
+    return set(insertions)     
+
+def merge_in(me, she):
+    '''
+    Merges she inside me, assuming they share some common taxa, and the 
+    alignment of common taxa is identical across both alignments.
+    '''      
+    ID = random()* 100000
+    _LOG.debug("Transitive Merge Started. ID:%d" %ID)
+    mykeys = set(me.keys())
+    herkeys = set(she.keys())
+    shared = mykeys.intersection(herkeys)        
+    onlyhers = herkeys - shared
+    me_ins = get_insertion_columns(shared, me)
+    she_ins = get_insertion_columns(shared, she)
+    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
+    
+    for key in onlyhers:
+        me[key] = she[key] 
+
+    ime = 0
+    ishe = 0
+    i = 0
+    while 1:
+        if ime in me_ins:
+            s = 0
+            while ime in me_ins:
+                me_ins.remove(ime)
+                s += 1
+            ime += s
+            for key in onlyhers:
+                me[key] = me[key][0:i] + "-"*s +me[key][i:]
+            i += s
+        elif ishe in she_ins:
+            s = 0
+            while ishe in she_ins:
+                she_ins.remove(ishe)
+                s += 1
+            ishe += s
+            for key in mykeys:
+                me[key] = me[key][0:i] + "-"*s + me[key][i:]
+            i += s
+        else:
+            ime += 1
+            ishe += 1
+            i += 1
+        if not she_ins and not me_ins:
+            break 
+    _LOG.debug("Transitive Merge Finished. ID:%d" %ID)

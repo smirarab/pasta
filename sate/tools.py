@@ -843,7 +843,7 @@ class Raxml(TreeEstimator):
 
 if GLOBAL_DEBUG:
     AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner)
-    MergerClasses = (MuscleMerger, OpalMerger, PadMerger, FakeMerger, CustomMerger)
+    MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:
     AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner)

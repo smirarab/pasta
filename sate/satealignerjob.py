@@ -26,6 +26,9 @@ import os
 import copy
 from threading import Lock
 from sate import get_logger
+from sate.tree import PhylogeneticTree
+from dendropy.dataobject.tree import Tree
+from sate.alignment import merge_in
 _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder
@@ -41,6 +44,7 @@ def bisect_tree(tree, breaking_edge_style='centroid'):
     _LOG.debug("Tree 1 has %s nodes, tree 2 has %s nodes" % (tree1.n_leaves, tree2.n_leaves) )
     assert snl == tree1.n_leaves + tree2.n_leaves
     return tree1, tree2
+
 
 class SateAlignerJob(TreeHolder):
     """A class that performs one alignment in the SATe algorithm.
@@ -66,6 +70,7 @@ class SateAlignerJob(TreeHolder):
                 tmp_base_dir,
                 tmp_dir_par=None,
                 reset_recursion_index=False,
+                skip_merge = False,
                 **kwargs):
         self._job_lock = Lock()
         TreeHolder.__init__(self, multilocus_dataset.dataset)
@@ -85,10 +90,12 @@ class SateAlignerJob(TreeHolder):
         self.killed = False
         self._dirs_to_cleanup = []
         self.tmp_dir_par = tmp_dir_par
+        self.skip_merge = skip_merge
         if self.tmp_dir_par == None:
             self.tmp_dir_par = self.tmp_base_dir
         if reset_recursion_index:
             self.__class__.RECURSION_INDEX = 0
+        self.finished = False
 
     def configuration(self):
         d = {}
@@ -199,6 +206,9 @@ class SateAlignerJob(TreeHolder):
                 aj_list.append(aj)
                 if self.killed:
                     raise RuntimeError("SateAligner Job killed")
+            if self.skip_merge:
+                for taxa in self.tree.leaf_node_names():
+                    self.sate_team.subsets[taxa]=self
             self.align_job_list = aj_list
             for aj in aj_list:
                 jobq.put(aj)
@@ -268,7 +278,7 @@ class SateAlignerJob(TreeHolder):
             j = self.subjob1
             if j:
                 _LOG.debug("Killing subjob1")
-                j.kill()
+                j.kill()            
             j_list = self.merge_job_list
             if j_list:
                 for j in j_list:
@@ -285,6 +295,8 @@ class SateAlignerJob(TreeHolder):
     def wait(self):
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
+        if self.finished:
+            return
         try:
             j_list = self.align_job_list
             if j_list:
@@ -294,7 +306,8 @@ class SateAlignerJob(TreeHolder):
                 j_list = self.merge_job_list
                 if not bool(j_list):
                     assert self.subjob1 and self.subjob2
-                    self._start_merger()
+                    if not self.skip_merge:
+                        self._start_merger()
                     j_list = self.merge_job_list
                 if j_list:
                     for j in j_list:
@@ -324,12 +337,14 @@ class SateAlignerJob(TreeHolder):
                                 tree=tree1,
                                 tmp_base_dir=self.tmp_base_dir,
                                 tmp_dir_par=sd1,
+                                skip_merge=self.skip_merge,
                                 **configuration),
                 SateAlignerJob(multilocus_dataset=multilocus_dataset2,
                                 sate_team=self.sate_team,
                                 tree=tree2,
                                 tmp_base_dir=self.tmp_base_dir,
                                 tmp_dir_par=sd2,
+                                skip_merge=self.skip_merge,
                                 **configuration)]
 
     def get_results(self):
@@ -341,15 +356,155 @@ class SateAlignerJob(TreeHolder):
             r = self.multilocus_dataset.new_with_shared_meta()
             for j in j_list:
                 r.append(j.get_results())
-            self.align_job_list = None
+            #self.align_job_list = None
+            self.finished = True
         else:
             j_list = self.merge_job_list
             if j_list:
                 r = self.multilocus_dataset.new_with_shared_meta()
                 for j in j_list:
                     r.append(j.get_results())
-                self.merge_job_list = None
+                #self.merge_job_list = None
+                self.finished = True
             else:
                 return None # this can happen if jobs are killed
         return r
 
+class Sate3MergerJob(SateAlignerJob):
+    
+    def __init__(self, 
+                multilocus_dataset,
+                sate_team, 
+                tree,
+                tmp_base_dir,
+                tmp_dir_par=None,
+                reset_recursion_index=False,
+                delete_temps2 = None,
+                **kwargs):
+        SateAlignerJob.__init__(self, 
+                                 multilocus_dataset,
+                                 sate_team, 
+                                 tree, 
+                                 tmp_base_dir, 
+                                 tmp_dir_par, 
+                                 reset_recursion_index,
+                                 **kwargs                                 
+                                 )
+        if delete_temps2 is not None:
+            self.delete_temps = delete_temps2
+        self.skip_merge = None
+
+    def launch_alignment(self, context_str=None):
+        '''Puts a alignment job(s) in the queue and then return None
+        
+        get_results() must be called to get the alignment. Note that this call 
+        may not be trivial in terms of time (the tree will be decomposed, lots
+        of temporary files may be written...), but the call does not block until
+        completion of the alignments.
+        Rather it queues the alignment jobs so that multiple processors can be 
+        exploited if they are available.
+        '''
+        if self.killed:
+            raise RuntimeError("SateAligner Job killed")
+
+        self._reset_jobs()
+        self.context_str = context_str
+        if self.context_str is None:
+            self.context_str = ''
+        node_count = self.tree.count_nodes()
+        _LOG.debug("Recursive merge on a branch with %d subsets" % (node_count))
+        prefix = "subsets tree: %s" %self.tree.compose_newick()
+        if node_count == 2:
+            nodes = self.tree._tree.nodes()
+            _LOG.debug("%s ... pairwise merge " % prefix)
+            self.skip_merge = False
+            self.subjob1 = self.sate_team.subsets[nodes[0].label]           
+            self.subjob2 = self.sate_team.subsets[nodes[1].label]
+        else:
+            _LOG.debug("%s ... recursing further " % prefix)
+            self.skip_merge = True
+            
+            # Reroot near centroid edge
+            ce = self.tree.get_centroid_edge()
+            nr = ce.head_node if not ce.head_node.is_leaf() else ce.tail_node
+            self.tree._tree.reroot_at_node(nr,delete_outdegree_one=False)            
+            _LOG.debug("rerooted to: %s" % self.tree.compose_newick())   
+            # For each path from root to its children, create a new merge job         
+            self.merge_job_list = []
+            nr = self.tree._tree.seed_node
+            childs = nr.child_nodes()
+            for keepchild in childs:                
+                remchilds = []                
+                for remchild in childs:
+                    if remchild != keepchild:
+                        remchilds.append(nr.reversible_remove_child(remchild, suppress_deg_two=False))
+                t1 = PhylogeneticTree(Tree(self.tree._tree))
+                remchilds.reverse()
+                for child in remchilds:
+                    nr.reinsert_nodes(child)
+                _LOG.debug("next child = %s" % t1.compose_newick())
+                multilocus_dataset1 = self.multilocus_dataset.new_with_shared_meta()
+                
+                if t1.count_nodes() == 2:            
+                    ns = t1._tree.nodes()
+                    tmp_dir_par = self.get_pairwise_temp_dir(ns[0].label, ns[1].label)
+                else:
+                    tmp_dir_par = self.tmp_base_dir                    
+                configuration = self.configuration()
+                self.merge_job_list.append(
+                    Sate3MergerJob(multilocus_dataset=multilocus_dataset1,
+                                    sate_team=self.sate_team,
+                                    tree=t1,
+                                    tmp_base_dir=self.tmp_base_dir,
+                                    tmp_dir_par= tmp_dir_par,
+                                    delete_temps2=False,
+                                    **configuration));
+            # now launch these new merge jobs
+            for merge_job in self.merge_job_list:
+                if self.killed:
+                    raise RuntimeError("SateAligner Job killed")
+                merge_job.launch_alignment()
+
+            if self.killed:
+                raise RuntimeError("SateAligner Job killed")
+        return
+
+    def get_results(self):
+        self.wait()
+        if self.killed:
+            raise RuntimeError("SateAligner Job killed")
+        if self.align_job_list:
+            raise RuntimeError("hmm, this should be empty")
+        else:
+            j_list = self.merge_job_list
+            if j_list:
+                # These are merge jobs that need transitivity merging             
+                if self.skip_merge:
+                    r = None
+                    for j in j_list:
+                        if r is not None:
+                            merge_in(r[0], j.get_results()[0])
+                        else:
+                            r = self.multilocus_dataset.new_with_shared_meta()
+                            r.append(j.get_results()[0])                                       
+                    #assert all(x.is_aligned() for x in r)
+                else: # These are pairwise merges
+                    r = self.multilocus_dataset.new_with_shared_meta()
+                    for j in j_list:
+                        r.append(j.get_results())
+                self.finished = True
+            else:
+                return None # this can happen if jobs are killed
+        return r
+        
+                                            
+        
+    def get_pairwise_temp_dir(self, label1, label2):
+        ''' Get a temp file for a pairwise merge
+        '''
+        assert(self.tmp_base_dir)
+        label = "%s_%s" %(label1,label2)
+        sd = os.path.join(self.tmp_base_dir, label.replace("/","").replace("\\", ""))
+        full_path_to_new_dir = self.sate_team.temp_fs.create_subdir(sd)
+        self._dirs_to_cleanup.append(full_path_to_new_dir)
+        return full_path_to_new_dir

@@ -7,7 +7,8 @@ import os
 
 from cStringIO import StringIO
 from sate import get_logger
-from sate.alignment import Alignment, SequenceDataset, MultiLocusDataset
+from sate.alignment import Alignment, SequenceDataset, MultiLocusDataset,\
+    merge_in
 from sate.treeholder import read_and_encode_splits
 
 from sate.test import get_testing_configuration, data_source_path, TestLevel, is_test_enabled
@@ -15,6 +16,7 @@ from sate.test.support.sate_test_case import SateTestCase
 
 from dendropy import treesplit
 import dendropy
+import sys
 
 _LOG = get_logger(__name__)
 
@@ -39,14 +41,14 @@ class AlignmentTest(unittest.TestCase):
         a.read_filepath(filename1, 'FASTA')
         b.read_filepath(filename2, 'FASTA')
 
-    def testMaxSequenceLength(self):
+    def testMinSequenceLength(self):
         a = Alignment()
         a['1'] = 'A--CG--T'
         a['2'] = 'AC----GT'
         a['3'] = 'A-C-G-T-'
         a['4'] = 'ACGT---T'
         self.assertEqual(a.max_sequence_length(), 5)
-
+            
 class SeqDatasetTest(unittest.TestCase):
 
     #def testTaxonRelabeling(self):

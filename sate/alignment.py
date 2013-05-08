@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from random import random
+import sys
 
 #############################################################################
 ##  this file is part of sate.
@@ -222,6 +223,14 @@ class Alignment(dict, object):
     def max_sequence_length(self):
         return max(len(re.sub(_INDEL, '', v)) for v in self.values())
 
+    
+    def from_bytearray_to_string(self):
+        for k,v in self.iteritems():
+            self[k] = str(v)
+
+    def from_string_to_bytearray(self):
+        for k,v in self.iteritems():
+            self[k] = bytearray(v)   
 
 class SequenceDataset(object):
     """Class for creating a dendropy reader, validating the input, and
@@ -661,47 +670,139 @@ def get_insertion_columns(shared,alg):
         insertions = filter(lambda c: seq[c] == "-", insertions)
         if not insertions:
             break
-    return set(insertions)     
+    return set(insertions) 
 
 def merge_in(me, she):
     '''
-    Merges she inside me, assuming they share some common taxa, and the 
+    Merges she inside me, assuming we share some common taxa, and the 
     alignment of common taxa is identical across both alignments.
+    
+    When assumptions are not met, behavior is largely undefined. 
     '''      
     ID = random()* 100000
     _LOG.debug("Transitive Merge Started. ID:%d" %ID)
+    
     mykeys = set(me.keys())
     herkeys = set(she.keys())
-    shared = mykeys.intersection(herkeys)        
+    shared = mykeys.intersection(herkeys)
+    _LOG.debug("Shared seq: %d" %(len(shared)))        
     onlyhers = herkeys - shared
     me_ins = get_insertion_columns(shared, me)
     she_ins = get_insertion_columns(shared, she)
-    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
+    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))    
     
+    newme = {}
+    for k in me.iterkeys():
+        newme[k] = []   
+    newshe = {}            
+    for key in onlyhers: 
+        newshe[key] = []
+    
+    melen =  len(me.values()[0])
+    shelen =  len(she.values()[0])
+
+    ime = 0
+    ishe = 0
+    while ime < melen or ishe < shelen:
+        #print ime,ishe
+        if ime in me_ins:
+            s = ime
+            while ime in me_ins:
+                me_ins.remove(ime)
+                ime += 1                
+            l = ime - s
+            ins = "-" * l
+            for seq in newshe.itervalues():
+                seq.append(ins)
+            for k,seq in newme.iteritems():
+                seq.append(me[k][s:ime])
+        elif ishe in she_ins:
+            s = ishe
+            while ishe in she_ins:
+                she_ins.remove(ishe)
+                ishe += 1
+            ins = "-" * (ishe-s)
+            for seq in newme.itervalues():
+                seq.append(ins)
+            for k,seq in newshe.iteritems():
+                seq.append(she[k][s:ishe])
+        else:       
+            sme = ime
+            sshe = ishe 
+            while ime not in me_ins and ishe not in she_ins and ime < melen and ishe < shelen:     
+                ime += 1
+                ishe += 1
+            for k,seq in newme.iteritems():
+                seq.append(me[k][sme:ime])
+            for k,seq in newshe.iteritems():
+                seq.append(she[k][sshe:ishe])
+            
+    print "final",ime,ishe
+            
+    newme.update(newshe)
+    
+    for k,v in newme.iteritems():
+        me[k] = "".join(v)
+    
+#    if convert_back_to_string:
+#        me.from_bytearray_to_string()
+        
+    _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
+    
+    
+def merge_in_bytearray(me, she, already_in_bytestring = False, convert_back_to_string = True):
+    '''
+    Merges she inside me, assuming we share some common taxa, and the 
+    alignment of common taxa is identical across both alignments.
+    
+    When assumptions are not met, behavior is largely undefined. 
+    '''      
+    ID = random()* 100000
+    _LOG.debug("Transitive Merge Started. ID:%d" %ID)
+    
+    mykeys = set(me.keys())
+    herkeys = set(she.keys())
+    shared = mykeys.intersection(herkeys)
+    _LOG.debug("Shared seq: %d" %(len(shared)))        
+    onlyhers = herkeys - shared
+    me_ins = get_insertion_columns(shared, me)
+    she_ins = get_insertion_columns(shared, she)
+    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))    
+    
+    if not already_in_bytestring:
+        me.from_string_to_bytearray()
+        #_LOG.debug("Conversion to bytestring finished.")
+
+    onlyshe = {}            
     for key in onlyhers:
-        me[key] = she[key] 
+        onlyshe[key] = bytearray(she[key]) 
+    #_LOG.debug("Sequences added")
 
     ime = 0
     ishe = 0
     i = 0
     while 1:
+        print ime,ishe,i
         if ime in me_ins:
             s = 0
             while ime in me_ins:
                 me_ins.remove(ime)
                 s += 1
-            ime += s
-            for key in onlyhers:
-                me[key] = me[key][0:i] + "-"*s +me[key][i:]
+                ime += 1
+            ins = bytearray(b"-") * s
+            for seq in onlyshe.itervalues():
+                seq[i:i] = ins
             i += s
         elif ishe in she_ins:
             s = 0
             while ishe in she_ins:
                 she_ins.remove(ishe)
                 s += 1
-            ishe += s
-            for key in mykeys:
-                me[key] = me[key][0:i] + "-"*s + me[key][i:]
+                ishe += 1
+
+            ins = bytearray(b"-") * s
+            for seq in me.itervalues():
+                seq[i:i] = ins
             i += s
         else:
             ime += 1
@@ -709,4 +810,16 @@ def merge_in(me, she):
             i += 1
         if not she_ins and not me_ins:
             break 
+        
+    me.update(onlyshe)
+    if convert_back_to_string:
+        me.from_bytearray_to_string()
+        
     _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
+    
+#a1 = Alignment()
+#a1.read_filepath(sys.argv[1])
+#a2 = Alignment()
+#a2.read_filepath(sys.argv[2])
+#merge_in(a1,a2)
+#a1.write_filepath("t.out")

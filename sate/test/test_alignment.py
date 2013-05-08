@@ -41,7 +41,7 @@ class AlignmentTest(unittest.TestCase):
         a.read_filepath(filename1, 'FASTA')
         b.read_filepath(filename2, 'FASTA')
 
-    def testMinSequenceLength(self):
+    def testMaxSequenceLength(self):
         a = Alignment()
         a['1'] = 'A--CG--T'
         a['2'] = 'AC----GT'

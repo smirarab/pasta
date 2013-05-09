@@ -432,17 +432,17 @@ class Sate3MergerJob(SateAlignerJob):
             # For each path from root to its children, create a new merge job         
             self.merge_job_list = []
             nr = self.tree._tree.seed_node
-            childs = nr.child_nodes()
-            for keepchild in childs:                
+            children = nr.child_nodes()
+            for keepchild in children:                
                 remchilds = []                
-                for remchild in childs:
+                for remchild in children:
                     if remchild != keepchild:
                         remchilds.append(nr.reversible_remove_child(remchild, suppress_deg_two=False))
                 t1 = PhylogeneticTree(Tree(self.tree._tree))
                 remchilds.reverse()
                 for child in remchilds:
                     nr.reinsert_nodes(child)
-                _LOG.debug("next child = %s" % t1.compose_newick())
+                _LOG.debug("child = %s" % t1.compose_newick())
                 multilocus_dataset1 = self.multilocus_dataset.new_with_shared_meta()
                 
                 if t1.count_nodes() == 2:            

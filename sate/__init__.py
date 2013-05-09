@@ -113,7 +113,7 @@ def get_logger(name="sate"):
         else:
             logging_formatter = default_formatter
         if logging_formatter is not None:
-            logging_formatter.datefmt = '%H:%M:%S'
+            logging_formatter.datefmt = '%D %H:%M:%S'
         logger.setLevel(level)
         ch = logging.StreamHandler()
         ch.setLevel(level)
@@ -131,7 +131,7 @@ def set_timing_log_filepath(fp):
     else:
         TIMING_LOG.setLevel(logging.DEBUG)
         h = logging.FileHandler(fp)
-        f = logging.Formatter("[%(asctime)s] : %(message)s")
+        f = logging.Formatter("[%(asctime)s.%(msecs)d] : %(message)s")
         f.datefmt = '%D %H:%M:%S'
         h.setLevel(logging.DEBUG)
         h.setFormatter(f)

@@ -26,8 +26,9 @@ from Queue import Queue
 from threading import Thread, Event, Lock
 from subprocess import Popen, PIPE
 from sate import get_logger, TIMING_LOG
-import random, sys
+import sys
 from sate.filemgr import open_with_intermediates
+from random import random
 
 _LOG = get_logger(__name__)
 
@@ -38,10 +39,15 @@ class LoggingQueue(Queue):
 
 jobq = LoggingQueue()
 
+gid = 0
+
 def worker():
+    global gid
     while True:
         job = jobq.get()
-        TIMING_LOG.info("%s started" % str(job.context_str))
+        gid += 1
+        ID = gid        
+        TIMING_LOG.info("%s (%d) started" % (str(job.context_str),ID))
         try:
             job.start()
         except:
@@ -55,7 +61,7 @@ def worker():
                 err = StringIO()
                 traceback.print_exc(file=err)
                 _LOG.error("Worker dying.  Error in job.get_results = %s" % err.getvalue())
-        TIMING_LOG.info("%s completed" % str(job.context_str))
+        TIMING_LOG.info("%s (%d) completed" % (str(job.context_str),ID))
         jobq.task_done()
     return
 

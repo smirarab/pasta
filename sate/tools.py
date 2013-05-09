@@ -668,6 +668,10 @@ class FastTree(TreeEstimator):
 
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
         alignment, partitions = multilocus_dataset.concatenate_alignments()
+        
+        if kwargs.has_key("mask_gappy_sites"):
+            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
+        
         alignment.write_filepath(seqfn, 'FASTA')
 
         if alignment.datatype == 'DNA':

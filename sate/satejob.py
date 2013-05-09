@@ -96,7 +96,8 @@ class SateJob (TreeHolder):
                             'start_tree_search_from_current' : False,
                             'keep_realignment_temporaries' : False,
                             'keep_iteration_temporaries' : False,
-                            'return_final_tree_and_alignment' : False
+                            'return_final_tree_and_alignment' : False,
+                            'mask_gappy_sites' : 1
                         }
     def configuration(self):
         d = {}
@@ -486,7 +487,8 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                                                tmp_dir_par=curr_tmp_dir_par,
                                                                delete_temps=delete_iteration_temps,
                                                                sate_products=sate_products,
-                                                               step_num=self.current_iteration)
+                                                               step_num=self.current_iteration,
+                                                               mask_gappy_sites = self.mask_gappy_sites)
                 prev_curr_align = self.curr_iter_align_tmp_filename
                 prev_curr_tree = self.curr_iter_tree_tmp_filename
                 self.curr_iter_align_tmp_filename = sate_products.get_abs_path_for_iter_output(self.current_iteration, TEMP_SEQ_ALIGNMENT_TAG, allow_existing=True)

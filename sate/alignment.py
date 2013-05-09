@@ -13,7 +13,7 @@ Simple classes for reading and manipulating sequence data matrices
 
 import re, os
 from copy import deepcopy
-from sate import get_logger, log_exception, MESSENGER
+from sate import get_logger, log_exception, MESSENGER, TIMING_LOG
 from sate.filemgr import open_with_intermediates
 
 _LOG = get_logger(__name__)
@@ -232,6 +232,28 @@ class Alignment(dict, object):
         for k,v in self.iteritems():
             self[k] = bytearray(v)   
 
+    def mask_gapy_sites(self,minimum_seq_requirement):
+        _LOG.debug("Masking alignment sites with fewer than %d characters" %minimum_seq_requirement)
+        n = len(self.values()[0])
+        masked = zip(range(0,n),[minimum_seq_requirement] * n)
+        for seq in self.itervalues():
+            masked = filter(lambda x: x[1] > 0, ((i,c) if seq[i]=="-" else (i,c-1) for (i,c) in masked))
+            if not masked:
+                _LOG.debug("No column will be masked.")
+                return
+        _LOG.debug("%d Columns identified for masking" %len(masked))
+        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y[0])],masked,[(-1,-1)]))
+        if included[-1][1] < n and masked[-1][0]+1 != n:
+            included.append((masked[-1][0]+1,n))
+        for k,seq in self.iteritems():
+            tmp = []
+            for (i,j) in included:
+                tmp.append(seq[i:j])
+            self[k] = "".join(tmp)
+        nn = len(self.values()[0])
+        assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
+        _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
+        
 class SequenceDataset(object):
     """Class for creating a dendropy reader, validating the input, and
     keeping mapping of real taxa names to "safe" versions that will not
@@ -681,6 +703,7 @@ def merge_in(me, she):
     '''      
     ID = random()* 100000
     _LOG.debug("Transitive Merge Started. ID:%d" %ID)
+    TIMING_LOG.info("transitivitymerge (t%d) started" %ID )
     
     mykeys = set(me.keys())
     herkeys = set(she.keys())
@@ -689,7 +712,7 @@ def merge_in(me, she):
     onlyhers = herkeys - shared
     me_ins = get_insertion_columns(shared, me)
     she_ins = get_insertion_columns(shared, she)
-    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))    
+    _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
     
     newme = {}
     for k in me.iterkeys():
@@ -711,7 +734,7 @@ def merge_in(me, she):
                 me_ins.remove(ime)
                 ime += 1                
             l = ime - s
-            ins = bytearray("-" * l)
+            ins = bytearray("-" * l) # TODO: test caching these in advance
             for seq in newshe.itervalues():
                 seq.extend(ins)
             for k,seq in newme.iteritems():
@@ -721,6 +744,7 @@ def merge_in(me, she):
             while ishe in she_ins:
                 she_ins.remove(ishe)
                 ishe += 1
+            l = ishe - s
             ins = bytearray("-" * l)
             for seq in newme.itervalues():
                 seq.extend(ins)
@@ -742,8 +766,9 @@ def merge_in(me, she):
     newme.update(newshe)
        
     for k,v in newme.iteritems():
-        me[k] = str(v)
+        me[k] = str(v)            
         
+    TIMING_LOG.info("transitivitymerge (t%d) finished" %ID )
     _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
     
 #a1 = Alignment()

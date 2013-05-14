@@ -282,42 +282,52 @@ class DispatchableJob(JobBase):
 class TickableJob():
 
     def __init__(self):
-        self.parent = None
-        self.unfinished_children = []
-        self.childrenlock = Lock()
+        self._parents = []
+        self._unfinished_children = []
+        self._childrenlock = Lock()
+        self._parentslock = Lock()
 
     def on_dependency_ready(self):
         ''' This function needs to be implemented by the children. 
                     This will be called when all children are done'''
         raise NotImplementedError("on_dependency_ready() method is not implemented.")
 
-    def set_parent(self,parentjob):
-        self.parent = parentjob	
+    def add_parent(self,parentjob):
+        self._parentslock.acquire()
+        self._parents.append(parentjob)
+        self._parentslock.release()	
 
     def add_child(self,childJob):
-        self.childrenlock.acquire()
-        self.unfinished_children.append(childJob)
-        self.childrenlock.release()
+        self._childrenlock.acquire()
+        self._unfinished_children.append(childJob)
+        self._childrenlock.release()
 
     def tick(self, finishedjob):
-        self.childrenlock.acquire()
-        self.unfinished_children.remove(finishedjob)   
-        #_LOG.debug("children ... %d" %len(self.unfinished_children))     
-        if not bool(self.unfinished_children):
-            self.childrenlock.release()
+        self._childrenlock.acquire()
+        self._unfinished_children.remove(finishedjob)   
+        #_LOG.debug("children ... %d" %len(self._unfinished_children))     
+        if not bool(self._unfinished_children):
+            self._childrenlock.release()
             self.on_dependency_ready()
         else:
-            self.childrenlock.release()
+            self._childrenlock.release()
+            
+    def tick_praents(self):
+        self._parentslock.acquire()
+        for parent in self._parents:
+            parent.tick(self)
+        self._parentslock.release()
         
         
 
 class TickingDispatchableJob(DispatchableJob):
     def __init__(self, invocation, result_processor, **kwargs):
         DispatchableJob.__init__(self, invocation, result_processor, **kwargs)
-        self.parent_tickable_job = None
+        self.parent_tickable_job = []
     
-    def set_parent_tickable_job(self, tickableJob):
-        self.parent_tickable_job = tickableJob
+    def add_parent_tickable_job(self, tickableJob):
+        self.parent_tickable_job.append(tickableJob)
         
     def postprocess(self):
-        self.parent_tickable_job.tick(self)
+        for parent in self.parent_tickable_job:
+            parent.tick(self)

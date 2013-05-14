@@ -113,17 +113,16 @@ class SateAlignerJob(TreeHolder, TickableJob):
         self.merge_job_list = None
 
     def postprocess(self):
-        if self.parent is not None:
-            self.parent.tick(self)
+        self.tick_praents()
 
     def on_dependency_ready(self):
         ''' This is called when the "child" jobs are finished. 
-        If self is a "alignment" subproblem, we just need to tick the parent.
+        If self is a "alignment" subproblem, we just need to tick the parent job(s).
         If self is a "merge" subproblem, the first time all dependencies are met
         is when the children jobs finish. At this point, the actual merge job
         is started and queued, and that new merge job is added as a child of self.
         Now, when this new "merge" job finishes, self is completed, and we need
-        to tick the parent.'''
+        to tick the parent(s).'''
         #_LOG.debug("Dependency ready!")
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
@@ -172,7 +171,7 @@ class SateAlignerJob(TreeHolder, TickableJob):
                                                   tmp_dir_par=self.tmp_dir_par,
                                                   delete_temps=self.delete_temps,
                                                   context_str=cs)
-            mj.set_parent_tickable_job(self)
+            mj.add_parent_tickable_job(self)
             self.add_child(mj)
                         
             if self.killed:
@@ -240,18 +239,23 @@ class SateAlignerJob(TreeHolder, TickableJob):
                                                        tmp_dir_par=self.tmp_dir_par,
                                                        delete_temps=self.delete_temps,
                                                        context_str=self.context_str + " align" + str(index))                
-                aj.set_parent_tickable_job(self)
+                aj.add_parent_tickable_job(self)
                 self.add_child(aj)
                 
                 aj_list.append(aj)
                 if self.killed:
                     raise RuntimeError("SateAligner Job killed")
+                
+                self.sate_team.alignmentjobs.append(aj)
+            
+            self.align_job_list = aj_list
+            
             if self.skip_merge:
                 for taxa in self.tree.leaf_node_names():
                     self.sate_team.subsets[taxa]=self
-            self.align_job_list = aj_list
-            for aj in aj_list:
-                jobq.put(aj)
+            else:
+                for aj in aj_list:
+                    jobq.put(aj)
         else:
             _LOG.debug("%s...Recursing" % prefix)
             # create the subjobs
@@ -260,8 +264,8 @@ class SateAlignerJob(TreeHolder, TickableJob):
             if self.killed:
                 raise RuntimeError("SateAligner Job killed")
 
-            self.subjob1.set_parent(self)
-            self.subjob2.set_parent(self)
+            self.subjob1.add_parent(self)
+            self.subjob2.add_parent(self)
             self.add_child(self.subjob1)
             self.add_child(self.subjob2)
 
@@ -437,14 +441,7 @@ class Sate3MergerJob(SateAlignerJob):
         self.skip_merge = None
 
     def launch_alignment(self, context_str=None):
-        '''Puts a alignment job(s) in the queue and then return None
-        
-        get_results() must be called to get the alignment. Note that this call 
-        may not be trivial in terms of time (the tree will be decomposed, lots
-        of temporary files may be written...), but the call does not block until
-        completion of the alignments.
-        Rather it queues the alignment jobs so that multiple processors can be 
-        exploited if they are available.
+        '''
         '''
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
@@ -462,6 +459,12 @@ class Sate3MergerJob(SateAlignerJob):
             self.skip_merge = False
             self.subjob1 = self.sate_team.subsets[nodes[0].label]           
             self.subjob2 = self.sate_team.subsets[nodes[1].label]
+            
+            self.subjob1.add_parent(self)
+            self.add_child(self.subjob1)
+
+            self.subjob2.add_parent(self)
+            self.add_child(self.subjob2)                                        
         else:
             _LOG.debug("%s ... recursing further " % prefix)
             self.skip_merge = True
@@ -472,7 +475,7 @@ class Sate3MergerJob(SateAlignerJob):
             self.tree._tree.reroot_at_node(nr,delete_outdegree_one=False)            
             _LOG.debug("rerooted to: %s" % self.tree.compose_newick())   
             # For each path from root to its children, create a new merge job         
-            self.merge_job_list = []
+            merge_job_list = []
             nr = self.tree._tree.seed_node
             children = nr.child_nodes()
             for keepchild in children:                
@@ -493,20 +496,29 @@ class Sate3MergerJob(SateAlignerJob):
                 else:
                     tmp_dir_par = self.tmp_base_dir                    
                 configuration = self.configuration()
-                self.merge_job_list.append(
-                    Sate3MergerJob(multilocus_dataset=multilocus_dataset1,
+                cj = Sate3MergerJob(multilocus_dataset=multilocus_dataset1,
                                     sate_team=self.sate_team,
                                     tree=t1,
                                     tmp_base_dir=self.tmp_base_dir,
                                     tmp_dir_par= tmp_dir_par,
                                     delete_temps2=False,
-                                    **configuration));
+                                    **configuration)
+                cj.add_parent(self)
+                self.add_child(cj)
+                
+                
+                merge_job_list.append(cj);
+                        
+            self.merge_job_list = merge_job_list
+            
             # now launch these new merge jobs
             for merge_job in self.merge_job_list:
                 if self.killed:
                     raise RuntimeError("SateAligner Job killed")
                 merge_job.launch_alignment()
 
+            self._merge_queued_event.set()
+            
             if self.killed:
                 raise RuntimeError("SateAligner Job killed")
         return
@@ -522,13 +534,12 @@ class Sate3MergerJob(SateAlignerJob):
             if j_list:
                 # These are merge jobs that need transitivity merging             
                 if self.skip_merge:
-                    r = None
-                    for j in j_list:
-                        if r is not None:
-                            merge_in(r[0], j.get_results()[0])
-                        else:
-                            r = self.multilocus_dataset.new_with_shared_meta()
-                            r.append(j.get_results()[0])                                       
+                    r = self.multilocus_dataset.new_with_shared_meta()
+                    r.append(j_list[0].get_results()[0]) #TODO: this should be changed to be multi-locus
+                    for j in j_list[1:]:
+                        cres = j.get_results()
+                        merge_in(r[0], cres[0]) #TODO: this should be changed to be multi-locus
+                        del cres
                     #assert all(x.is_aligned() for x in r)
                 else: # These are pairwise merges
                     r = self.multilocus_dataset.new_with_shared_meta()

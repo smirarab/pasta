@@ -40,7 +40,7 @@ from sate.scheduler import jobq
 from sate.filemgr import  TempFS
 from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
-from collections import defaultdict
+
 
 class SateTeam (object):
     '''A blob for holding the appropriate merger, alignment, and tree_estimator tools
@@ -61,7 +61,8 @@ class SateTeam (object):
             self.merger.max_mem_mb = max_mem_mb
             self.tree_estimator = config.create_tree_estimator(temp_fs=self._temp_fs)
             self.raxml_tree_estimator = config.create_tree_estimator(name='Raxml', temp_fs=self._temp_fs)
-            self.subsets = {}
+            self.subsets = {} # needed for sate3merger
+            self.alignmentjobs = [] # needed for sate3merger
         except AttributeError:
             raise
             raise ValueError("config cannot be None unless all of the tools are passed in.")
@@ -135,7 +136,7 @@ class SateJob (TreeHolder):
         self._tree_build_job = None
         self._sate_decomp_job = None
         self._reset_jobs()
-        self.sate3merge = False
+        self.sate3merge = True
 
         self._status_message_func = kwargs.get('status_messages')
 
@@ -452,6 +453,8 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
                     if len(self.sate_team.subsets.values()) == 1:
                         # can happen if there are no decompositions
+                        for job in self.sate_team.alignmentjobs:
+                            jobq.put(job)
                         new_multilocus_dataset = self.sate_team.subsets.values()[0].get_results()
                     else:
                         pariwise_tmp_dir_par = os.path.join(curr_tmp_dir_par, "pw")
@@ -463,8 +466,16 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                              reset_recursion_index=True,   
                                              #delete_temps2=False,                                      
                                              **configuration)
+                        # Start alignment jobs
+                        for job in self.sate_team.alignmentjobs:
+                            jobq.put(job)
+                                                
                         pmj.launch_alignment(context_str=context_str)
-                        new_multilocus_dataset = pmj.get_results()                                                                    
+                        new_multilocus_dataset = pmj.get_results()
+                        del pmj  
+                    
+                    self.sate_team.alignmentjobs = []
+                    self.sate_team.subsets = {}                                                                  
                 else:          
                     new_multilocus_dataset = aligner.get_results()
                     
@@ -480,13 +491,14 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 self.status('Step %d. Alignment obtained. Tree inference beginning...' % (self.current_iteration))
                 if self.killed:
                     raise RuntimeError("SATe Job killed")
-                
-                
+                                
                 dataset_for_tree = new_multilocus_dataset           
                      
                 if self.mask_gappy_sites > 0:
                     dataset_for_tree = copy.deepcopy(new_multilocus_dataset)
-                    dataset_for_tree.mask_gapy_sites(self.mask_gappy_sites)
+                    import cProfile                    
+                    cProfile.runctx('dataset_for_tree.mask_gapy_sites(self.mask_gappy_sites)',
+                                    globals(),locals())#, 'mask.stats.%d' %self.current_iteration)                    
             
             
                 tbj = self.sate_team.tree_estimator.create_job(dataset_for_tree,

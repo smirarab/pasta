@@ -232,15 +232,19 @@ class Alignment(dict, object):
         for k,v in self.iteritems():
             self[k] = bytearray(v)   
 
-    def mask_gapy_sites(self,minimum_seq_requirement):
-        _LOG.debug("Masking alignment sites with fewer than %d characters" %minimum_seq_requirement)
+    def mask_gapy_sites(self,minimum_seq_requirement):        
         n = len(self.values()[0])
+        _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
         masked = zip(range(0,n),[minimum_seq_requirement] * n)
+        i = 0
         for seq in self.itervalues():
-            masked = filter(lambda x: x[1] > 0, ((i,c) if seq[i]=="-" else (i,c-1) for (i,c) in masked))
+            masked = filter(lambda x: x[1] > 0, ((i,c) if seq[i]=="-" else (i,c-1) for (i,c) in masked))            
             if not masked:
                 _LOG.debug("No column will be masked.")
                 return
+            if i % 1000 == 0:
+                _LOG.debug("i is %d" %(i))
+            i += 1
         _LOG.debug("%d Columns identified for masking" %len(masked))
         included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y[0])],masked,[(-1,-1)]))
         if included[-1][1] < n and masked[-1][0]+1 != n:
@@ -566,7 +570,7 @@ class MultiLocusDataset(list):
 
         for n, element in enumerate(self):
             if element.datatype.upper() != current_datatype:
-               continue
+                continue
             if isinstance(element, SequenceDataset):
                 char_matrix = element.dataset.char_matrices[0]
                 for taxon, seq in char_matrix.iteritems():
@@ -607,6 +611,10 @@ class MultiLocusDataset(list):
         else:
             combined_alignment.datatype = "MIXED"
         return (combined_alignment, partitions)
+    
+    def mask_gapy_sites(self,minimum_seq_requirement):
+        for a in self:
+            a.mask_gapy_sites(minimum_seq_requirement)
 
     def restore_taxon_names(self):
         """Changes the labels in the contained alignment back to their original name"""
@@ -776,4 +784,5 @@ def merge_in(me, she):
 #a2 = Alignment()
 #a2.read_filepath(sys.argv[2])
 #merge_in(a1,a2)
-#a1.write_filepath("t.out")
+#a1.mask_gapy_sites(5)
+#lsa1.write_filepath("t.out")

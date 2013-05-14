@@ -21,10 +21,9 @@
 # Jiaye Yu and Mark Holder, University of Kansas
 
 
-import math
 import os
 import copy
-from threading import Lock
+from threading import Lock, Event
 from sate import get_logger
 from sate.tree import PhylogeneticTree
 from dendropy.dataobject.tree import Tree
@@ -33,6 +32,8 @@ _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder
 from sate.scheduler import jobq
+from sate.scheduler import TickableJob
+
 
 def bisect_tree(tree, breaking_edge_style='centroid'):
     """Partition 'tree' into two parts
@@ -46,7 +47,7 @@ def bisect_tree(tree, breaking_edge_style='centroid'):
     return tree1, tree2
 
 
-class SateAlignerJob(TreeHolder):
+class SateAlignerJob(TreeHolder, TickableJob):
     """A class that performs one alignment in the SATe algorithm.
     
     If the size of the tree is <= than the threshold problem size then this
@@ -73,6 +74,8 @@ class SateAlignerJob(TreeHolder):
                 skip_merge = False,
                 **kwargs):
         self._job_lock = Lock()
+        self._merge_queued_event = Event()
+        TickableJob.__init__(self)
         TreeHolder.__init__(self, multilocus_dataset.dataset)
         behavior = copy.copy(SateAlignerJob.BEHAVIOUR_DEFAULTS)
         behavior.update(kwargs)
@@ -109,10 +112,39 @@ class SateAlignerJob(TreeHolder):
         self.align_job_list = None
         self.merge_job_list = None
 
+    def postprocess(self):
+        if self.parent is not None:
+            self.parent.tick(self)
+
+    def on_dependency_ready(self):
+        ''' This is called when the "child" jobs are finished. 
+        If self is a "alignment" subproblem, we just need to tick the parent.
+        If self is a "merge" subproblem, the first time all dependencies are met
+        is when the children jobs finish. At this point, the actual merge job
+        is started and queued, and that new merge job is added as a child of self.
+        Now, when this new "merge" job finishes, self is completed, and we need
+        to tick the parent.'''
+        #_LOG.debug("Dependency ready!")
+        if self.killed:
+            raise RuntimeError("SateAligner Job killed")
+        try:
+            if not self.align_job_list:
+                if not self.merge_job_list:
+                    assert self.subjob1 and self.subjob2
+                    if not self.skip_merge:
+                        self._start_merger()
+                        return
+            self.postprocess()
+        except KeyboardInterrupt:
+            self.kill()
+        
+
     def _start_merger(self):
-        '''Blocks until the two "subjobs" are done,
+        '''Blocks until the two "subjobs" are done 
+        (with new implementation, they will be done, before this is even called)
             creates the merger job and puts it in the jobs queue, 
             cleans up the alignment subdirectories,
+            signals an event that signifies the fact that the merge job is on queue,
             and then returns.
         
         Called by wait()
@@ -130,6 +162,7 @@ class SateAlignerJob(TreeHolder):
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
         assert(result1.get_num_loci() == result2.get_num_loci())
+        
         mj_list = []
         for n, r1 in enumerate(result1):
             r2 = result2[n]
@@ -139,6 +172,9 @@ class SateAlignerJob(TreeHolder):
                                                   tmp_dir_par=self.tmp_dir_par,
                                                   delete_temps=self.delete_temps,
                                                   context_str=cs)
+            mj.set_parent_tickable_job(self)
+            self.add_child(mj)
+                        
             if self.killed:
                 raise RuntimeError("SateAligner Job killed")
             mj_list.append(mj)
@@ -151,6 +187,7 @@ class SateAlignerJob(TreeHolder):
             for d in self._dirs_to_cleanup:
                 self.sate_team.temp_fs.remove_dir(d)
 
+        self._merge_queued_event.set()
     
     def _get_subjob_dir(self, num):
         '''Creates a numbered directory d1, d2, etc within tmp_dir_par.
@@ -202,7 +239,10 @@ class SateAlignerJob(TreeHolder):
                 aj = self.sate_team.aligner.create_job(single_locus_sd,
                                                        tmp_dir_par=self.tmp_dir_par,
                                                        delete_temps=self.delete_temps,
-                                                       context_str=self.context_str + " align" + str(index))
+                                                       context_str=self.context_str + " align" + str(index))                
+                aj.set_parent_tickable_job(self)
+                self.add_child(aj)
+                
                 aj_list.append(aj)
                 if self.killed:
                     raise RuntimeError("SateAligner Job killed")
@@ -219,6 +259,12 @@ class SateAlignerJob(TreeHolder):
             # store this dir so we can use it in the merger
             if self.killed:
                 raise RuntimeError("SateAligner Job killed")
+
+            self.subjob1.set_parent(self)
+            self.subjob2.set_parent(self)
+            self.add_child(self.subjob1)
+            self.add_child(self.subjob2)
+
             self.subjob1.launch_alignment(break_strategy=break_strategy)
             if self.killed:
                 raise RuntimeError("SateAligner Job killed")
@@ -303,14 +349,10 @@ class SateAlignerJob(TreeHolder):
                 for j in j_list:
                     j.wait()
             else:
-                j_list = self.merge_job_list
-                if not bool(j_list):
-                    assert self.subjob1 and self.subjob2
-                    if not self.skip_merge:
-                        self._start_merger()
-                    j_list = self.merge_job_list
-                if j_list:
-                    for j in j_list:
+                if not self.merge_job_list:
+                    self._merge_queued_event.wait()
+                if self.merge_job_list:
+                    for j in self.merge_job_list:
                         return j.wait()
         except KeyboardInterrupt:
             self.kill()

@@ -31,7 +31,8 @@ from alignment import Alignment
 from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB
 from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
 from sate.filemgr import open_with_intermediates
-from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob
+from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
+    TickingDispatchableJob
 
 from cStringIO import StringIO
 from alignment import Alignment
@@ -177,7 +178,8 @@ class Aligner(ExternalTool):
     def create_job(self, *args, **kwargs):
         raise NotImplementedError('Abstract Aligner class cannot spawn jobs.')
 
-    def _finish_standard_job(self, alignedfn, datatype, invoc, scratch_dir, job_id, delete_temps, stdout=None):
+    def _finish_standard_job(self, alignedfn, datatype, invoc, scratch_dir, 
+                             job_id, delete_temps, stdout=None):
         dirs_to_delete = []
         if delete_temps:
             dirs_to_delete = [scratch_dir]
@@ -187,16 +189,17 @@ class Aligner(ExternalTool):
                                                dirs_to_delete=dirs_to_delete,
                                                temp_fs=self.temp_fs)
         if stdout:
-            job = DispatchableJob(invoc,
+            job = TickingDispatchableJob(invoc,
                                   result_processor=rpc,
                                   cwd=scratch_dir,
                                   stdout=stdout,
                                   context_str=job_id)
         else:
-            job = DispatchableJob(invoc,
+            job = TickingDispatchableJob(invoc,
                                   result_processor=rpc,
                                   cwd=scratch_dir,
                                   context_str=job_id)
+        
         return job
 
 class CustomAligner(Aligner):
@@ -429,7 +432,7 @@ class Merger(ExternalTool):
                                                datatype=datatype,
                                                dirs_to_delete=dirs_to_delete,
                                                temp_fs=self.temp_fs)
-        job = DispatchableJob(invoc, result_processor=rpc,  cwd=scratch_dir, context_str=job_id)
+        job = TickingDispatchableJob(invoc, result_processor=rpc,  cwd=scratch_dir, context_str=job_id)
         return job
 
 
@@ -669,8 +672,8 @@ class FastTree(TreeEstimator):
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
         alignment, partitions = multilocus_dataset.concatenate_alignments()
         
-        if kwargs.has_key("mask_gappy_sites"):
-            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
+#        if kwargs.has_key("mask_gappy_sites"):
+#            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
         
         alignment.write_filepath(seqfn, 'FASTA')
 

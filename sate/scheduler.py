@@ -57,6 +57,7 @@ def worker():
         else:
             try:
                 job.get_results()
+                job.postprocess()
             except:
                 err = StringIO()
                 traceback.print_exc(file=err)
@@ -108,6 +109,9 @@ class FakeJob(JobBase):
 
     def get_results(self):
         return self.results
+    
+    def postprocess(self):
+        pass
 
     def kill(self):
         pass
@@ -194,6 +198,7 @@ class DispatchableJob(JobBase):
         so we'll only have the first thread do this.  All other threads that enter
         wait will wait for the finished_event
         """
+        
         self.thread_waiting_lock.acquire()
         if self.thread_waiting:
             self.thread_waiting_lock.release()
@@ -201,8 +206,9 @@ class DispatchableJob(JobBase):
             if self.error is not None:
                 raise self.error
 
-
             self.finished_event.wait()
+            
+           
             if self.error is not None:
                 raise self.error
         else:
@@ -252,7 +258,7 @@ class DispatchableJob(JobBase):
                         raise self.error
             finally:
                 self.finished_event.set()
-
+        
         return self.return_code
 
     def get_results(self):
@@ -264,7 +270,54 @@ class DispatchableJob(JobBase):
             pass
             # os.remove('.%s.pid' % self.get_id())  # treebuild_job will not go through this after finish
         return self.results
-
+    
+    def postprocess(self):
+        pass
+    
     def kill(self):
         if self.results is None:
             self.process.kill()
+            
+            
+class TickableJob():
+
+    def __init__(self):
+        self.parent = None
+        self.unfinished_children = []
+        self.childrenlock = Lock()
+
+    def on_dependency_ready(self):
+        ''' This function needs to be implemented by the children. 
+                    This will be called when all children are done'''
+        raise NotImplementedError("on_dependency_ready() method is not implemented.")
+
+    def set_parent(self,parentjob):
+        self.parent = parentjob	
+
+    def add_child(self,childJob):
+        self.childrenlock.acquire()
+        self.unfinished_children.append(childJob)
+        self.childrenlock.release()
+
+    def tick(self, finishedjob):
+        self.childrenlock.acquire()
+        self.unfinished_children.remove(finishedjob)   
+        #_LOG.debug("children ... %d" %len(self.unfinished_children))     
+        if not bool(self.unfinished_children):
+            self.childrenlock.release()
+            self.on_dependency_ready()
+        else:
+            self.childrenlock.release()
+        
+        
+
+class TickingDispatchableJob(DispatchableJob):
+    def __init__(self, invocation, result_processor, **kwargs):
+        DispatchableJob.__init__(self, invocation, result_processor, **kwargs)
+        self.parent_tickable_job = None
+    
+    def set_parent_tickable_job(self, tickableJob):
+        self.parent_tickable_job = tickableJob
+        
+    def postprocess(self):
+        self.parent_tickable_job.tick(self)

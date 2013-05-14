@@ -135,7 +135,7 @@ class SateJob (TreeHolder):
         self._tree_build_job = None
         self._sate_decomp_job = None
         self._reset_jobs()
-        self.sate3merge = True
+        self.sate3merge = False
 
         self._status_message_func = kwargs.get('status_messages')
 
@@ -480,7 +480,16 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 self.status('Step %d. Alignment obtained. Tree inference beginning...' % (self.current_iteration))
                 if self.killed:
                     raise RuntimeError("SATe Job killed")
-                tbj = self.sate_team.tree_estimator.create_job(new_multilocus_dataset,
+                
+                
+                dataset_for_tree = new_multilocus_dataset           
+                     
+                if self.mask_gappy_sites > 0:
+                    dataset_for_tree = copy.deepcopy(new_multilocus_dataset)
+                    dataset_for_tree.mask_gapy_sites(self.mask_gappy_sites)
+            
+            
+                tbj = self.sate_team.tree_estimator.create_job(dataset_for_tree,
                                                                starting_tree=start_from,
                                                                num_cpus=self.num_cpus,
                                                                context_str=context_str + " tree",

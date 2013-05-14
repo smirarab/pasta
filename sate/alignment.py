@@ -235,20 +235,42 @@ class Alignment(dict, object):
     def mask_gapy_sites(self,minimum_seq_requirement):        
         n = len(self.values()[0])
         _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
-        masked = zip(range(0,n),[minimum_seq_requirement] * n)
-        i = 0
-        for seq in self.itervalues():
-            masked = filter(lambda x: x[1] > 0, ((i,c) if seq[i]=="-" else (i,c-1) for (i,c) in masked))            
-            if not masked:
-                _LOG.debug("No column will be masked.")
-                return
-            if i % 1000 == 0:
-                _LOG.debug("i is %d" %(i))
-            i += 1
+        
+#        # The following implements row-based masking. Seems to be less efficient than column based
+#        masked = zip(range(0,n),[minimum_seq_requirement] * n)
+#        i = 0
+#        for seq in self.values():
+#            masked = filter(lambda x: x[1] > 0, ((i,c) if seq[i]=="-" else (i,c-1) for (i,c) in masked))            
+#            if not masked:
+#                _LOG.debug("No column will be masked.")
+#                return
+#            if i % 1000 == 0:
+#                _LOG.debug("i is %d" %(i))
+#            i += 1
+#        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y[0])],masked,[(-1,-1)]))
+#        if included[-1][1] < n and masked[-1][0]+1 != n:
+#            included.append((masked[-1][0]+1,n))
+
+        # The following implements column-based masking. Seems to be more efficient than row based
+        masked = []
+        allseqs = self.values()
+        allseqs.sort(key=lambda x: x.count("-"))
+        for c in xrange(0,n):
+            r = minimum_seq_requirement
+            for seq in allseqs:
+                if seq[c] != "-":
+                    r -= 1
+                if r == 0:
+                    break
+            if r != 0:
+                masked.append(c)
+            if c % 1000 == 0:
+                _LOG.debug("c is %d" %(c))
+                 
         _LOG.debug("%d Columns identified for masking" %len(masked))
-        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y[0])],masked,[(-1,-1)]))
-        if included[-1][1] < n and masked[-1][0]+1 != n:
-            included.append((masked[-1][0]+1,n))
+        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
+        if included[-1][1] < n and masked[-1]+1 != n:
+            included.append((masked[-1]+1,n))
         for k,seq in self.iteritems():
             tmp = []
             for (i,j) in included:
@@ -779,10 +801,14 @@ def merge_in(me, she):
     TIMING_LOG.info("transitivitymerge (t%d) finished" %ID )
     _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
     
-#a1 = Alignment()
-#a1.read_filepath(sys.argv[1])
+    
+#als = []
+#for i in range(1,2):
+#    a1 = Alignment()
+#    a1.read_filepath(sys.argv[1])
+#    als.append(a1)
 #a2 = Alignment()
 #a2.read_filepath(sys.argv[2])
 #merge_in(a1,a2)
 #a1.mask_gapy_sites(5)
-#lsa1.write_filepath("t.out")
+#a1.write_filepath("t.out")

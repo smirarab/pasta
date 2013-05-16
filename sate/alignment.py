@@ -264,8 +264,6 @@ class Alignment(dict, object):
                     break
             if r != 0:
                 masked.append(c)
-            if c % 1000 == 0:
-                _LOG.debug("c is %d" %(c))
                  
         _LOG.debug("%d Columns identified for masking" %len(masked))
         included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
@@ -374,6 +372,7 @@ class SequenceDataset(object):
             else:
                 self.dataset.read(file_obj, schema=file_format, row_type='str')
                 # do some cursory checks of the datatype
+                _LOG.debug("File read. checking input ... ")
                 import re
                 if dup == "DNA":
                     pattern = re.compile(r"([^-ACTGN?RYMKSWHBVD])", re.I)
@@ -794,6 +793,8 @@ def merge_in(me, she):
     #print "final",ime,ishe
             
     newme.update(newshe)
+    
+    me.clear()
        
     for k,v in newme.iteritems():
         me[k] = str(v)            

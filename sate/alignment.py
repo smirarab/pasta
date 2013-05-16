@@ -266,6 +266,8 @@ class Alignment(dict, object):
                 masked.append(c)
                  
         _LOG.debug("%d Columns identified for masking" %len(masked))
+        if not masked:
+            return
         included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
         if included[-1][1] < n and masked[-1]+1 != n:
             included.append((masked[-1]+1,n))

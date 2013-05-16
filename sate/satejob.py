@@ -28,7 +28,7 @@ import time
 import sys
 import copy
 from threading import Lock
-from sate import get_logger
+from sate import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from dendropy.dataobject.taxon import Taxon
 _LOG = get_logger(__name__)
 
@@ -478,7 +478,8 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                     self.sate_team.subsets = {}                                                                  
                 else:          
                     new_multilocus_dataset = aligner.get_results()
-                    
+                
+                _LOG.debug("Alignment obtained. Preparing for tree.")
                 self.sate_aligner_job = None
                 del aligner
 
@@ -494,11 +495,11 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                 
                 dataset_for_tree = new_multilocus_dataset           
                      
-                if self.mask_gappy_sites > 0:
-                    dataset_for_tree = copy.deepcopy(new_multilocus_dataset)
-                    import cProfile                    
-                    cProfile.runctx('dataset_for_tree.mask_gapy_sites(self.mask_gappy_sites)',
-                                    globals(),locals())#, 'mask.stats.%d' %self.current_iteration)                    
+                #if self.mask_gappy_sites > 0:
+                #    dataset_for_tree = copy.deepcopy(new_multilocus_dataset)
+                #    import cProfile                    
+                #    cProfile.runctx('dataset_for_tree.mask_gapy_sites(self.mask_gappy_sites)',
+                #                    globals(),locals())#, 'mask.stats.%d' %self.current_iteration)                    
             
             
                 tbj = self.sate_team.tree_estimator.create_job(dataset_for_tree,

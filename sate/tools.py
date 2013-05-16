@@ -28,7 +28,8 @@ import platform
 import shutil
 
 from alignment import Alignment
-from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB
+from sate import get_logger, GLOBAL_DEBUG, SATE_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB,\
+    TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
 from sate.filemgr import open_with_intermediates
 from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
@@ -570,6 +571,24 @@ class TreeEstimator(ExternalTool):
                         _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
                     else:
                         shutil.copy2(seqfn, i_concat_align)
+
+    def store_unmasked_input(self, alignment, **kwargs):
+        """
+        If sate_products and step_num are both found in the `kwargs` then this
+            function will copy `seqfn` to the filepath obtained by a call to
+            sate_products.get_abs_path_for_iter_output
+            with the 'seq_alignment.txt' suffix.
+        """
+        sate_products = kwargs.get('sate_products')
+        if sate_products:
+            step_num = kwargs.get('step_num')
+            if step_num is not None:
+                i_concat_align = sate_products.get_abs_path_for_iter_output(step_num, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG)
+                if i_concat_align:
+                    if os.path.exists(i_concat_align):
+                        _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
+                    else:
+                        alignment.write_filepath(i_concat_align)
                 
 
 class CustomTreeEstimator(TreeEstimator):
@@ -671,9 +690,10 @@ class FastTree(TreeEstimator):
 
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
         alignment, partitions = multilocus_dataset.concatenate_alignments()
-        
-#        if kwargs.has_key("mask_gappy_sites"):
-#            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
+                
+        if kwargs.has_key("mask_gappy_sites"):
+            self.store_unmasked_input(alignment, **kwargs)
+            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
         
         alignment.write_filepath(seqfn, 'FASTA')
 

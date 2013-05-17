@@ -640,7 +640,7 @@ class MultiLocusDataset(list):
             safe_name = safe_name_prefix + str(ind)
 
     def create_dendropy_dataset(self):
-        _LOG.debug("Crating dendropy dataset")
+        _LOG.debug("creating dendropy dataset")
         from dendropy import DataSet, TaxonSet
         taxon_set = TaxonSet()
         self.taxa_label_to_taxon = {}

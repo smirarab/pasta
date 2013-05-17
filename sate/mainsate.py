@@ -434,6 +434,7 @@ def run_sate_from_config(user_config, sate_products):
     instance used to create `dir`
     """
 
+    _LOG.debug("start reading the input alignment")
     multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
             datatype=user_config.commandline.datatype,
             missing=user_config.commandline.missing)

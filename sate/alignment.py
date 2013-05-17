@@ -407,6 +407,7 @@ class SequenceDataset(object):
 
     def sequences_are_valid(self, remap_missing=False, map_missing_to=None):
         """Check for ? in sequences"""
+        _LOG.debug("Checking sequences are valid")
         try:
             taxa_block = getattr(self.dataset, DATASET_TAXA_ATTR)[0]
             char_block = getattr(self.dataset, DATASET_CHAR_ATTR)[0]
@@ -440,6 +441,7 @@ class SequenceDataset(object):
                     char_block[taxon] = ''.join(as_list)
                 else:
                     return False
+        _LOG.debug("Sequence validity check done. ")
         return True
 
 class MultiLocusDataset(list):
@@ -550,6 +552,7 @@ class MultiLocusDataset(list):
         taxon_set.lock()
 
     def relabel_for_sate(self):
+        _LOG.debug("start relabeling for SATe")
         self.safe_to_real_names = {}
         self.filename_list = []
         alignment_list = []

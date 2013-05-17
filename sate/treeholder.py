@@ -89,14 +89,16 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
 
 def check_taxon_labels(taxon_set, dataset):
     ts = set([i for tset in dataset.taxon_sets for i in tset.labels()])
-    extra = [l for l in taxon_set.labels() if l not in ts]
-    missing = [l for l in ts if l not in taxon_set.labels()]
+    ds = set(taxon_set.labels())
+    extra = ds - ts
+    missing = ts - ds
     return extra, missing
 
 def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
     if starting_tree:
         ds = dendropy.DataSet()
         ds.read_from_stream(tree_stream, schema='NEWICK')
+        _LOG.debug("Taxa read, now checking taxon labels.")
         extra, missing = check_taxon_labels(ds.tree_lists[-1].taxon_set, dataset)
         if extra or missing:
             raise TaxaLabelsMismatchError(
@@ -105,8 +107,10 @@ def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
                 'In tree, not sequences: {0}\n'
                 'In sequences, not tree: {1}\n'.format(','.join(extra),
                         ','.join(missing)))
+        _LOG.debug("labels were fine. re-reading tree.")
         dataset.read_from_string(ds.as_string(schema='NEWICK'),
                 schema='NEWICK', taxon_set=dataset.taxon_sets[0])
+        _LOG.debug("reading tree finished")
     elif dataset.taxon_sets:
         dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])
     else:
@@ -129,13 +133,18 @@ def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=F
     '''Uses `tree_str` and `dataset` to create a PhylogeneticTree object
     and calls `calc_splits` on the object before returning it.
     '''
+    _LOG.debug("start generating tree from string")
     tree_stream = StringIO(tree_str)
     tree_list = read_and_encode_splits(dataset, tree_stream)
     t = tree_list[0]
     if force_fully_resolved:
+        _LOG.debug("start resolving polytomies")
         resolve_polytomies(t, update_splits=True)
+        _LOG.debug("end of resolving polytomies")
     t = PhylogeneticTree(t)
+    _LOG.debug("calculating splits")
     t.calc_splits()
+    _LOG.debug("end generating tree from string")
     return t
 
 class TreeHolder(object):

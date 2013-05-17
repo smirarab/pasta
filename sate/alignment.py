@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from random import random
 import sys
-
+from dendropy.dataobject.taxon import Taxon
 #############################################################################
 ##  this file is part of sate.
 ##  see "license.txt" for terms and conditions of usage.
@@ -279,7 +279,108 @@ class Alignment(dict, object):
         nn = len(self.values()[0])
         assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
         _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
+
+
+from dendropy.dataio.fasta import FastaReader
+from dendropy import dataobject
+from dendropy.utility.error import DataParseError
+from dendropy.dataio import fasta
+
+class FastaCustomReader(FastaReader):
+    
+    def __init__(self, **kwargs):
+        FastaReader.__init__(self,**kwargs)        
         
+    def read(self, stream):
+        """
+        Main file parsing driver.
+        """
+        _LOG.debug("Will be using custom Fasta reader")
+        if self.exclude_chars:
+            return self.dataset
+        if self.dataset is None:
+            self.dataset = dataobject.DataSet()
+        taxon_set = self.get_default_taxon_set()
+        self.char_matrix = self.dataset.new_char_matrix(char_matrix_type=self.char_matrix_type,
+                taxon_set=taxon_set)
+        if isinstance(self.char_matrix, dataobject.StandardCharacterMatrix) \
+            and len(self.char_matrix.state_alphabets) == 0:
+                self.char_matrix.state_alphabets.append(dataobject.get_state_alphabet_from_symbols("0123456789"))
+                self.char_matrix.default_state_alphabet = self.char_matrix.state_alphabets[0]
+        if self.char_matrix.default_state_alphabet is not None:
+            self.symbol_state_map = self.char_matrix.default_state_alphabet.symbol_state_map()
+        elif len(self.char_matrix.state_alphabets) == 0:
+            raise ValueError("No state alphabets defined")
+        elif len(self.char_matrix.state_alphabets) > 1:
+            raise NotImplementedError("Mixed state-alphabet matrices not supported")
+        else:
+            self.symbol_state_map = self.char_matrix.state_alphabets[0]
+
+        if self.simple_rows:
+            legal_chars = self.char_matrix.default_state_alphabet.get_legal_symbols_as_str()
+            re_ilegal = re.compile(r"[^%s]" %legal_chars);
+            
+        curr_vec = None
+        curr_taxon = None
+
+        for line_index, line in enumerate(stream):
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith('>'):
+                if self.simple_rows and curr_taxon and curr_vec:
+                    self.char_matrix[curr_taxon] = "".join(curr_vec)
+                name = s[1:].strip()
+                #curr_taxon = taxon_set.require_taxon(label=name)
+                curr_taxon = Taxon(label=name)
+                taxon_set.append(curr_taxon)
+                if curr_taxon in self.char_matrix:
+                    raise DataParseError(message="Fasta error: Repeated sequence name (%s) found" % name, row=line_index + 1, stream=stream)
+                if curr_vec is not None and len(curr_vec) == 0:
+                    raise DataParseError(message="Fasta error: Expected sequence, but found another sequence name (%s)" % name, row=line_index + 1, stream=stream)
+                if self.simple_rows:
+                    curr_vec = []
+                else:
+                    curr_vec = dataobject.CharacterDataVector(taxon=curr_taxon)
+                    self.char_matrix[curr_taxon] = curr_vec
+            elif curr_vec is None:
+                raise DataParseError(message="Fasta error: Expecting a lines starting with > before sequences", row=line_index + 1, stream=stream)
+            else:
+                if self.simple_rows:
+                    m = re_ilegal.search(s)
+                    if m:
+                        raise DataParseError(message='Unrecognized sequence symbol "%s"' % m.group(0), row=line_index + 1, column=m.start(), stream=stream)
+                    curr_vec.append(s)
+                else:
+                    for col_ind, c in enumerate(s):
+                        c = c.strip()
+                        if not c:
+                            continue
+                        try:
+                            state = self.symbol_state_map[c]
+                            curr_vec.append(dataobject.CharacterDataCell(value=state))
+                        except:
+                            raise DataParseError(message='Unrecognized sequence symbol "%s"' % c, row=line_index + 1, column=col_ind + 1, stream=stream)
+        if self.simple_rows and curr_taxon and curr_vec:
+            self.char_matrix[curr_taxon] = "".join(curr_vec)
+        _LOG.debug("Custom reader finished reading")
+        return self.dataset
+        
+
+class DNACustomFastaReader(FastaCustomReader):
+    def __init__(self, **kwargs):
+        FastaCustomReader.__init__(self, char_matrix_type=dataobject.DnaCharacterMatrix, **kwargs)
+
+class RNACustomFastaReader(FastaCustomReader):
+    def __init__(self, **kwargs):
+        FastaCustomReader.__init__(self, char_matrix_type=dataobject.RnaCharacterMatrix, **kwargs)
+
+class ProteinCustomFastaReader(FastaCustomReader):
+    def __init__(self, **kwargs):
+        FastaCustomReader.__init__(self, char_matrix_type=dataobject.ProteinCharacterMatrix, **kwargs)        
+
+import dendropy
+from dendropy.dataio import ioclient        
 class SequenceDataset(object):
     """Class for creating a dendropy reader, validating the input, and
     keeping mapping of real taxa names to "safe" versions that will not
@@ -338,6 +439,10 @@ class SequenceDataset(object):
         self.safe_to_real_names = {}
         self.datatype = None
         self.filename = '<unknown>'
+        ioclient.register("fasta", FastaCustomReader, fasta.FastaWriter, None)
+        ioclient.register("dnafasta", DNACustomFastaReader, fasta.FastaWriter, None)
+        ioclient.register("rnafasta", RNACustomFastaReader, fasta.FastaWriter, None)
+        ioclient.register("proteinfasta", ProteinCustomFastaReader, fasta.FastaWriter, None)
 
     def get_character_matrix(self):
         """Returns the first character matrix or raises IndexError if no
@@ -366,12 +471,12 @@ class SequenceDataset(object):
             if not dup in datatype_list:
                 raise ValueError('Expecting the datatype to be  DNA, RNA or PROTEIN')
             file_format = dup + file_format
-        try:
-            import dendropy
+        try:            
             self.dataset = dendropy.DataSet()
             if careful_parse:
                 self.dataset.read(file_obj, schema=file_format)
             else:
+
                 self.dataset.read(file_obj, schema=file_format, row_type='str')
                 # do some cursory checks of the datatype
                 _LOG.debug("File read. checking input ... ")

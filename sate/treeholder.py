@@ -25,7 +25,7 @@ import dendropy
 from cStringIO import StringIO
 from sate.tree import PhylogeneticTree
 from sate.errors import TaxaLabelsMismatchError
-from sate import get_logger
+from sate import get_logger, MESSENGER
 _LOG = get_logger(__name__)
 
 # Provide a random number generator
@@ -95,21 +95,24 @@ def check_taxon_labels(taxon_set, dataset):
     return extra, missing
 
 def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
-    if starting_tree:
-        ds = dendropy.DataSet()
-        ds.read_from_stream(tree_stream, schema='NEWICK')
-        _LOG.debug("Taxa read, now checking taxon labels.")
-        extra, missing = check_taxon_labels(ds.tree_lists[-1].taxon_set, dataset)
-        if extra or missing:
-            raise TaxaLabelsMismatchError(
-                'There are taxon label mismatches between the starting tree '
-                'and sequences...\n'
-                'In tree, not sequences: {0}\n'
-                'In sequences, not tree: {1}\n'.format(','.join(extra),
-                        ','.join(missing)))
-        _LOG.debug("labels were fine. re-reading tree.")
-        dataset.read_from_string(ds.as_string(schema='NEWICK'),
+    if starting_tree:        
+        try:
+            dataset.read_from_stream(tree_stream,
                 schema='NEWICK', taxon_set=dataset.taxon_sets[0])
+        except KeyError as e:
+            m = str(e)
+            m = m[1:m.find("TaxonSet")] + "sequences but present in tree"            
+            raise TaxaLabelsMismatchError(                
+                 'There are taxon label mismatches between the starting tree '
+                 'and sequences...\n'
+                 '%s\n' %m)
+        st = dataset.tree_lists[-1][0]        
+        if len(st.leaf_nodes()) != len(dataset.taxon_sets[0]):
+            missing = [t.label for t in set(dataset.taxon_sets[0]) - set((n.taxon for n in st.leaf_nodes()))]
+            raise TaxaLabelsMismatchError(                
+                 'There are taxon label mismatches between the starting tree '
+                 'and sequences...\n'
+                 'In sequences, not tree: {0}\n'.format(','.join(missing)) )
         _LOG.debug("reading tree finished")
     elif dataset.taxon_sets:
         dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])

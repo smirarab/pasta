@@ -320,7 +320,9 @@ class SateJob (TreeHolder):
             node.alignment_subset_job = set([nalsj])
             # the following is just for logging purposes
             node.taxon = Taxon(label=nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:])
-        subsets_tree._tree.infer_taxa()                   
+        _LOG.debug("nodes labeled")        
+        subsets_tree._tree.infer_taxa()
+        _LOG.debug("fake taxa inferred")                   
         #Then make sure the tree is rooted at a branch (not at a node). 
         if len(subsets_tree._tree.seed_node.child_nodes()) >2:
             subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
@@ -345,6 +347,7 @@ class SateJob (TreeHolder):
                         c.edge.collapse()                                    
                     else:
                         node.remove_child(c)
+                    del c                        
                 else:
                     i += 1
             
@@ -450,6 +453,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 aligner.launch_alignment(break_strategy=break_strategy,
                                          context_str=context_str)                
                 if self.sate3merge:
+                    _LOG.debug("Build SATe3 merge jobs")
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
                     if len(self.sate_team.subsets.values()) == 1:
                         # can happen if there are no decompositions

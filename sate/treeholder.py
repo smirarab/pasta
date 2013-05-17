@@ -55,6 +55,8 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
     for node in tree.postorder_node_iter():
         if len(node.child_nodes()) > 2:
             polytomies.append(node)
+            
+    _LOG.debug("Found %d polytomies" %len(polytomies))
     for node in polytomies:
         children = node.child_nodes()
         nc = len(children)
@@ -85,6 +87,7 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
                     next_attachment.add_child(next_sib)
                     next_attachment.add_child(next_child)
                 attachment_points.append(next_attachment)
+    _LOG.debug("polytomies resolved, updating splits")
     if update_splits:
         tree.update_splits()
 

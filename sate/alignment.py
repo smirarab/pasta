@@ -640,7 +640,8 @@ class MultiLocusDataset(list):
             safe_name = safe_name_prefix + str(ind)
 
     def create_dendropy_dataset(self):
-        from dendropy import DataSet, TaxonSet, Taxon
+        _LOG.debug("Crating dendropy dataset")
+        from dendropy import DataSet, TaxonSet
         taxon_set = TaxonSet()
         self.taxa_label_to_taxon = {}
         for n, element in enumerate(self):
@@ -651,10 +652,11 @@ class MultiLocusDataset(list):
                 if taxon.label not in self.taxa_label_to_taxon:
                     nt = Taxon(label=taxon.label)
                     self.taxa_label_to_taxon[taxon.label] = nt
-                    taxon_set.add_taxon(nt)
+                    taxon_set.append(nt)
         self.dataset = DataSet()
         self.dataset.attach_taxon_set(taxon_set)
         taxon_set.lock()
+        _LOG.debug("dendropy dataset created and locked")
 
     def relabel_for_sate(self):
         _LOG.debug("start relabeling for SATe")

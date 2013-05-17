@@ -321,8 +321,8 @@ class SateJob (TreeHolder):
             # the following is just for logging purposes
             node.taxon = Taxon(label=nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:])
         _LOG.debug("nodes labeled")        
-        subsets_tree._tree.infer_taxa()
-        _LOG.debug("fake taxa inferred")                   
+        #subsets_tree._tree.infer_taxa()
+        #_LOG.debug("fake taxa inferred")                   
         #Then make sure the tree is rooted at a branch (not at a node). 
         if len(subsets_tree._tree.seed_node.child_nodes()) >2:
             subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
@@ -382,7 +382,7 @@ class SateJob (TreeHolder):
             if node.is_leaf():
                 # Add a dummy taxon, or else dendropy can get confused
                 node.taxon = Taxon(label=node.label)
-        subsets_tree._tree.infer_taxa()
+        #subsets_tree._tree.infer_taxa()
         return subsets_tree
         
     def run(self, tmp_dir_par, sate_products=None):

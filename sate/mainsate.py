@@ -35,7 +35,8 @@ from sate.alignment import Alignment, SequenceDataset, MultiLocusDataset
 from sate.configure import get_configuration, get_input_source_directory
 from sate.tools import *
 from sate.satejob import *
-from sate.treeholder import read_and_encode_splits
+from sate.treeholder import read_and_encode_splits,\
+    generate_tree_with_splits_from_tree
 from sate.scheduler import start_worker, jobq
 from sate.utility import IndentedHelpFormatterWithNL
 from sate.filemgr import open_with_intermediates
@@ -314,7 +315,10 @@ def finish_sate_execution(sate_team,
                         status_messages=MESSENGER.send_info,
                         score=score,
                         **sate_config_dict)
-        job.tree_str = starting_tree_str
+        if starting_tree is not None:            
+            job.tree = generate_tree_with_splits_from_tree(starting_tree, force_fully_resolved = True)
+        else:
+            job.tree_str = starting_tree_str
         job.curr_iter_align_tmp_filename = alignment_as_tmp_filename_to_report
         job.curr_iter_tree_tmp_filename = tree_as_tmp_filename_to_report
         if score is not None:

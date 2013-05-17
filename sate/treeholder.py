@@ -48,6 +48,7 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
     If `rng` is not passed in, then polytomy is broken deterministically by
         repeatedly joining pairs of children.
     """
+    _LOG.debug("start resolving polytomies")
     from dendropy import Node
     polytomies = []
     if rng is None:
@@ -87,10 +88,11 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
                     next_attachment.add_child(next_sib)
                     next_attachment.add_child(next_child)
                 attachment_points.append(next_attachment)
-    _LOG.debug("polytomies resolved, updating splits")
+    _LOG.debug("polytomies resolution - updating splits")
     if update_splits:
         tree.update_splits()
-
+    _LOG.debug("polytomies resolved.")
+    
 def check_taxon_labels(taxon_set, dataset):
     ts = set([i for tset in dataset.taxon_sets for i in tset.labels()])
     ds = set(taxon_set.labels())
@@ -359,10 +361,11 @@ def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=F
     tree_stream = StringIO(tree_str)
     tree_list = read_and_encode_splits(dataset, tree_stream)
     t = tree_list[0]
-    if force_fully_resolved:
-        _LOG.debug("start resolving polytomies")
-        resolve_polytomies(t, update_splits=True)
-        _LOG.debug("end of resolving polytomies")
+    return generate_tree_with_splits_from_tree(t, force_fully_resolved)
+    
+def generate_tree_with_splits_from_tree(t, force_fully_resolved=False):    
+    if force_fully_resolved:        
+        resolve_polytomies(t, update_splits=False)
     t = PhylogeneticTree(t)
     _LOG.debug("calculating splits")
     t.calc_splits()

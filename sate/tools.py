@@ -102,14 +102,18 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs, sate_products=None, step_nu
     else:
         score = float(open(raxml_log, 'rU').readlines()[-1].split()[1])
     raxml_result = os.path.join(dir, 'RAxML_result.%s' % id)
-    tree_str = open(raxml_result, 'rU').read().strip()
+    f = open(raxml_result, 'rU')
+    tree_str = f.read().strip()
+    f.close()
     copy_temp_tree(raxml_result, sate_products, step_num)
     for d in dirs_to_delete:
         temp_fs.remove_dir(d)
     return score, tree_str
 
 def read_fasttree_results(dir, fasttree_restults_file, log, delete_dir=False, sate_products=None, step_num=None):
-        tree_str = open(fasttree_restults_file, 'rU').read().strip()
+        f = open(fasttree_restults_file, 'rU')
+        tree_str = f.read().strip()
+        f.close()
         score = None
         for line in reversed(open(log, 'rU').readlines()):
             if (line.split()[0] == 'Gamma20LogLk'):

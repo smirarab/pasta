@@ -136,7 +136,9 @@ class Alignment(dict, object):
         If duplicate sequence names are encountered then the old name will be replaced.
         """
         file_obj = open(filename, 'r')
-        return self.read_file_object(file_obj, file_format=file_format)
+        ret = self.read_file_object(file_obj, file_format=file_format)
+        file_obj.close()
+        return ret
 
     def read_file_object(self, file_obj, file_format='FASTA'):
         """Augments the matrix by reading the file object.
@@ -599,6 +601,7 @@ class MultiLocusDataset(list):
                         datatype=datatype,
                         filename=seq_fn,
                         careful_parse=careful_parse)
+                fileobj.close()
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
             except Exception, x:
                 raise Exception("Error reading file:\n%s\n" % str(x))

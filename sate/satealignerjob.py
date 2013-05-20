@@ -540,6 +540,7 @@ class Sate3MergerJob(SateAlignerJob):
                         cres = j.get_results()
                         merge_in(r[0], cres[0]) #TODO: this should be changed to be multi-locus
                         del cres
+                        del j
                     #assert all(x.is_aligned() for x in r)
                 else: # These are pairwise merges
                     r = self.multilocus_dataset.new_with_shared_meta()

@@ -546,6 +546,7 @@ class Sate3MergerJob(SateAlignerJob):
                     r = self.multilocus_dataset.new_with_shared_meta()
                     for j in j_list:
                         r.append(j.get_results())
+                    del j
                 self.finished = True
             else:
                 return None # this can happen if jobs are killed

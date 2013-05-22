@@ -354,7 +354,9 @@ class SateAlignerJob(TreeHolder, TickableJob):
                     j.wait()
             else:
                 if not self.merge_job_list:
+                    _LOG.debug("waiting for merge events to be queued")
                     self._merge_queued_event.wait()
+                    _LOG.debug("merge events to be queued. signal received.")
                 if self.merge_job_list:
                     for j in self.merge_job_list:
                         return j.wait()
@@ -439,6 +441,8 @@ class Sate3MergerJob(SateAlignerJob):
         if delete_temps2 is not None:
             self.delete_temps = delete_temps2
         self.skip_merge = None
+        self.result_alignment = None
+        self.results_lock = Lock()
 
     def launch_alignment(self, context_str=None):
         '''
@@ -524,6 +528,9 @@ class Sate3MergerJob(SateAlignerJob):
         return
 
     def get_results(self):
+        self.results_lock.acquire()
+        if self.result_alignment is not None:
+            return self.result_alignment
         self.wait()
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
@@ -547,9 +554,11 @@ class Sate3MergerJob(SateAlignerJob):
                     for j in j_list:
                         r.append(j.get_results())
                     del j
+                self.result_alignment = r
                 self.finished = True
             else:
-                return None # this can happen if jobs are killed
+                r = None # this can happen if jobs are killed
+        self.results_lock.release()
         return r
         
                                             
@@ -563,3 +572,7 @@ class Sate3MergerJob(SateAlignerJob):
         full_path_to_new_dir = self.sate_team.temp_fs.create_subdir(sd)
         self._dirs_to_cleanup.append(full_path_to_new_dir)
         return full_path_to_new_dir
+
+    def postprocess(self):
+        self.get_results()
+        self.tick_praents()

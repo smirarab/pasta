@@ -79,31 +79,24 @@ def write_fasta(alignment, dest):
         file_obj.close()
 
 def write_compact(alignment, dest):
+    pt = re.compile(r'-+')
     """Writes the `alignment` in FASTA format to either a file object or file"""
     file_obj = None
     if isinstance(dest, str):
         file_obj = open(dest, "w")
     else:
-        file_obj = dest
+        file_obj = dest        
     for name, seq in alignment.items():
-        s=bytearray(b'')
-        i=0
-        for c in seq:                        
-            if c != '-':
-                if i != 0:
-                    if i != 1:
-                        s.extend("-%d" %i)
-                    else:
-                        s.append('-')
-                    i = 0                    
-                s.append(c)
-            else:
-                i += 1
-        file_obj.write('>%s\n%s\n' % (name, str(s)) )
+        i = 0
+        s=[]
+        for gaps in re.finditer(pt,seq):
+            s.append('%s-%d' % (seq[i:gaps.start()], gaps.end()-gaps.start()))
+            i= gaps.end()
+        s.append(seq[i:])
+        file_obj.write('>%s\n%s\n'%(name,''.join(s)))
         #s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
         #s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
-        #file_obj.write("%s\n%s\n" %("\t".join((x[0] for x in s)), "\t".join((str(x[1]) for x in s))))
-                        
+        #file_obj.write("%s\n%s\n" %("\t".join((x[0] for x in s)), "\t".join((str(x[1]) for x in s))))                        
     if isinstance(dest, str):
         file_obj.close()
 
@@ -961,9 +954,9 @@ def merge_in(me, she):
 #    a1 = Alignment()
 #    a1.read_filepath(sys.argv[1])
 #    als.append(a1)
-#a2 = Alignment()
-#a2.read_filepath(sys.argv[1])
-#a2.write('compact.fasta', 'FASTAZIP')
+a2 = Alignment()
+a2.read_filepath(sys.argv[1])
+a2.write('compact.txt', 'COMPACT')
 #merge_in(a1,a2)
 #a1.mask_gapy_sites(5)
 #a1.write_filepath("t.out")

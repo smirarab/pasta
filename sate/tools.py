@@ -581,7 +581,7 @@ class TreeEstimator(ExternalTool):
         If sate_products and step_num are both found in the `kwargs` then this
             function will copy `seqfn` to the filepath obtained by a call to
             sate_products.get_abs_path_for_iter_output
-            with the 'seq_alignment.txt' suffix.
+            with the 'seq_unmasked_alignment.txt' suffix.
         """
         sate_products = kwargs.get('sate_products')
         if sate_products:
@@ -592,7 +592,7 @@ class TreeEstimator(ExternalTool):
                     if os.path.exists(i_concat_align):
                         _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
                     else:
-                        alignment.write_filepath(i_concat_align)
+                        alignment.write_filepath(i_concat_align,file_format='FASTA',zip=True)
                 
 
 class CustomTreeEstimator(TreeEstimator):

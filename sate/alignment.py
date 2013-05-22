@@ -78,6 +78,35 @@ def write_fasta(alignment, dest):
     if isinstance(dest, str):
         file_obj.close()
 
+def write_compact(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name, seq in alignment.items():
+        s=bytearray(b'')
+        i=0
+        for c in seq:                        
+            if c != '-':
+                if i != 0:
+                    if i != 1:
+                        s.extend("-%d" %i)
+                    else:
+                        s.append('-')
+                    i = 0                    
+                s.append(c)
+            else:
+                i += 1
+        file_obj.write('>%s\n%s\n' % (name, str(s)) )
+        #s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
+        #s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
+        #file_obj.write("%s\n%s\n" %("\t".join((x[0] for x in s)), "\t".join((str(x[1]) for x in s))))
+                        
+    if isinstance(dest, str):
+        file_obj.close()
+
 def write_phylip(alignment, dest):
     """Writes the `alignment` in relaxed PHYLIP format to either a file object or file"""
     file_obj = None
@@ -155,9 +184,14 @@ class Alignment(dict, object):
         for name, seq in read_func(file_obj):
             self[name] = seq
 
-    def write_filepath(self, filename, file_format='FASTA'):
+    def write_filepath(self, filename, file_format='FASTA', zip=False):
         """Writes the sequence data in the specified `file_format` to `filename`"""
+        
         file_obj = open_with_intermediates(filename,'w')
+        if zip:
+            import gzip
+            file_obj.close()            
+            file_obj = gzip.open(filename, "wb", 6)
         self.write(file_obj, file_format=file_format)
         file_obj.close()
 
@@ -169,6 +203,8 @@ class Alignment(dict, object):
             write_func = write_nexus
         elif ( file_format.upper() == 'PHYLIP' ):
             write_func = write_phylip
+        elif ( file_format.upper() == 'COMPACT' ):
+            write_func = write_compact            
         else:
             write_func = write_fasta
         write_func(self, file_obj)
@@ -684,7 +720,7 @@ class MultiLocusDataset(list):
                 safe_name = self._register_safe_name(taxon.label, n, fn)
                 trees_taxon = self.taxa_label_to_taxon[taxon.label]
                 trees_taxon.label = safe_name
-                _LOG.debug("%s (%d) -> %s" % (taxon.label, id(taxon), safe_name))
+                #_LOG.debug("%s (%d) -> %s" % (taxon.label, id(taxon), safe_name))
                 taxon.label = safe_name
                 a[safe_name] = char_vec
             alignment_list.append(a)
@@ -838,6 +874,7 @@ def get_insertion_columns(shared,alg):
             break
     return set(insertions) 
 
+_T_ID=0
 def merge_in(me, she):
     '''
     Merges she inside me, assuming we share some common taxa, and the 
@@ -845,12 +882,13 @@ def merge_in(me, she):
     
     When assumptions are not met, behavior is largely undefined. 
     '''      
-    ID = random()* 100000
-    _LOG.debug("Transitive Merge Started. ID:%d" %ID)
-    TIMING_LOG.info("transitivitymerge (t%d) started" %ID )
-    
+    global _T_ID
+    _T_ID += 1
+    ID = _T_ID    
+    TIMING_LOG.info("transitivitymerge (%d) started" %ID )    
     mykeys = set(me.keys())
     herkeys = set(she.keys())
+    _LOG.debug("Transitive Merge Started. ID:%d - Rows: %d,%d" %(ID,len(mykeys),len(herkeys)))    
     shared = mykeys.intersection(herkeys)
     _LOG.debug("Shared seq: %d" %(len(shared)))        
     onlyhers = herkeys - shared
@@ -914,7 +952,7 @@ def merge_in(me, she):
     for k,v in newme.iteritems():
         me[k] = str(v)            
         
-    TIMING_LOG.info("transitivitymerge (t%d) finished" %ID )
+    TIMING_LOG.info("transitivitymerge (%d) finished" %ID )
     _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
     
     
@@ -924,7 +962,8 @@ def merge_in(me, she):
 #    a1.read_filepath(sys.argv[1])
 #    als.append(a1)
 #a2 = Alignment()
-#a2.read_filepath(sys.argv[2])
+#a2.read_filepath(sys.argv[1])
+#a2.write('compact.fasta', 'FASTAZIP')
 #merge_in(a1,a2)
 #a1.mask_gapy_sites(5)
 #a1.write_filepath("t.out")

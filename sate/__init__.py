@@ -41,7 +41,7 @@ If configuration files are read in the order they occur as arguments (with value
 """
 
 TEMP_SEQ_ALIGNMENT_TAG = "seq_alignment.txt"
-TEMP_SEQ_UNMASKED_ALIGNMENT_TAG = "seq_unmasked_alignment.txt"
+TEMP_SEQ_UNMASKED_ALIGNMENT_TAG = "seq_unmasked_alignment.gz"
 TEMP_TREE_TAG = "tree.tre"
 __all__ = []
 

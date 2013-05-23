@@ -27,6 +27,8 @@ from sate.tree import PhylogeneticTree
 from sate.errors import TaxaLabelsMismatchError
 from sate import get_logger
 from dendropy.dataobject.taxon import Taxon
+from dendropy.dataio.newick import tree_source_iter
+from dendropy.dataobject.tree import Tree
 _LOG = get_logger(__name__)
 
 # Provide a random number generator
@@ -113,6 +115,18 @@ def stt_require_taxon(stt,label):
         stt.label_taxon[label] = t
         return stt._returning(t, label)
 
+def read_newick_with_translate(stream,translate_dict):
+    """
+    Instantiates and returns a `DataSet` object based on the
+    NEWICK-formatted contents read from the file-like object source
+    `stream`.
+    """
+    ts = [t for t in tree_source_iter(stream=stream,
+            translate_dict=translate_dict,
+            allow_repeated_use=True)]
+    return ts[0]
+
+
 def tree_from_token_stream(stream_tokenizer, **kwargs):
     """
     Processes a (SINGLE) TREE statement. Assumes that the input stream is
@@ -131,6 +145,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     store_tree_weights = kwargs.get("store_tree_weights", False)
     extract_comment_metadata = kwargs.get('extract_comment_metadata', False)
     case_sensitive_taxon_labels = kwargs.get('case_sensitive_taxon_labels', False)
+    allow_repeated_use = kwargs.get('allow_repeated_use', False)
     stream_tokenizer_extract_comment_metadata_setting = stream_tokenizer.extract_comment_metadata
     stream_tokenizer.extract_comment_metadata = extract_comment_metadata
     if taxon_set is None:
@@ -176,7 +191,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     if stt is None:
         stt = StrToTaxon(taxon_set,
                 translate_dict,
-                allow_repeated_use=False,
+                allow_repeated_use=allow_repeated_use,
                 case_sensitive=case_sensitive_taxon_labels)
 
     tree.seed_node = dataobject.Node()

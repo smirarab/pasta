@@ -30,9 +30,12 @@ import copy
 from threading import Lock
 from sate import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from dendropy.dataobject.taxon import Taxon
+from sate.tree import PhylogeneticTree
+from io import StringIO
 _LOG = get_logger(__name__)
 
-from sate.treeholder import TreeHolder, resolve_polytomies
+from sate.treeholder import TreeHolder, resolve_polytomies,\
+    read_newick_with_translate
 from sate.satealignerjob import SateAlignerJob, Sate3MergerJob
 from sate import get_logger
 from sate.utility import record_timestamp
@@ -313,18 +316,23 @@ class SateJob (TreeHolder):
         self.best_alignment_tmp_filename = self.curr_iter_align_tmp_filename
 
     def build_subsets_tree(self, curr_tmp_dir_par):
-        subsets_tree = self.get_tree_copy()                    
-        #First label leaves based on their subsets
-        for node in subsets_tree._tree.leaf_iter():
-            nalsj = self.sate_team.subsets[node.taxon.label]
-            node.alignment_subset_job = set([nalsj])
-            # the following is just for logging purposes
-            node.taxon = Taxon(label=nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:])
+        translate={}
+        t2 = {}
+        for node in self.tree._tree.leaf_iter():
+            nalsj = self.sate_team.subsets[node.taxon.label]            
+            newname = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]
+            translate[node.taxon.label] = newname
+            t2[newname] = set([nalsj])            
+        subsets_tree = PhylogeneticTree(read_newick_with_translate(StringIO(self.tree_str),translate_dict=translate))
+        for node in subsets_tree._tree.leaf_iter():            
+            node.alignment_subset_job = t2[node.taxon]
+        del t2
+        del translate
         _LOG.debug("nodes labeled")        
         #subsets_tree._tree.infer_taxa()
         #_LOG.debug("fake taxa inferred")                   
         #Then make sure the tree is rooted at a branch (not at a node). 
-        if len(subsets_tree._tree.seed_node.child_nodes()) >2:
+        if len(subsets_tree._tree.seed_node.child_nodes()) > 2:
             subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
         _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick()))
         # Then label internal branches based on their children, and collapse redundant edges. 
@@ -346,8 +354,7 @@ class SateJob (TreeHolder):
                     if c.child_nodes():
                         c.edge.collapse()                                    
                     else:
-                        node.remove_child(c)
-                    del c                        
+                        node.remove_child(c)                      
                 else:
                     i += 1
             

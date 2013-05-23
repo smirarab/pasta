@@ -508,9 +508,7 @@ class Sate3MergerJob(SateAlignerJob):
                                     delete_temps2=False,
                                     **configuration)
                 cj.add_parent(self)
-                self.add_child(cj)
-                
-                
+                self.add_child(cj)                                
                 merge_job_list.append(cj);
                         
             self.merge_job_list = merge_job_list
@@ -528,10 +526,13 @@ class Sate3MergerJob(SateAlignerJob):
         return
 
     def get_results(self):
-        self.results_lock.acquire()
-        if self.result_alignment is not None:
-            return self.result_alignment
+        
         self.wait()
+        
+        self.results_lock.acquire()        
+        if self.result_alignment is not None:
+            self.results_lock.release()
+            return self.result_alignment
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
         if self.align_job_list:
@@ -544,16 +545,13 @@ class Sate3MergerJob(SateAlignerJob):
                     r = self.multilocus_dataset.new_with_shared_meta()
                     r.append(j_list[0].get_results()[0]) #TODO: this should be changed to be multi-locus
                     for j in j_list[1:]:
-                        cres = j.get_results()
-                        merge_in(r[0], cres[0]) #TODO: this should be changed to be multi-locus
-                        del cres
-                        del j
+                        merge_in(r[0], j.get_results()[0]) #TODO: this should be changed to be multi-locus
+                        j.clear_results_object()                        
                     #assert all(x.is_aligned() for x in r)
                 else: # These are pairwise merges
                     r = self.multilocus_dataset.new_with_shared_meta()
                     for j in j_list:
                         r.append(j.get_results())
-                    del j
                 self.result_alignment = r
                 self.finished = True
             else:
@@ -561,7 +559,12 @@ class Sate3MergerJob(SateAlignerJob):
         self.results_lock.release()
         return r
         
-                                            
+    def clear_results_object(self):
+        self.results_lock.acquire()
+        for alg in self.result_alignment: 
+            alg.clear()
+        self.result_alignment = None
+        self.results_lock.release()                                        
         
     def get_pairwise_temp_dir(self, label1, label2):
         ''' Get a temp file for a pairwise merge

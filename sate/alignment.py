@@ -78,6 +78,31 @@ def write_fasta(alignment, dest):
     if isinstance(dest, str):
         file_obj.close()
 
+def write_compact_to_fasta(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name in alignment.keys():
+        s = alignment.as_string_sequence(name)
+        file_obj.write('>%s\n%s\n' % (name, s) )
+    if isinstance(dest, str):
+        file_obj.close()
+
+def write_compact_to_compact(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name, seq in alignment.items():
+        file_obj.write('>%s\n%s\n%s\n' % (name, seq.seq, " ".join((str(x) for x in seq.pos))) )
+    if isinstance(dest, str):
+        file_obj.close()
+
 def write_compact(alignment, dest):
     pt = re.compile(r'-+')
     """Writes the `alignment` in FASTA format to either a file object or file"""
@@ -177,11 +202,11 @@ class Alignment(dict, object):
         for name, seq in read_func(file_obj):
             self[name] = seq
 
-    def write_filepath(self, filename, file_format='FASTA', zip=False):
+    def write_filepath(self, filename, file_format='FASTA', zipout=False):
         """Writes the sequence data in the specified `file_format` to `filename`"""
         
         file_obj = open_with_intermediates(filename,'w')
-        if zip:
+        if zipout:
             import gzip
             file_obj.close()            
             file_obj = gzip.open(filename, "wb", 6)
@@ -230,7 +255,8 @@ class Alignment(dict, object):
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            new_alignment[key] = self[key]
+            if self.has_key(key):
+                new_alignment[key] = self[key]
         return new_alignment
 
     def is_empty(self):
@@ -311,6 +337,8 @@ class Alignment(dict, object):
         assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
         _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
 
+    def merge_in(self, she):
+        merge_in(self,she)
 
 from dendropy.dataio.fasta import FastaReader
 from dendropy import dataobject
@@ -798,11 +826,7 @@ class MultiLocusDataset(list):
     def sub_alignment(self, taxon_names):
         m = self.new_with_shared_meta()
         for alignment in self:
-            na = Alignment()
-            na.datatype = alignment.datatype
-            for k in taxon_names:
-                if (alignment.has_key(k)):
-                    na[k] = alignment[k]
+            na = alignment.sub_alignment(taxon_names)            
             m.append(na)
         return m
     def get_num_taxa(self):
@@ -856,6 +880,241 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
         except Exception, e:
             caught_exception = e
     raise e
+
+gappat = re.compile(r'[-?]+')
+nogappat = re.compile(r'[^-?]+')
+        
+_T_ID=0
+
+class AlignmentSequence:
+    def __init__(self):
+        self.seq = None
+        self.pos = []
+
+class CompactAlignment(dict,object):
+    def __init__(self):
+        self.colcount = 0
+        self.datatype = None
+    
+    
+    def sub_alignment(self, sub_keys):
+        "Creates an new alignment with a subset of the taxa."
+        new_alignment = CompactAlignment()
+        new_alignment.datatype = self.datatype
+        for key in sub_keys:
+            if self.has_key(key):
+                new_alignment[key] = self[key]
+        return new_alignment
+    
+    def is_aligned(self):
+        return True
+    def sequence_length(self):
+        return self.colcount
+    def get_num_taxa(self):
+        return len(self)
+    
+    def unaligned(self):
+        n = Alignment()
+        n.datatype = self.datatype
+        for k,seq in self.iteritems():
+            n[k] = seq.seq
+        return n
+    
+    def iter_column_character_count(self, seqsubset = None):
+        if seqsubset is None:
+            seqsubset = self.keys()
+        
+        counts = [0] * self.colcount
+        for k in seqsubset:
+            for pos in self[k].pos:
+                counts[pos] += 1
+        
+        for c in counts:
+            yield c
+            
+    def iter_columns_with_minimum_char_count(self, x, seqsubset = None):
+        for i,c in enumerate(self.iter_column_character_count(seqsubset)):
+            if c >= x:
+                yield i
+
+    def iter_columns_with_maximum_char_count(self, x, seqsubset = None):
+        for i,c in enumerate(self.iter_column_character_count(seqsubset)):
+            if c <= x:
+                yield i
+                
+    def get_insertion_columns(self,shared):
+        return set(i for i in self.iter_columns_with_maximum_char_count(0,shared)) 
+
+    def merge_in(self, she):
+        '''
+        Merges she inside self, assuming we share some common taxa, and the 
+        alignment of common taxa is identical across both alignments.
+        
+        When assumptions are not met, behavior is largely undefined. 
+        '''      
+        global _T_ID
+        _T_ID += 1
+        ID = _T_ID    
+        TIMING_LOG.info("transitivitymerge (%d) started" %ID )    
+        mykeys = set(self.keys())
+        herkeys = set(she.keys())
+        _LOG.debug("Transitive Merge Started. ID:%d - Rows: %d,%d" %(ID,len(mykeys),len(herkeys)))    
+        shared = mykeys.intersection(herkeys)
+        _LOG.debug("Shared seq: %d" %(len(shared)))        
+        onlyhers = herkeys - shared
+        me_ins = self.get_insertion_columns(shared)
+        she_ins = she.get_insertion_columns(shared)
+        _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
+        
+        memap=[]
+        shemap=[]
+        
+        melen = self.colcount
+        shelen =  she.colcount
+    
+        ime = 0
+        ishe = 0
+        inew = 0
+        while ime < melen or ishe < shelen:
+            #print ime,ishe
+            if ime in me_ins:              
+                memap.append(inew)
+                ime += 1
+            elif ishe in she_ins:
+                shemap.append(inew)
+                ishe += 1
+            else:       
+                memap.append(inew)
+                shemap.append(inew)
+                ishe += 1
+                ime += 1
+            inew += 1
+            
+        self.colcount = inew
+        
+        for seq in self.itervalues():
+            seq.pos = [memap[p] for p in seq.pos]
+            
+        for k in onlyhers:
+            she[k].pos = [shemap[p] for p in she[k].pos]
+            self[k] = she[k]        
+            
+        TIMING_LOG.info("transitivitymerge (%d) finished" %ID )
+        _LOG.debug("Transitive Merge Finished. ID:%d; cols after: %d" %(ID,self.colcount))
+
+    def mask_gapy_sites(self,minimum_seq_requirement):                
+        _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" 
+                   %(minimum_seq_requirement,self.colcount))
+
+        masked = set(self.iter_columns_with_maximum_char_count(minimum_seq_requirement-1))
+        
+        _LOG.debug("%d Columns identified for masking" %len(masked))
+        if not masked:
+            return
+        
+        off = 0
+        colmap = []
+        for c in xrange(0,self.colcount):
+            if c in masked:
+                off += 1
+                colmap.append(-1)
+            else:
+                colmap.append(c - off)
+                
+        for seq in self.itervalues():
+            # Find ID of char positions that would be masked
+            maskind = [i for i,c in enumerate(seq.pos) if c in masked]
+            n = len(seq.pos)
+            included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
+            if not maskind:
+                included.append((0,n))
+            elif included[-1][1] < n and maskind[-1]+1 != n:
+                included.append((maskind[-1]+1,n))
+            tmp = []
+            for (i,j) in included:
+                tmp.extend(seq.seq[i:j])
+            seq.seq = "".join(tmp)
+            seq.pos = [colmap[x] for x in (p for p in seq.pos if p not in masked)]
+                
+        self.colcount -= off
+        _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" 
+                   %(self.colcount+off,self.colcount,minimum_seq_requirement))
+        
+    def read_filepath(self, filename, file_format='FASTA'):
+        """Augments the matrix by reading the filepath.
+        If duplicate sequence names are encountered then the old name will be replaced.
+        """
+        file_obj = open(filename, 'r')
+        ret = self.read_file_object(file_obj, file_format=file_format)
+        file_obj.close()
+        return ret
+
+    def read_file_object(self, file_obj, file_format='FASTA'):
+        """Augments the matrix by reading the file object.
+        If duplicate sequence names are encountered then the old name will be replaced.
+        """
+        if ( file_format.upper() == 'FASTA' ):
+            read_func = read_fasta        
+        else:
+            raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
+
+        for name, seq in read_func(file_obj):
+            cseq = self.get_alignment_seq_object(seq)
+            self[name] = cseq
+        self.colcount = len(seq)
+        
+    def as_string_sequence(self,name):
+        seq = self[name]
+        s = []
+        nxt = 0
+        for i,p in enumerate(seq.pos):
+            if next != p:
+                s.append("-" * (p-nxt))
+            s.append(seq.seq[i]) 
+            nxt = p+1
+        p = self.colcount
+        if (p != nxt):
+            s.append("-" * (p-nxt))
+        return "".join(s)
+            
+    def get_alignment_seq_object(self, seq):
+        cseq = AlignmentSequence()            
+        for m in re.finditer(nogappat, seq):
+            cseq.pos.extend(xrange(m.start(),m.end()))
+        cseq.seq = re.sub(gappat,"",seq)
+        return cseq
+
+    def update_dict_from(self, alignment):
+        for k in self.iterkeys():
+            alignment[k] = self.as_string_sequence(k)
+        alignment.datatype = self.datatype
+            
+    def update_from_alignment(self, alignment):
+        for k,v in alignment.iteritems():
+            self[k] = self.get_alignment_seq_object(v)
+        self.colcount = len(v)
+        self.datatype = alignment.datatype
+            
+    def write_filepath(self, filename, file_format='FASTA', zipout=False):
+        """Writes the sequence data in the specified `file_format` to `filename`"""
+        
+        file_obj = open_with_intermediates(filename,'w')
+        if zipout:
+            import gzip
+            file_obj.close()            
+            file_obj = gzip.open(filename, "wb", 6)
+        self.write(file_obj, file_format=file_format)
+        file_obj.close()
+
+    def write(self, file_obj, file_format):
+        """Writes the sequence data in the specified `file_format` to `file_obj`"""
+        if ( file_format.upper() == 'FASTA' ):
+            write_func = write_compact_to_fasta        
+        elif ( file_format.upper() == 'COMPACT' ):
+            write_func = write_compact_to_compact            
+        else:
+            write_func = write_fasta
+        write_func(self, file_obj)
 
 def get_insertion_columns(shared,alg):
     n = len(alg.values()[0])
@@ -946,17 +1205,4 @@ def merge_in(me, she):
         me[k] = str(v)            
         
     TIMING_LOG.info("transitivitymerge (%d) finished" %ID )
-    _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
-    
-    
-#als = []
-#for i in range(1,2):
-#    a1 = Alignment()
-#    a1.read_filepath(sys.argv[1])
-#    als.append(a1)
-#a2 = Alignment()
-#a2.read_filepath(sys.argv[1])
-#a2.write('compact.txt', 'COMPACT')
-#merge_in(a1,a2)
-#a1.mask_gapy_sites(5)
-#a1.write_filepath("t.out")
+    _LOG.debug("Transitive Merge Finished. ID:%d; cols after: %d" %(ID,len(v)))

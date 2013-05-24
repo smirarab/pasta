@@ -239,7 +239,7 @@ class MafftAligner(Aligner):
             invoc.append(self.exe)
         else:
             invoc.extend([sys.executable, self.exe])
-        if len(alignment) <= 200 and alignment.max_sequence_length() < 10000:
+        if len(alignment) <= 200 and new_alignment.max_sequence_length() < 10000:
             invoc.extend(['--localpair', '--maxiterate', '1000'])
         if '--ep' not in self.user_opts:
             invoc.extend(['--ep', '0.123'])
@@ -592,7 +592,7 @@ class TreeEstimator(ExternalTool):
                     if os.path.exists(i_concat_align):
                         _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
                     else:
-                        alignment.write_filepath(i_concat_align,file_format='COMPACT',zip=True)
+                        alignment.write_filepath(i_concat_align,file_format='COMPACT',zipout=True)
                 
 
 class CustomTreeEstimator(TreeEstimator):
@@ -693,7 +693,10 @@ class FastTree(TreeEstimator):
         seqfn = os.path.join(curdir, "input.fasta")
 
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
-        alignment, partitions = multilocus_dataset.concatenate_alignments()
+        if len(multilocus_dataset) > 0:
+            alignment, partitions = multilocus_dataset.concatenate_alignments() #TODO: will fail for SATe3
+        else:
+            alignment = multilocus_dataset[0]
                 
         if kwargs.has_key("mask_gappy_sites"):
             self.store_unmasked_input(alignment, **kwargs)

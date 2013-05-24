@@ -27,7 +27,7 @@ from threading import Lock, Event
 from sate import get_logger
 from sate.tree import PhylogeneticTree
 from dendropy.dataobject.tree import Tree
-from sate.alignment import merge_in
+from sate.alignment import merge_in, CompactAlignment
 _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder
@@ -545,13 +545,15 @@ class Sate3MergerJob(SateAlignerJob):
                     r = self.multilocus_dataset.new_with_shared_meta()
                     r.append(j_list[0].get_results()[0]) #TODO: this should be changed to be multi-locus
                     for j in j_list[1:]:
-                        merge_in(r[0], j.get_results()[0]) #TODO: this should be changed to be multi-locus
+                        r[0].merge_in(j.get_results()[0]) #TODO: this should be changed to be multi-locus
                         j.clear_results_object()                        
                     #assert all(x.is_aligned() for x in r)
                 else: # These are pairwise merges
                     r = self.multilocus_dataset.new_with_shared_meta()
                     for j in j_list:
-                        r.append(j.get_results())
+                        a = CompactAlignment()
+                        a.update_from_alignment(j.get_results())
+                        r.append(a)
                 self.result_alignment = r
                 self.finished = True
             else:

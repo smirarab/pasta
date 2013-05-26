@@ -58,6 +58,48 @@ def read_fasta(src):
     if isinstance(src, str):
         file_obj.close()
 
+def read_compact(src):
+    """generator that returns (name, sequence) tuples from either a COMPACT
+    formatted file or file object.
+    """
+    file_obj = None
+    if isinstance(src, str):
+        try:
+            file_obj = open(src, "rU")
+        except IOError:
+            print("The file `%s` does not exist, exiting gracefully" % src)
+    elif isinstance(src, file):
+            file_obj = src
+    else:
+        raise TypeError('FASTA reader cannot recognize the source of %s' % src)
+    name = None
+    seq_list = list()
+    pos_list = list()
+    pos = False
+    for line_number, i in enumerate(file_obj):
+        if i.startswith('>'):
+            if name:
+                yield name, (''.join(seq_list),pos_list)
+                seq_list = list()
+                pos_list = list()
+                pos = False
+            name = i[1:].strip()
+        elif i.startswith('<'):
+            pos = True
+        else:
+            if pos:
+                pos = [int(x) for x in i.strip().split()]
+                pos_list.extend(pos)
+            else:
+                seq = ''.join(i.strip().upper().split())
+                if not is_sequence_legal(seq):
+                    raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
+                seq_list.append(seq)
+    yield name, (''.join(seq_list),pos_list)
+    if isinstance(src, str):
+        file_obj.close()
+
+
 def read_nexus(src):
     "TODO: use dendropy to do this."
     raise NotImplementedError('Input of NEXUS file format is not supported yet.')
@@ -1021,11 +1063,13 @@ class CompactAlignment(dict,object):
             else:
                 colmap.append(c - off)
                 
+        _LOG.debug("Column index mapping calculated.")
         for seq in self.itervalues():
             # Find ID of char positions that would be masked
             maskind = [i for i,c in enumerate(seq.pos) if c in masked]
             n = len(seq.pos)
-            included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
+            included = filter(lambda z: z[0]!=z[1], 
+                              reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
             if not maskind:
                 included.append((0,n))
             elif included[-1][1] < n and maskind[-1]+1 != n:
@@ -1055,12 +1099,16 @@ class CompactAlignment(dict,object):
         """
         if ( file_format.upper() == 'FASTA' ):
             read_func = read_fasta        
+        elif ( file_format.upper() == 'COMPACT' ):
+            read_func = read_compact
         else:
             raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
 
         for name, seq in read_func(file_obj):
             cseq = self.get_alignment_seq_object(seq)
             self[name] = cseq
+            #print cseq.seq
+            #print cseq.pos
         self.colcount = len(seq)
         
     def as_string_sequence(self,name):
@@ -1078,10 +1126,14 @@ class CompactAlignment(dict,object):
         return "".join(s)
             
     def get_alignment_seq_object(self, seq):
-        cseq = AlignmentSequence()            
-        for m in re.finditer(nogappat, seq):
-            cseq.pos.extend(xrange(m.start(),m.end()))
-        cseq.seq = re.sub(gappat,"",seq)
+        cseq = AlignmentSequence()
+        if isinstance(seq, str):            
+            for m in re.finditer(nogappat, seq):
+                cseq.pos.extend(xrange(m.start(),m.end()))
+            cseq.seq = re.sub(gappat,"",seq)
+        else:
+            cseq.seq = seq[0]
+            cseq.pos = seq[1]
         return cseq
 
     def update_dict_from(self, alignment):

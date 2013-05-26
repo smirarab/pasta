@@ -1103,13 +1103,13 @@ class CompactAlignment(dict,object):
             read_func = read_compact
         else:
             raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
-
+        self.colcount = 0
         for name, seq in read_func(file_obj):
-            cseq = self.get_alignment_seq_object(seq)
+            cseq, l = self.get_alignment_seq_object(seq)
             self[name] = cseq
-            #print cseq.seq
-            #print cseq.pos
-        self.colcount = len(seq)
+            print cseq.seq
+            print cseq.pos
+            self.colcount = max(l, self.colcount)
         
     def as_string_sequence(self,name):
         seq = self[name]
@@ -1127,14 +1127,17 @@ class CompactAlignment(dict,object):
             
     def get_alignment_seq_object(self, seq):
         cseq = AlignmentSequence()
+        l = 0
         if isinstance(seq, str):            
             for m in re.finditer(nogappat, seq):
                 cseq.pos.extend(xrange(m.start(),m.end()))
             cseq.seq = re.sub(gappat,"",seq)
+            l = len(seq)
         else:
             cseq.seq = seq[0]
             cseq.pos = seq[1]
-        return cseq
+            l = seq[1][-1]
+        return (cseq,l)
 
     def update_dict_from(self, alignment):
         for k in self.iterkeys():
@@ -1143,8 +1146,8 @@ class CompactAlignment(dict,object):
             
     def update_from_alignment(self, alignment):
         for k,v in alignment.iteritems():
-            self[k] = self.get_alignment_seq_object(v)
-        self.colcount = len(v)
+            self[k],l = self.get_alignment_seq_object(v)
+        self.colcount = l
         self.datatype = alignment.datatype
             
     def write_filepath(self, filename, file_format='FASTA', zipout=False):

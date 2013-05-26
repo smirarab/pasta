@@ -1072,7 +1072,7 @@ class CompactAlignment(dict,object):
                               reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
             if not maskind:
                 included.append((0,n))
-            elif included[-1][1] < n and maskind[-1]+1 != n:
+            elif (not included or included[-1][1] < n) and maskind[-1]+1 != n:
                 included.append((maskind[-1]+1,n))
             tmp = []
             for (i,j) in included:
@@ -1107,9 +1107,10 @@ class CompactAlignment(dict,object):
         for name, seq in read_func(file_obj):
             cseq, l = self.get_alignment_seq_object(seq)
             self[name] = cseq
-            print cseq.seq
-            print cseq.pos
+            #print cseq.seq
+            #print cseq.pos
             self.colcount = max(l, self.colcount)
+        print self.colcount
         
     def as_string_sequence(self,name):
         seq = self[name]
@@ -1136,7 +1137,7 @@ class CompactAlignment(dict,object):
         else:
             cseq.seq = seq[0]
             cseq.pos = seq[1]
-            l = seq[1][-1]
+            l = seq[1][-1] + 1
         return (cseq,l)
 
     def update_dict_from(self, alignment):

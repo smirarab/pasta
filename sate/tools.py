@@ -693,7 +693,7 @@ class FastTree(TreeEstimator):
         seqfn = os.path.join(curdir, "input.fasta")
 
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
-        if len(multilocus_dataset) > 0:
+        if len(multilocus_dataset) > 1:
             alignment, partitions = multilocus_dataset.concatenate_alignments() #TODO: will fail for SATe3
         else:
             alignment = multilocus_dataset[0]

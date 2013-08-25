@@ -26,9 +26,7 @@ from cStringIO import StringIO
 from sate.tree import PhylogeneticTree
 from sate.errors import TaxaLabelsMismatchError
 from sate import get_logger
-from dendropy.dataobject.taxon import Taxon
 from dendropy.dataio.newick import tree_source_iter
-from dendropy.dataobject.tree import Tree
 _LOG = get_logger(__name__)
 
 # Provide a random number generator

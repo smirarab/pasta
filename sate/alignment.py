@@ -58,6 +58,48 @@ def read_fasta(src):
     if isinstance(src, str):
         file_obj.close()
 
+def read_compact(src):
+    """generator that returns (name, sequence) tuples from either a COMPACT
+    formatted file or file object.
+    """
+    file_obj = None
+    if isinstance(src, str):
+        try:
+            file_obj = open(src, "rU")
+        except IOError:
+            print("The file `%s` does not exist, exiting gracefully" % src)
+    elif isinstance(src, file):
+            file_obj = src
+    else:
+        raise TypeError('FASTA reader cannot recognize the source of %s' % src)
+    name = None
+    seq_list = list()
+    pos_list = list()
+    pos = False
+    for line_number, i in enumerate(file_obj):
+        if i.startswith('>'):
+            if name:
+                yield name, (''.join(seq_list),pos_list)
+                seq_list = list()
+                pos_list = list()
+                pos = False
+            name = i[1:].strip()
+        elif i.startswith('<'):
+            pos = True
+        else:
+            if pos:
+                pos = [int(x) for x in i.strip().split()]
+                pos_list.extend(pos)
+            else:
+                seq = ''.join(i.strip().upper().split())
+                if not is_sequence_legal(seq):
+                    raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
+                seq_list.append(seq)
+    yield name, (''.join(seq_list),pos_list)
+    if isinstance(src, str):
+        file_obj.close()
+
+
 def read_nexus(src):
     "TODO: use dendropy to do this."
     raise NotImplementedError('Input of NEXUS file format is not supported yet.')
@@ -75,6 +117,31 @@ def write_fasta(alignment, dest):
         file_obj = dest
     for name, seq in alignment.items():
         file_obj.write('>%s\n%s\n' % (name, seq) )
+    if isinstance(dest, str):
+        file_obj.close()
+
+def write_compact_to_fasta(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name in alignment.keys():
+        s = alignment.as_string_sequence(name)
+        file_obj.write('>%s\n%s\n' % (name, s) )
+    if isinstance(dest, str):
+        file_obj.close()
+
+def write_compact_to_compact(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name, seq in alignment.items():
+        file_obj.write('>%s\n%s\n%s\n' % (name, seq.seq, " ".join((str(x) for x in seq.pos))) )
     if isinstance(dest, str):
         file_obj.close()
 
@@ -265,11 +332,11 @@ class Alignment(dict, object):
         for name, seq in read_func(file_obj):
             self[name] = seq
 
-    def write_filepath(self, filename, file_format='FASTA', zip=False):
+    def write_filepath(self, filename, file_format='FASTA', zipout=False):
         """Writes the sequence data in the specified `file_format` to `filename`"""
         
         file_obj = open_with_intermediates(filename,'w')
-        if zip:
+        if zipout:
             import gzip
             file_obj.close()            
             file_obj = gzip.open(filename, "wb", 6)
@@ -322,7 +389,8 @@ class Alignment(dict, object):
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            new_alignment[key] = self[key]
+            if self.has_key(key):
+                new_alignment[key] = self[key]
         return new_alignment
 
     def is_empty(self):
@@ -403,6 +471,8 @@ class Alignment(dict, object):
         assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
         _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
 
+    def merge_in(self, she):
+        merge_in(self,she)
 
 from dendropy.dataio.fasta import FastaReader
 from dendropy import dataobject
@@ -890,11 +960,7 @@ class MultiLocusDataset(list):
     def sub_alignment(self, taxon_names):
         m = self.new_with_shared_meta()
         for alignment in self:
-            na = Alignment()
-            na.datatype = alignment.datatype
-            for k in taxon_names:
-                if (alignment.has_key(k)):
-                    na[k] = alignment[k]
+            na = alignment.sub_alignment(taxon_names)            
             m.append(na)
         return m
     def get_num_taxa(self):
@@ -948,6 +1014,255 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
         except Exception, e:
             caught_exception = e
     raise e
+
+gappat = re.compile(r'[-?]+')
+nogappat = re.compile(r'[^-?]+')
+        
+_T_ID=0
+
+class AlignmentSequence:
+    def __init__(self):
+        self.seq = None
+        self.pos = []
+
+class CompactAlignment(dict,object):
+    def __init__(self):
+        self.colcount = 0
+        self.datatype = None
+    
+    
+    def sub_alignment(self, sub_keys):
+        "Creates an new alignment with a subset of the taxa."
+        new_alignment = CompactAlignment()
+        new_alignment.datatype = self.datatype
+        for key in sub_keys:
+            if self.has_key(key):
+                new_alignment[key] = self[key]
+        return new_alignment
+    
+    def is_aligned(self):
+        return True
+    def sequence_length(self):
+        return self.colcount
+    def get_num_taxa(self):
+        return len(self)
+    
+    def unaligned(self):
+        n = Alignment()
+        n.datatype = self.datatype
+        for k,seq in self.iteritems():
+            n[k] = seq.seq
+        return n
+    
+    def iter_column_character_count(self, seqsubset = None):
+        if seqsubset is None:
+            seqsubset = self.keys()
+        
+        counts = [0] * self.colcount
+        for k in seqsubset:
+            for pos in self[k].pos:
+                counts[pos] += 1
+        
+        for c in counts:
+            yield c
+            
+    def iter_columns_with_minimum_char_count(self, x, seqsubset = None):
+        for i,c in enumerate(self.iter_column_character_count(seqsubset)):
+            if c >= x:
+                yield i
+
+    def iter_columns_with_maximum_char_count(self, x, seqsubset = None):
+        for i,c in enumerate(self.iter_column_character_count(seqsubset)):
+            if c <= x:
+                yield i
+                
+    def get_insertion_columns(self,shared):
+        return set(i for i in self.iter_columns_with_maximum_char_count(0,shared)) 
+
+    def merge_in(self, she):
+        '''
+        Merges she inside self, assuming we share some common taxa, and the 
+        alignment of common taxa is identical across both alignments.
+        
+        When assumptions are not met, behavior is largely undefined. 
+        '''      
+        global _T_ID
+        _T_ID += 1
+        ID = _T_ID    
+        TIMING_LOG.info("transitivitymerge (%d) started" %ID )    
+        mykeys = set(self.keys())
+        herkeys = set(she.keys())
+        _LOG.debug("Transitive Merge Started. ID:%d - Rows: %d,%d" %(ID,len(mykeys),len(herkeys)))    
+        shared = mykeys.intersection(herkeys)
+        _LOG.debug("Shared seq: %d" %(len(shared)))        
+        onlyhers = herkeys - shared
+        me_ins = self.get_insertion_columns(shared)
+        she_ins = she.get_insertion_columns(shared)
+        _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
+        
+        memap=[]
+        shemap=[]
+        
+        melen = self.colcount
+        shelen =  she.colcount
+    
+        ime = 0
+        ishe = 0
+        inew = 0
+        while ime < melen or ishe < shelen:
+            #print ime,ishe
+            if ime in me_ins:              
+                memap.append(inew)
+                ime += 1
+            elif ishe in she_ins:
+                shemap.append(inew)
+                ishe += 1
+            else:       
+                memap.append(inew)
+                shemap.append(inew)
+                ishe += 1
+                ime += 1
+            inew += 1
+            
+        self.colcount = inew
+        
+        for seq in self.itervalues():
+            seq.pos = [memap[p] for p in seq.pos]
+            
+        for k in onlyhers:
+            she[k].pos = [shemap[p] for p in she[k].pos]
+            self[k] = she[k]        
+            
+        TIMING_LOG.info("transitivitymerge (%d) finished" %ID )
+        _LOG.debug("Transitive Merge Finished. ID:%d; cols after: %d" %(ID,self.colcount))
+
+    def mask_gapy_sites(self,minimum_seq_requirement):                
+        _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" 
+                   %(minimum_seq_requirement,self.colcount))
+
+        masked = set(self.iter_columns_with_maximum_char_count(minimum_seq_requirement-1))
+        
+        _LOG.debug("%d Columns identified for masking" %len(masked))
+        if not masked:
+            return
+        
+        off = 0
+        colmap = []
+        for c in xrange(0,self.colcount):
+            if c in masked:
+                off += 1
+                colmap.append(-1)
+            else:
+                colmap.append(c - off)
+                
+        _LOG.debug("Column index mapping calculated.")
+        for seq in self.itervalues():
+            # Find ID of char positions that would be masked
+            maskind = [i for i,c in enumerate(seq.pos) if c in masked]
+            n = len(seq.pos)
+            included = filter(lambda z: z[0]!=z[1], 
+                              reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
+            if not maskind:
+                included.append((0,n))
+            elif (not included or included[-1][1] < n) and maskind[-1]+1 != n:
+                included.append((maskind[-1]+1,n))
+            tmp = []
+            for (i,j) in included:
+                tmp.extend(seq.seq[i:j])
+            seq.seq = "".join(tmp)
+            seq.pos = [colmap[x] for x in (p for p in seq.pos if p not in masked)]
+                
+        self.colcount -= off
+        _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" 
+                   %(self.colcount+off,self.colcount,minimum_seq_requirement))
+        
+    def read_filepath(self, filename, file_format='FASTA'):
+        """Augments the matrix by reading the filepath.
+        If duplicate sequence names are encountered then the old name will be replaced.
+        """
+        file_obj = open(filename, 'r')
+        ret = self.read_file_object(file_obj, file_format=file_format)
+        file_obj.close()
+        return ret
+
+    def read_file_object(self, file_obj, file_format='FASTA'):
+        """Augments the matrix by reading the file object.
+        If duplicate sequence names are encountered then the old name will be replaced.
+        """
+        if ( file_format.upper() == 'FASTA' ):
+            read_func = read_fasta        
+        elif ( file_format.upper() == 'COMPACT' ):
+            read_func = read_compact
+        else:
+            raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
+        self.colcount = 0
+        for name, seq in read_func(file_obj):
+            cseq, l = self.get_alignment_seq_object(seq)
+            self[name] = cseq
+            #print cseq.seq
+            #print cseq.pos
+            self.colcount = max(l, self.colcount)
+        print self.colcount
+        
+    def as_string_sequence(self,name):
+        seq = self[name]
+        s = []
+        nxt = 0
+        for i,p in enumerate(seq.pos):
+            if next != p:
+                s.append("-" * (p-nxt))
+            s.append(seq.seq[i]) 
+            nxt = p+1
+        p = self.colcount
+        if (p != nxt):
+            s.append("-" * (p-nxt))
+        return "".join(s)
+            
+    def get_alignment_seq_object(self, seq):
+        cseq = AlignmentSequence()
+        l = 0
+        if isinstance(seq, str):            
+            for m in re.finditer(nogappat, seq):
+                cseq.pos.extend(xrange(m.start(),m.end()))
+            cseq.seq = re.sub(gappat,"",seq)
+            l = len(seq)
+        else:
+            cseq.seq = seq[0]
+            cseq.pos = seq[1]
+            l = seq[1][-1] + 1
+        return (cseq,l)
+
+    def update_dict_from(self, alignment):
+        for k in self.iterkeys():
+            alignment[k] = self.as_string_sequence(k)
+        alignment.datatype = self.datatype
+            
+    def update_from_alignment(self, alignment):
+        for k,v in alignment.iteritems():
+            self[k],l = self.get_alignment_seq_object(v)
+        self.colcount = l
+        self.datatype = alignment.datatype
+            
+    def write_filepath(self, filename, file_format='FASTA', zipout=False):
+        """Writes the sequence data in the specified `file_format` to `filename`"""
+        
+        file_obj = open_with_intermediates(filename,'w')
+        if zipout:
+            import gzip
+            file_obj.close()            
+            file_obj = gzip.open(filename, "wb", 6)
+        self.write(file_obj, file_format=file_format)
+        file_obj.close()
+
+    def write(self, file_obj, file_format):
+        """Writes the sequence data in the specified `file_format` to `file_obj`"""
+        if ( file_format.upper() == 'FASTA' ):
+            write_func = write_compact_to_fasta        
+        elif ( file_format.upper() == 'COMPACT' ):
+            write_func = write_compact_to_compact            
+        else:
+            write_func = write_fasta
+        write_func(self, file_obj)
 
 def get_insertion_columns(shared,alg):
     n = len(alg.values()[0])

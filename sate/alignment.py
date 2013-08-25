@@ -80,7 +80,7 @@ def write_fasta(alignment, dest):
 
 def write_compact(alignment, dest):
     pt = re.compile(r'-+')
-    """Writes the `alignment` in FASTA format to either a file object or file"""
+    """Writes the `alignment` in COMPACT format to either a file object or file"""
     file_obj = None
     if isinstance(dest, str):
         file_obj = open(dest, "w")
@@ -99,6 +99,92 @@ def write_compact(alignment, dest):
         #file_obj.write("%s\n%s\n" %("\t".join((x[0] for x in s)), "\t".join((str(x[1]) for x in s))))                        
     if isinstance(dest, str):
         file_obj.close()
+
+def write_compact2(alignment, dest):
+    """Writes the `alignment` in COMPACT2 format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest        
+    for name, seq in alignment.items():        
+        s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
+        s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
+        file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))                        
+    if isinstance(dest, str):
+        file_obj.close()
+
+def write_compact3(alignment, dest):
+    pt = re.compile(r'-+')
+    """Writes the `alignment` in COMPACT3 format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest        
+    for name, seq in alignment.items():
+        i = 0
+        s=[]
+        p=[]
+        for gaps in re.finditer(pt,seq):
+            s.append(seq[i:gaps.start()])
+            p.append('%d-%d' % (gaps.start(),gaps.end()-1))
+            i= gaps.end()
+        s.append(seq[i:])        
+        file_obj.write('>%s\n%s\n@ %s\n'%(name,''.join(s),' '.join(p)))
+        #s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
+        #s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
+        #file_obj.write("%s\n%s\n" %("\t".join((x[0] for x in s)), "\t".join((str(x[1]) for x in s))))                        
+    if isinstance(dest, str):
+        file_obj.close()
+                
+def read_compact3(src):
+    """generator that returns (name, sequence) tuples from either a COMPACT3
+    formatted file or file object.
+    """
+    file_obj = None
+    if isinstance(src, str):
+        try:
+            file_obj = open(src, "rU")
+        except IOError:
+            print("The file `%s` does not exist, exiting gracefully" % src)
+    elif isinstance(src, file):
+            file_obj = src
+    else:
+        raise TypeError('FASTA reader cannot recognize the source of %s' % src)
+    name = None
+    seq_list = list()
+    pos_list = list()
+    for line_number, i in enumerate(file_obj):
+        if i.startswith('>'):
+            if name:
+                seq = []
+                lastpos = 0
+                seq_list="".join(seq_list)
+                for x in pos_list:
+                    print x
+                    seq.append(seq_list[0:x[0]-lastpos])
+                    seq.append("-"*(x[1]-x[0]))
+                    seq_list = seq_list[x[0]-lastpos:]
+                    lastpos = x[1]
+                seq.append(seq_list)
+                yield name, ''.join(seq)
+                seq_list = list()
+                pos_list = list()
+            name = i[1:].strip()            
+        elif i.startswith('@'):
+            seq = [(int(y[0]),int(y[1])+1) for y in (x.split("-") for x in i[1:].split())]
+            pos_list.extend(seq)
+        elif i.startswith('#'):
+            pass
+        else:
+            seq = ''.join(i.strip().upper().split())
+            if not is_sequence_legal(seq):
+                raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
+            seq_list.append(seq)
+    yield name, ''.join(seq_list)
+    if isinstance(src, str):
+        file_obj.close()    
 
 def write_phylip(alignment, dest):
     """Writes the `alignment` in relaxed PHYLIP format to either a file object or file"""
@@ -172,6 +258,8 @@ class Alignment(dict, object):
             read_func = read_nexus
         elif ( file_format.upper() == 'PHYLIP' ):
             read_func = read_phylip
+        elif ( file_format.upper() == 'COMPACT3' ):
+            read_func = read_compact3
         else:
             raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
         for name, seq in read_func(file_obj):
@@ -198,6 +286,10 @@ class Alignment(dict, object):
             write_func = write_phylip
         elif ( file_format.upper() == 'COMPACT' ):
             write_func = write_compact            
+        elif ( file_format.upper() == 'COMPACT2' ):
+            write_func = write_compact2       
+        elif ( file_format.upper() == 'COMPACT3' ):
+            write_func = write_compact3
         else:
             write_func = write_fasta
         write_func(self, file_obj)
@@ -947,8 +1039,7 @@ def merge_in(me, she):
         
     TIMING_LOG.info("transitivitymerge (%d) finished" %ID )
     _LOG.debug("Transitive Merge Finished. ID:%d" %ID)
-    
-    
+
 #als = []
 #for i in range(1,2):
 #    a1 = Alignment()
@@ -956,7 +1047,10 @@ def merge_in(me, she):
 #    als.append(a1)
 #a2 = Alignment()
 #a2.read_filepath(sys.argv[1])
-#a2.write('compact.txt', 'COMPACT')
+#a2.write('compact.txt', 'COMPACT3')
+#a2= Alignment()
+#a2.read_filepath('compact.txt',"COMPACT3")
+#a2.write("backt.fasta", "FASTA")
 #merge_in(a1,a2)
 #a1.mask_gapy_sites(5)
 #a1.write_filepath("t.out")

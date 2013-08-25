@@ -176,6 +176,7 @@ def finish_sate_execution(sate_team,
     ######
     alignment_as_tmp_filename_to_report = None
     tree_as_tmp_filename_to_report = None
+    starting_tree = None
     
     tree_file = options.treefile
     if tree_file:

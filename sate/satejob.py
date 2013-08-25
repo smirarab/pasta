@@ -31,7 +31,7 @@ from threading import Lock
 from sate import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from dendropy.dataobject.taxon import Taxon
 from sate.tree import PhylogeneticTree
-from io import StringIO
+from StringIO import StringIO
 _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder, resolve_polytomies,\

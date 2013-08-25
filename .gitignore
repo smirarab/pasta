@@ -4,5 +4,6 @@ SATe.egg-info/
 build/
 bin/
 sate/test/runSateTest*
+sate/test/data/*
 *.swp
 

@@ -592,7 +592,7 @@ class TreeEstimator(ExternalTool):
                     if os.path.exists(i_concat_align):
                         _LOG.warn('File "%s" exists. It will not be overwritten' % i_concat_align)
                     else:
-                        alignment.write_filepath(i_concat_align,file_format='COMPACT3',zip=True)
+                        alignment.write_filepath(i_concat_align,file_format='COMPACT3',zipout=True)
                 
 
 class CustomTreeEstimator(TreeEstimator):

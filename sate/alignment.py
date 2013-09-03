@@ -1053,6 +1053,9 @@ class AlignmentSequence:
         self.seq = None
         self.pos = []
 
+    def replace(self, match_char, replace_char):
+	return self.seq.replace(match_char, replace_char)
+
 class CompactAlignment(dict,object):
     def __init__(self):
         self.colcount = 0
@@ -1067,7 +1070,7 @@ class CompactAlignment(dict,object):
             if self.has_key(key):
                 new_alignment[key] = self[key]
         return new_alignment
-    
+   
     def is_aligned(self):
         return True
     def sequence_length(self):

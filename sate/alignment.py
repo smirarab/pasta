@@ -12,7 +12,6 @@ Simple classes for reading and manipulating sequence data matrices
 """
 
 import re, os
-from copy import deepcopy
 from sate import get_logger, log_exception, MESSENGER, TIMING_LOG
 from sate.filemgr import open_with_intermediates
 
@@ -134,7 +133,7 @@ def write_compact_to_fasta(alignment, dest):
         file_obj.close()
 
 def write_compact_to_compact(alignment, dest):
-    """Writes the `alignment` in FASTA format to either a file object or file"""
+    """Writes the `alignment` in COMPACT format to either a file object or file"""
     file_obj = None
     if isinstance(dest, str):
         file_obj = open(dest, "w")
@@ -145,6 +144,24 @@ def write_compact_to_compact(alignment, dest):
     if isinstance(dest, str):
         file_obj.close()
 
+def write_compact_to_compact3(alignment, dest):
+    """Writes the `alignment` in COMPACT format to either a file object or file"""
+    file_obj = None
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+    for name, seq in alignment.items():            
+        pos=[]
+        nxt = 0
+        for p in seq.pos:
+            if nxt != p:
+                pos.append("%d-%d" % (nxt,p))            
+            nxt = p+1                                       
+        file_obj.write('>%s\n%s\n@ %s\n'%(name, seq.seq,' '.join(pos)))
+    if isinstance(dest, str):
+        file_obj.close()
+        
 def write_compact(alignment, dest):
     pt = re.compile(r'-+')
     """Writes the `alignment` in COMPACT format to either a file object or file"""
@@ -426,6 +443,7 @@ class Alignment(dict, object):
     def mask_gapy_sites(self,minimum_seq_requirement):        
         n = len(self.values()[0])
         _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
+        #print "LLLLENNNNN",len(self['sci'])
         
 #        # The following implements row-based masking. Seems to be less efficient than column based
 #        masked = zip(range(0,n),[minimum_seq_requirement] * n)
@@ -1209,7 +1227,7 @@ class CompactAlignment(dict,object):
         s = []
         nxt = 0
         for i,p in enumerate(seq.pos):
-            if next != p:
+            if nxt != p:
                 s.append("-" * (p-nxt))
             s.append(seq.seq[i]) 
             nxt = p+1
@@ -1259,7 +1277,9 @@ class CompactAlignment(dict,object):
         if ( file_format.upper() == 'FASTA' ):
             write_func = write_compact_to_fasta        
         elif ( file_format.upper() == 'COMPACT' ):
-            write_func = write_compact_to_compact            
+            write_func = write_compact_to_compact
+        elif ( file_format.upper() == 'COMPACT3' ):
+            write_func = write_compact_to_compact3 
         else:
             write_func = write_fasta
         write_func(self, file_obj)

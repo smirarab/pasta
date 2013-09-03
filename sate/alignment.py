@@ -246,7 +246,7 @@ def read_compact3(src):
                 lastpos = 0
                 seq_list="".join(seq_list)
                 for x in pos_list:
-                    print x
+                    #print x
                     seq.append(seq_list[0:x[0]-lastpos])
                     seq.append("-"*(x[1]-x[0]))
                     seq_list = seq_list[x[0]-lastpos:]
@@ -266,7 +266,17 @@ def read_compact3(src):
             if not is_sequence_legal(seq):
                 raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
             seq_list.append(seq)
-    yield name, ''.join(seq_list)
+    seq = []
+    lastpos = 0
+    seq_list="".join(seq_list)
+    for x in pos_list:
+        #print x
+        seq.append(seq_list[0:x[0]-lastpos])
+        seq.append("-"*(x[1]-x[0]))
+        seq_list = seq_list[x[0]-lastpos:]
+        lastpos = x[1]
+    seq.append(seq_list)
+    yield name, ''.join(seq)
     if isinstance(src, str):
         file_obj.close()    
 
@@ -1380,12 +1390,12 @@ def merge_in(me, she):
 #    a1 = Alignment()
 #    a1.read_filepath(sys.argv[1])
 #    als.append(a1)
-#a2 = Alignment()
-#a2.read_filepath(sys.argv[1])
-#a2.write('compact.txt', 'COMPACT3')
-#a2= Alignment()
-#a2.read_filepath('compact.txt',"COMPACT3")
-#a2.write("backt.fasta", "FASTA")
+a2 = Alignment()
+a2.read_filepath(sys.argv[1])
+a2.write('compact.txt', 'COMPACT3')
+a2= Alignment()
+a2.read_filepath('compact.txt',"COMPACT3")
+a2.write("backt.fasta", "FASTA")
 #merge_in(a1,a2)
 #a1.mask_gapy_sites(5)
 #a1.write_filepath("t.out")

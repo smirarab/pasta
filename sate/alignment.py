@@ -1052,9 +1052,12 @@ class AlignmentSequence:
     def __init__(self):
         self.seq = None
         self.pos = []
-
+    
     def replace(self, match_char, replace_char):
-	return self.seq.replace(match_char, replace_char)
+        s = AlignmentSequence()
+        s.pos.extend(self.pos)
+        s.seq = self.seq.replace(match_char, replace_char)
+        return s
 
 class CompactAlignment(dict,object):
     def __init__(self):

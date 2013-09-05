@@ -37,6 +37,7 @@ from sate.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
 
 from cStringIO import StringIO
 from alignment import Alignment
+import copy
 
 _LOG = get_logger(__name__)
 
@@ -700,6 +701,7 @@ class FastTree(TreeEstimator):
                 
         if kwargs.has_key("mask_gappy_sites"):
             self.store_unmasked_input(alignment, **kwargs)
+            alignment = copy.deepcopy(alignment)
             alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
         
         alignment.write_filepath(seqfn, 'FASTA')

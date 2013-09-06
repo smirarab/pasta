@@ -156,7 +156,7 @@ def write_compact_to_compact3(alignment, dest):
         nxt = 0
         for p in seq.pos:
             if nxt != p:
-                pos.append("%d-%d" % (nxt,p))            
+                pos.append("%d-%d" % (nxt,p-1))            
             nxt = p+1                                       
         file_obj.write('>%s\n%s\n@ %s\n'%(name, seq.seq,' '.join(pos)))
     if isinstance(dest, str):

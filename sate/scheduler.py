@@ -24,9 +24,9 @@ import os, traceback
 from cStringIO import StringIO
 from Queue import Queue
 from threading import Thread, Event, Lock
+from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
 from sate import get_logger, TIMING_LOG
-import sys
 from sate.filemgr import open_with_intermediates
 from random import random
 
@@ -38,36 +38,140 @@ class LoggingQueue(Queue):
         Queue.put(self, job)
 
 jobq = LoggingQueue()
-
 gid = 0
 
-def worker():
-    global gid
-    while True:
-        job = jobq.get()
-        gid += 1
-        ID = gid        
-        TIMING_LOG.info("%s (%d) started" % (str(job.context_str),ID))
-        try:
-            job.start()
-        except:
-            err = StringIO()
-            traceback.print_exc(file=err)
-            _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
+class ProcessLighJob():
+    def __init__(self, invocation, k):
+        self._invocation = invocation
+        self._k = k
+        self.error = None
+        self.return_code = None
+
+    def read_stderr(self,_stderr_fo):
+        if os.path.exists(_stderr_fo.name):
+            errFile = open(_stderr_fo.name,'r')
+            errorFromFile = errFile.read(-1)
+            errFile.close()
+            return errorFromFile
         else:
+            return None
+                
+    def run(self):
+        _LOG.debug('launching %s.' % " ".join(self._invocation))
+        k = self._k
+        proc_cwd = k.get('cwd', os.curdir)
+        stdout_file_path = k.get('stdout', None)
+        stderr_file_path = k.get('stderr', None)
+        if stdout_file_path:
+            _stdout_fo = open_with_intermediates(stdout_file_path, 'w')
+        else:
+            _stdout_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stdout.txt'), 'w')
+        k['stdout'] = _stdout_fo
+        if stderr_file_path:
+            _stderr_fo = open_with_intermediates(stderr_file_path, 'w')
+        else:
+            _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
+        k['stderr'] = _stderr_fo
+
+        
+        process = Popen(self._invocation, stdin = PIPE, **k)
+
+        err_msg = []                
+        err_msg.append("SATe failed because one of the programs it tried to run failed.")
+        err_msg.append('The invocation that failed was: \n    "%s"\n' % '" "'.join(self._invocation))
+        try:
+            self.return_code = process.wait()
+            _stdout_fo.close()
+            _stderr_fo.close()
+            process.stdin.close()
+            if self.return_code:
+                errorFromFile = self.read_stderr(_stderr_fo)
+                if errorFromFile:
+                    err_msg.append(errorFromFile)
+                self.error = "\n".join(err_msg)
+        except Exception as e:
+            err_msg.append(str(e))
+            self.error = "\n".join(err_msg)    
+            
+        _LOG.debug('Finished %s.\n Return code: %s; %s' % (" ".join(self._invocation), self.return_code, self.error))    
+
+class pworker():
+    def __init__(self, q):
+        self.q = q
+        
+    def __call__(self):
+        while True:            
+            job = self.q.get()            
             try:
-                job.get_results()
-                job.postprocess()
+                job.run()
+                self.q.task_done()
             except:
                 err = StringIO()
                 traceback.print_exc(file=err)
-                _LOG.error("Worker dying.  Error in job.get_results = %s" % err.getvalue())
-        TIMING_LOG.info("%s (%d) completed" % (str(job.context_str),ID))
-        jobq.task_done()
-    return
+                _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())        
+        return
+
+m = Manager()
+
+class worker():
+    
+    def __init__(self):
+        global m
+        self.pqueue = m.Queue()
+        pw = pworker(self.pqueue)
+        self.p = Process(target=pw)
+        self.p.daemon = True
+        self.p.start()
+
+    def stop(self):
+        self.p.terminate()
+        
+    def __call__(self):                            
+        global gid
+        while True:            
+            job = jobq.get()            
+            gid += 1
+            ID = gid        
+            TIMING_LOG.info("%s (%d) started" % (str(job.context_str),ID))
+            try:
+                if isinstance(job, DispatchableJob):
+                    pa = job.start()
+                    plj = ProcessLighJob(pa[0],pa[1])
+                    self.pqueue.put(plj)
+                else: 
+                    _LOG.debug("JOB TYPE IS: " + type(job))
+                    job.start()
+            except:
+                err = StringIO()
+                traceback.print_exc(file=err)
+                _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
+            else:
+                if isinstance(job, DispatchableJob):
+                    self.pqueue.join()
+                    if plj.error is not None:
+                        job.error = Exception(plj.error)
+                    job.return_code = plj.return_code
+                    if job.return_code:
+                        raise job.error
+                    
+                    job.results = job.result_processor()
+                    
+                    job.finished_event.set()     
+                try:
+                    job.get_results()
+                    job.postprocess()
+                except:
+                    err = StringIO()
+                    traceback.print_exc(file=err)
+                    _LOG.error("Worker dying.  Error in job.get_results = %s" % err.getvalue())
+                    raise
+            TIMING_LOG.info("%s (%d) completed" % (str(job.context_str),ID))
+            jobq.task_done()
+        return
 
 # We'll keep a list of Worker threads that are running in case any of our code triggers multiple calls
 _WORKER_THREADS = []
+_WORKER_OBJECTS = []
 
 def start_worker(num_workers):
     """Spawns worker threads such that at least `num_workers` threads will be
@@ -81,10 +185,16 @@ def start_worker(num_workers):
     num_currently_running = len(_WORKER_THREADS)
     for i in range(num_currently_running, num_workers):
         _LOG.debug("Launching Worker thread #%d" % i)
-        t = Thread(target=worker)
+        w = worker()
+        t = Thread(target=w)
         _WORKER_THREADS.append(t)
+        _WORKER_OBJECTS.append(w)
         t.setDaemon(True)
         t.start()
+        
+def stop_worker():
+    for w in _WORKER_OBJECTS:
+        w.stop()
 
 class JobBase(object):
     def __init__(self, **kwargs):
@@ -116,23 +226,18 @@ class FakeJob(JobBase):
     def kill(self):
         pass
 
-
 class DispatchableJob(JobBase):
     def __init__(self, invocation, result_processor, **kwargs):
         JobBase.__init__(self, **kwargs)
         self._invocation = invocation
         # _LOG.debug('DispatchableJob.__init__(invocation= %s )' % " ".join(self._invocation))  # Not sure why it does not work with datatype in treebuild.create_job
         self.result_processor = result_processor
-        self.process = None
         self.return_code = None
         self.results = None
         self._id = None
         self._stdout_fo = None
         self._stderr_fo = None
-        self.launched_event = Event()
         self.finished_event = Event()
-        self.thread_waiting = False
-        self.thread_waiting_lock = Lock()
         self.error = None
 
     def get_id(self):
@@ -144,35 +249,17 @@ class DispatchableJob(JobBase):
     id = property(get_id, set_id)
 
     def start(self):
-        assert self.process is None, "Relaunching jobs is not allowed"
         try:
-            _LOG.debug('launching %s.\n setting event' % " ".join(self._invocation))
-            proc_cwd = self._kwargs.get('cwd', os.curdir)
+            #_LOG.debug('launching %s.\n setting event' % " ".join(self._invocation))            
             k = dict(self._kwargs)
-            stdout_file_path = self._kwargs.get('stdout', None)
-            stderr_file_path = self._kwargs.get('stderr', None)
-            if stdout_file_path:
-                self._stdout_fo = open_with_intermediates(
-                        stdout_file_path, 'w')
-            else:
-                self._stdout_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stdout.txt'), 'w')
-            k['stdout'] = self._stdout_fo
-            if stderr_file_path:
-                self._stderr_fo = open_with_intermediates(
-                        stderr_file_path, 'w')
-            else:
-                self._stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
-            k['stderr'] = self._stderr_fo
-            self.process = Popen(self._invocation, stdin = PIPE, **k)
-            self.set_id(self.process.pid)
+            return (self._invocation, k)
+            #self.process = Popen(self._invocation, stdin = PIPE, **k)
+            #self.set_id(self.process.pid)
             #f = open('.%s.pid' % self.get_id(), 'w')
-            #f.close()
-            _LOG.debug('setting launched_event')
+            #f.close()            
         except:
             self.error = RuntimeError('The invocation:\n"%s"\nfailed' % '" "'.join(self._invocation))
             raise
-        finally:
-            self.launched_event.set()
 
 ####
 #   Polling does not appear to be needed in the current impl.
@@ -182,15 +269,6 @@ class DispatchableJob(JobBase):
 #           self.return_code = self.process.poll()
 #       return self.return_code
 
-    def read_stderr(self):
-        if os.path.exists(self._stderr_fo.name):
-            errFile = open(self._stderr_fo.name,'r')
-            errorFromFile = errFile.read(-1)
-            errFile.close()
-            return errorFromFile
-        else:
-            return None
-
     def wait(self):
         """Blocking.
 
@@ -199,66 +277,17 @@ class DispatchableJob(JobBase):
         wait will wait for the finished_event
         """
         
-        self.thread_waiting_lock.acquire()
-        if self.thread_waiting:
-            self.thread_waiting_lock.release()
+        # this branch is actually monitoring the process
+        
+        if self.error is not None:
+            raise self.error
 
-            if self.error is not None:
-                raise self.error
-
-            self.finished_event.wait()
-            
-           
-            if self.error is not None:
-                raise self.error
-        else:
-            # this branch is actually monitoring the process
-            self.thread_waiting = True
-            self.thread_waiting_lock.release()
-
-            try:
-                if self.error is not None:
-                    raise self.error
-
-                if self.return_code is None:
-                    _LOG.debug('Launch detected')
-                    self.launched_event.wait()
-                    _LOG.debug('Launch detected')
-                    if self.error is not None:
-                        raise self.error
-
-                    err_msg = []
-                    err_msg.append("SATe failed because one of the programs it tried to run failed.")
-                    err_msg.append('The invocation that failed was: \n    "%s"\n' % '" "'.join(self._invocation))
-
-                    try:
-                        self.return_code = self.process.wait()
-                        self._stdout_fo.close()
-                        self._stderr_fo.close()
-                        self.process.stdin.close()
-                        if self.return_code:
-                            errorFromFile = self.read_stderr()
-                            if errorFromFile:
-                                err_msg.append(errorFromFile)
-                            self.error = Exception("\n".join(err_msg))
-                            raise self.error
-                    except:
-                        self.error = Exception("\n".join(err_msg))
-                        raise self.error
-
-                    try:
-                        self.results = self.result_processor()
-                    except Exception, e:
-                        errorFromFile = self.read_stderr()
-                        if not errorFromFile:
-                            errorFromFile = str(e)
-                        err_msg.append(errorFromFile)
-                        self.error = Exception("\n".join(err_msg))
-
-                    if self.error is not None:
-                        raise self.error
-            finally:
-                self.finished_event.set()
+        _LOG.debug("Waiting for results")
+        self.finished_event.wait()
+        _LOG.debug("Results found") 
+       
+        if self.error is not None:
+            raise self.error                        
         
         return self.return_code
 
@@ -276,8 +305,7 @@ class DispatchableJob(JobBase):
         pass
     
     def kill(self):
-        if self.results is None:
-            self.process.kill()
+        pass
             
             
 class TickableJob():
@@ -331,4 +359,5 @@ class TickingDispatchableJob(DispatchableJob):
         
     def postprocess(self):
         for parent in self.parent_tickable_job:
+            _LOG.debug("Ticking "+str(parent))
             parent.tick(self)

@@ -37,7 +37,7 @@ from sate.tools import *
 from sate.satejob import *
 from sate.treeholder import read_and_encode_splits,\
     generate_tree_with_splits_from_tree
-from sate.scheduler import start_worker, jobq
+from sate.scheduler import start_worker, jobq, stop_worker
 from sate.utility import IndentedHelpFormatterWithNL
 from sate.filemgr import open_with_intermediates
 from sate import filemgr
@@ -157,11 +157,8 @@ def read_input_sequences(seq_filename_list,
 def finish_sate_execution(sate_team,
                           user_config,
                           temporaries_dir,
-                          multilocus_dataset,
                           sate_products):
     global _RunningJobs
-    # get the RAxML model #TODO: this should check for the tree_estimator.  Currently we only support raxml, so this works...
-    model = user_config.raxml.model
 
     options = user_config.commandline
 
@@ -170,6 +167,19 @@ def finish_sate_execution(sate_team,
         f = open_with_intermediates(options.timesfile, 'a')
         f.close()
         set_timing_log_filepath(options.timesfile)
+
+    ############################################################################
+    # Launch threads to do work
+    #####
+    sate_config = user_config.get("sate")
+    start_worker(sate_config.num_cpus)
+    
+    
+    _LOG.debug("start reading the input alignment")
+    multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
+            datatype=user_config.commandline.datatype,
+            missing=user_config.commandline.missing)
+        
     ############################################################################
     # We must read the incoming tree in before we call the get_sequences_for_sate
     #   function that relabels that taxa in the dataset
@@ -177,7 +187,7 @@ def finish_sate_execution(sate_team,
     alignment_as_tmp_filename_to_report = None
     tree_as_tmp_filename_to_report = None
     starting_tree = None
-    
+        
     tree_file = options.treefile
     if tree_file:
         if not os.path.exists(tree_file):
@@ -233,12 +243,6 @@ def finish_sate_execution(sate_team,
     
     if options.aligned:
         options.aligned = all( [i.is_aligned() for i in multilocus_dataset] )
-
-    ############################################################################
-    # Launch threads to do work
-    #####
-    sate_config = user_config.get("sate")
-    start_worker(sate_config.num_cpus)
 
     ############################################################################
     # Be prepared to kill any long running jobs
@@ -423,7 +427,8 @@ def finish_sate_execution(sate_team,
         if tree_as_tmp_filename_to_report is not None:
             MESSENGER.send_info('The resulting tree (with the names in a "safe" form) was first written as the file "%s"' % tree_as_tmp_filename_to_report)
 
-    finally:
+    finally:      
+        stop_worker()  
         for el in prev_signals:
             sig, prev_handler = el
             if prev_handler is None:
@@ -439,10 +444,6 @@ def run_sate_from_config(user_config, sate_products):
     instance used to create `dir`
     """
 
-    _LOG.debug("start reading the input alignment")
-    multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
-            datatype=user_config.commandline.datatype,
-            missing=user_config.commandline.missing)
     cmdline_options = user_config.commandline
 
     ############################################################################
@@ -470,7 +471,6 @@ def run_sate_from_config(user_config, sate_products):
         finish_sate_execution(sate_team=sate_team,
                               user_config=user_config,
                               temporaries_dir=temporaries_dir,
-                              multilocus_dataset=multilocus_dataset,
                               sate_products=sate_products)
     finally:
         if delete_dir:

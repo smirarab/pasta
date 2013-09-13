@@ -239,7 +239,7 @@ class MafftAligner(Aligner):
         if platform.system() == "Windows":
             invoc.append(self.exe)
         else:
-            invoc.extend([sys.executable, self.exe])
+            invoc.extend([self.exe])
         if len(alignment) <= 200 and new_alignment.max_sequence_length() < 10000:
             invoc.extend(['--localpair', '--maxiterate', '1000'])
         if '--ep' not in self.user_opts:

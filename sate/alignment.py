@@ -151,13 +151,16 @@ def write_compact_to_compact3(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
+    colcount = alignment.colcount
     for name, seq in alignment.items():            
         pos=[]
-        nxt = 0
+        strt = 0
         for p in seq.pos:
-            if nxt != p:
-                pos.append("%d-%d" % (nxt,p-1))            
-            nxt = p+1                                       
+            if strt != p:
+                pos.append("%d-%d" % (strt,p-1))            
+            strt = p+1
+        if colcount != strt:
+            pos.append("%d-%d" % (strt,colcount-1))
         file_obj.write('>%s\n%s\n@ %s\n'%(name, seq.seq,' '.join(pos)))
     if isinstance(dest, str):
         file_obj.close()

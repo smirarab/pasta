@@ -40,7 +40,7 @@ class LoggingQueue(Queue):
 jobq = LoggingQueue()
 gid = 0
 
-class ProcessLighJob():
+class LightJobForProcess():
     def __init__(self, invocation, k):
         self._invocation = invocation
         self._k = k
@@ -136,10 +136,9 @@ class worker():
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
-                    plj = ProcessLighJob(pa[0],pa[1])
+                    plj = LightJobForProcess(pa[0],pa[1])
                     self.pqueue.put(plj)
-                else: 
-                    _LOG.debug("JOB TYPE IS: " + type(job))
+                else:                    
                     job.start()
             except:
                 err = StringIO()
@@ -282,9 +281,7 @@ class DispatchableJob(JobBase):
         if self.error is not None:
             raise self.error
 
-        _LOG.debug("Waiting for results")
-        self.finished_event.wait()
-        _LOG.debug("Results found") 
+        self.finished_event.wait() 
        
         if self.error is not None:
             raise self.error                        
@@ -359,5 +356,4 @@ class TickingDispatchableJob(DispatchableJob):
         
     def postprocess(self):
         for parent in self.parent_tickable_job:
-            _LOG.debug("Ticking "+str(parent))
             parent.tick(self)

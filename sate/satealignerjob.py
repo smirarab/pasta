@@ -418,7 +418,7 @@ class SateAlignerJob(TreeHolder, TickableJob):
                 return None # this can happen if jobs are killed
         return r
 
-class Sate3MergerJob(SateAlignerJob):
+class PASTAMergerJob(SateAlignerJob):
     
     def __init__(self, 
                 multilocus_dataset,
@@ -474,7 +474,7 @@ class Sate3MergerJob(SateAlignerJob):
             self.skip_merge = True
             
             # Reroot near centroid edge
-            ce = self.tree.get_centroid_edge()
+            ce = self.tree.get_centroid_edge(spanning=True)
             nr = ce.head_node if not ce.head_node.is_leaf() else ce.tail_node
             self.tree._tree.reroot_at_node(nr,delete_outdegree_one=False)            
             _LOG.debug("rerooted to: %s" % self.tree.compose_newick())   
@@ -500,7 +500,7 @@ class Sate3MergerJob(SateAlignerJob):
                 else:
                     tmp_dir_par = self.tmp_base_dir                    
                 configuration = self.configuration()
-                cj = Sate3MergerJob(multilocus_dataset=multilocus_dataset1,
+                cj = PASTAMergerJob(multilocus_dataset=multilocus_dataset1,
                                     sate_team=self.sate_team,
                                     tree=t1,
                                     tmp_base_dir=self.tmp_base_dir,

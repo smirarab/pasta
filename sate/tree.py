@@ -50,13 +50,15 @@ class PhylogeneticTree(object):
             else:
                 i.num_leaves_below = sum([j.edge.num_leaves_below for j in nd.child_nodes()])
 
-    def get_centroid_edge(self):
+    def get_centroid_edge(self,spanning=False):
         """Get centroid edge"""
         root = self._tree.seed_node
         root_children = root.child_nodes()
         if root_children and (not hasattr(root_children[0].edge, "num_leaves_below")):
             self.calc_splits()
             n_leaves = self.count_leaves()
+            if spanning and len(root_children) == 1:
+                n_leaves += 1
         else:
             if root.edge:
                 n_leaves = root.edge.num_leaves_below
@@ -65,6 +67,8 @@ class PhylogeneticTree(object):
         centroid_edge = None
         centroid_imbalance = n_leaves
         half_taxa = n_leaves/2
+        if half_taxa == 0:
+            half_taxa = 1
         for edge in self._tree.postorder_edge_iter():
             if edge.tail_node is None:
                 continue
@@ -73,7 +77,7 @@ class PhylogeneticTree(object):
             if (imbalance < centroid_imbalance):
                 centroid_edge = edge
                 centroid_imbalance = imbalance
-            assert centroid_edge is not None
+        assert centroid_edge is not None
         return centroid_edge
 
     def get_longest_internal_edge(self):

@@ -9,16 +9,16 @@
 Functions for configuring a runtime logger for the sate module.
 """
 
-PROGRAM_NAME = "SATe"
+PROGRAM_NAME = "PASTA"
 PROGRAM_AUTHOR = ["Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Siavash Mirarab", "Jamie Oaks"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "2.2.7"
+PROGRAM_VERSION = "1.1.0"
 PROGRAM_YEAR = "2009-2013"
-PROGRAM_DESCRIPTION = "Simultaneous Alignment and Tree Estimation"
+PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://phylo.bio.ku.edu/software/sate/sate.html"
-PROGRAM_INSTITUTE = "Department of Ecology and Evolutionary Biology, Univesity of Kansas"
+PROGRAM_INSTITUTE = "Department of Computer Science, Univesity of Texas at Austin"
 PROGRAM_LONG_DESCRIPTION = """
-SATe performs iterative realignment and tree inference.
+PASTA performs iterative realignment and tree inference, similar to SATe.
 
 Minimally you must provide a sequence file (with the '--input' option) a starting tree is optional.
 
@@ -35,7 +35,7 @@ option-name = value
 option-name = value
 ####################################################
 
-If you tell sate to keep its temporary files (-k option), then the configuration for the run will be stored in a file "last_used.cfg" in the "temporary" directory.
+If you tell pasta to keep its temporary files (-k option), then the configuration for the run will be stored in a file "last_used.cfg" in the "temporary" directory.
 
 If configuration files are read in the order they occur as arguments (with values in later files replacing previously read values). Options specified in the command line are read last. Thus these values "overwrite" any settings from the configuration files.
 """

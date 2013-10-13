@@ -21,11 +21,10 @@ import subprocess
 import sys
 import sate
 
-script_name = 'run_sate.py'
-gui_script_name = 'run_sate_gui.py'
+script_name = 'run_pasta.py' 
 
 def compose_build_distribution_name(build_type):
-    return "sate%s-v%s-%s" % (build_type, sate.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
+    return "pasta%s-v%s-%s" % (build_type, sate.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
 
 param = {
     'name': sate.PROGRAM_NAME,
@@ -42,7 +41,9 @@ param = {
     'install_requires': ['dendropy>=3.2.0'],
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',
-    'long_description': """A Python implementation of the Simultaneous Alignment and Tree estimation algorithm of Liu, et al. 2009. The package requires configuration to refer to third-party tools such as ClustalW2, MAFFT, MUSCLE, OPAL, Prank, and RAxML""",
+    'long_description': """A Python implementation of the Practical Alignment using SATe and Transitivity. 
+    The package requires configuration to refer to third-party tools such as ClustalW2, MAFFT, MUCLE, OPAL, Prank, and RAxML,
+    and the code is heavily based on SATe""",
     'classifiers': ["Environment :: Console",
                     "Intended Audience :: Developers",
                     "Intended Audience :: Science/Research",
@@ -126,10 +127,6 @@ if sys.argv[1] == 'py2exe':
 
     param.update({
         'console': [script_name, os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft")],
-        'windows': [
-                    {   "script": gui_script_name,
-                        "icon_resources": [(0, os.path.join(sate.SATE_GUI_RESOURCES, 'sate.ico'))],
-                    } ],
         'data_files': my_files,
         'zipfile': None,
         'options': {'py2exe': PY2EXE_OPTIONS},

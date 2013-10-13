@@ -87,13 +87,15 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     new_sate_defaults = {
         'tree_estimator' : 'fasttree',
         'aligner' : 'mafft',
-        'merger' : 'muscle',
+        'merger' : 'opal',
         'break_strategy' : 'centroid',
         'move_to_blind_on_worse_score' : True,
         'start_tree_search_from_current' : True,
-        'after_blind_iter_without_imp_limit' : 1,
+        'after_blind_iter_without_imp_limit' : -1,
         'time_limit' : -1,
-        'after_blind_time_without_imp_limit' : -1
+        'iter_limit' : 3,
+        'after_blind_time_without_imp_limit' : -1,
+        'mask_gappy_sites' : total_num_tax / 1000
         }
     if total_num_tax > 400:
         new_sate_defaults['max_subproblem_size'] = 200
@@ -108,7 +110,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
             }
     else:
         new_defaults['fasttree'] = {
-            'model' : '-gtr -gamma',
+            'model' : '-gtr -fastest -nosupport',
             'GUI_model' : 'GTR+G20'
             }
      

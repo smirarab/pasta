@@ -36,7 +36,7 @@ _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder, resolve_polytomies,\
     read_newick_with_translate
-from sate.satealignerjob import SateAlignerJob, Sate3MergerJob
+from sate.satealignerjob import SateAlignerJob, PASTAMergerJob
 from sate import get_logger
 from sate.utility import record_timestamp
 from sate.scheduler import jobq
@@ -139,7 +139,7 @@ class SateJob (TreeHolder):
         self._tree_build_job = None
         self._sate_decomp_job = None
         self._reset_jobs()
-        self.sate3merge = True
+        self.pastamerge = True
 
         self._status_message_func = kwargs.get('status_messages')
 
@@ -454,13 +454,13 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                          tree=tree_for_aligner,
                                          tmp_base_dir=curr_tmp_dir_par,
                                          reset_recursion_index=True,
-                                         skip_merge=self.sate3merge,
+                                         skip_merge=self.pastamerge,
                                          **configuration)
                 self.sate_aligner_job = aligner
                 aligner.launch_alignment(break_strategy=break_strategy,
                                          context_str=context_str)                
-                if self.sate3merge:
-                    _LOG.debug("Build SATe3 merge jobs")
+                if self.pastamerge:
+                    _LOG.debug("Build PASTA merge jobs")
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
                     if len(self.sate_team.subsets.values()) == 1:
                         # can happen if there are no decompositions
@@ -470,7 +470,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                     else:
                         pariwise_tmp_dir_par = os.path.join(curr_tmp_dir_par, "pw")
                         pariwise_tmp_dir_par = self.sate_team.temp_fs.create_subdir(pariwise_tmp_dir_par)    
-                        pmj = Sate3MergerJob(multilocus_dataset=self.multilocus_dataset,
+                        pmj = PASTAMergerJob(multilocus_dataset=self.multilocus_dataset,
                                              sate_team=self.sate_team,
                                              tree=subsets_tree,
                                              tmp_base_dir=pariwise_tmp_dir_par,

@@ -18,7 +18,8 @@ PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://phylo.bio.ku.edu/software/sate/sate.html"
 PROGRAM_INSTITUTE = "Department of Computer Science, Univesity of Texas at Austin"
 PROGRAM_LONG_DESCRIPTION = """
-PASTA performs iterative realignment and tree inference, similar to SATe.
+PASTA performs iterative realignment and tree inference, similar to SATe. 
+Current code is heavily based on SATe, with lots of modifications, many related to algorithmic differences between PASTA and SATe, but also many scalability improvements (parallelization, tree parsing, defaults, etc.)
 
 Minimally you must provide a sequence file (with the '--input' option) a starting tree is optional.
 

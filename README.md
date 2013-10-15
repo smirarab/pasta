@@ -45,3 +45,13 @@ To run, use:
 `
 python run_pasta.py -i input_fasta -t starting_tree
 `
+
+NOTE that current version of the PASTA code does NOT compute the starting tree through a
+process similar to what is described in the paper. Instead, it simply uses a FastTree on
+the input, if input is aligned, or else runs MAFFT on it. Our approach for getting
+the starting tree is very simple, and is described below:
+
+1- Choose a random subset of your sequences (size 100).
+2- Get a SATe alignment on this subset (you need to install SATe for this; alternatively just run PASTA on it).
+3- Build a HMMER model on the alignment of 100 subsets.
+4- Use HMMAlign to align the remaining sequences into the small subset. 

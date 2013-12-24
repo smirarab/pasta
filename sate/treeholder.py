@@ -108,6 +108,7 @@ def stt_require_taxon(stt,label):
         t = stt.get_taxon(label)
         if t is not None:
             return t
+        print "Adding taxon", label
         t = dataobject.Taxon(label=label)
         stt.taxon_set.append(t)
         stt.label_taxon[label] = t
@@ -328,11 +329,11 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
 
 dendropy.dataio.nexustokenizer.tree_from_token_stream = tree_from_token_stream
  
-def read_trees_into_dataset(dataset, tree_stream, starting_tree=False):
+def read_trees_into_dataset(dataset, tree_stream, starting_tree=False, preserve_underscores=True):
     if starting_tree:        
         try:
             dataset.read_from_stream(tree_stream,
-                schema='NEWICK', taxon_set=dataset.taxon_sets[0])
+                schema='NEWICK', taxon_set=dataset.taxon_sets[0],preserve_underscores=preserve_underscores)
         except KeyError as e:
             m = str(e)
             m = m[1:m.find("TaxonSet")] + "sequences but present in tree"            

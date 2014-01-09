@@ -4,7 +4,8 @@ This is an implementation of the PASTA (Practical Alignment using SATe and TrAns
 
 Acknowledgment 
 ===
-The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html)
+The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc
+directory for documentation of the SATe code. 
 
 INSTALLATION
 ===
@@ -57,3 +58,7 @@ Our approach for getting the starting tree is very simple, and is described belo
 5. Run FastTree on the output of step 4.
 
 We do have a separate program that computes this simple starting tree. See https://github.com/smirarab/sepp and use UPP. Make sure you set `-A 100 -P 100` to get the starting tree described in the PASTA paper. 
+
+LICENSE
+===
+PASTA uses the same license as SATe (GNU Public License).

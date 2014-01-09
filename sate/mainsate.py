@@ -474,6 +474,9 @@ def run_sate_from_config(user_config, sate_products):
                               user_config=user_config,
                               temporaries_dir=temporaries_dir,
                               sate_products=sate_products)
+#    except:
+#        stop_worker()
+#        raise
     finally:
         if delete_dir:
             sate_team.temp_fs.remove_dir(temporaries_dir)

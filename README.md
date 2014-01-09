@@ -5,11 +5,10 @@ This is an implementation of the PASTA (Practical Alignment using SATe and TrAns
 Acknowledgment 
 ===
 The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html)
-Future versions would start from a fresh implementation. 
 
 INSTALLATION
 ===
-Current version of PASTA has been developed and tested entirely on Linux. It probably works on MAC machines as well. 
+Current version of PASTA has been developed and tested entirely on Linux. It has been tested on MAC as well, but less extensively. 
 Windows won't work currently, but is planned for future versions. 
 
 You need to have:
@@ -18,7 +17,7 @@ You need to have:
 - Java (for OPAL)
 
 ### LINUX:
-Download the zip file, extract it and cd into the `pasta.1.1.0/pasta`. Then run:
+Download the zip file, extract it and cd into the `pasta.[version]/pasta`. Then run:
 
 `
   python steup.py develop 
@@ -28,9 +27,9 @@ You probably need to add a `sudo` in front of that command. If you don't have ro
 That different location needs to be part of your `PYTHONPATH` environmental variable. Email: smirarab@gmail.com for installation issues. 
 
 ### MAC: 
-Download the zip file, extract it and cd into the `pasta.1.1.0`.
+Download the zip file, extract it and cd into the `pasta.[version]`.
 If you are installing on MAC, you need to go through some additional steps.
-Inside `pasta.1.1.0`, you need to clone the following git repository:
+Inside `pasta.[version]`, you need to clone the following git repository:
 
 https://github.com/sate-dev/sate-tools-mac
 
@@ -56,3 +55,5 @@ Our approach for getting the starting tree is very simple, and is described belo
 3. Build a HMMER model on the alignment of 100 subsets.
 4. Use HMMAlign to align the remaining sequences into the small subset. 
 5. Run FastTree on the output of step 4.
+
+We do have a separate program that computes this simple starting tree. See https://github.com/smirarab/sepp and use UPP. Make sure you set `-A 100 -P 100` to get the starting tree described in the PASTA paper. 

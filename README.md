@@ -2,6 +2,8 @@ PASTA
 ===
 This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm. This version is currently for testing purposes only. 
 
+All questions and inquires should be addressed to our user email group: pasta-users@googlegroups.com
+
 Acknowledgment 
 ===
 The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc
@@ -25,7 +27,7 @@ Download the zip file, extract it and cd into the `pasta.[version]/pasta`. Then 
 `
 
 You probably need to add a `sudo` in front of that command. If you don't have root access, use `--prefix` to install in a different location.
-That different location needs to be part of your `PYTHONPATH` environmental variable. Email: smirarab@gmail.com for installation issues. 
+That different location needs to be part of your `PYTHONPATH` environmental variable. Email: pasta-users@googlegroups.com for installation issues. 
 
 ### MAC: 
 Download the zip file, extract it and cd into the `pasta.[version]`.

@@ -12,34 +12,35 @@ directory for documentation of the SATe code.
 INSTALLATION
 ===
 Current version of PASTA has been developed and tested entirely on Linux. It has been tested on MAC as well, but less extensively. 
-Windows won't work currently, but is planned for future versions. 
+Windows won't work currently (future versions may or may not support Windows). 
 
 You need to have:
 - Python 
 - Dendropy (http://packages.python.org/DendroPy/)
 - Java (for OPAL)
 
-### LINUX:
-Download the zip file, extract it and cd into the `pasta.[version]/pasta`. Then run:
+Insallation steps:
+
+1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
+
+2. Clone the PASTA repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
+If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip) and decompress it into your desired directory. 
+
+3.  Clone the relevant "tools" directory from the SATe project. Note that there are different repositories for [linux](https://github.com/sate-dev/sate-tools-linux) and [MAC](https://github.com/sate-dev/sate-tools-mac). e.g., you can use `git clone git@github.com:sate-dev/sate-tools-linux.git` on Linux or `git@github.com:sate-dev/sate-tools-mac.git` on MAC. Or you can directly download these as zip files for [Linux](https://github.com/sate-dev/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/sate-dev/sate-tools-mac/archive/master.zip) and decompress them in your target directory for PASTA code.
+
+4. `cd pasta`
+
+5. Then run:
 
 `
   python steup.py develop 
 `
 
 You probably need to add a `sudo` in front of that command. If you don't have root access, use `--prefix` to install in a different location.
-That different location needs to be part of your `PYTHONPATH` environmental variable. Email: pasta-users@googlegroups.com for installation issues. 
+That different location needs to be part of your `PYTHONPATH` environmental variable. 
 
-### MAC: 
-Download the zip file, extract it and cd into the `pasta.[version]`.
-If you are installing on MAC, you need to go through some additional steps.
-Inside `pasta.[version]`, you need to clone the following git repository:
+Email pasta-users@googlegroups.com for installation issues. 
 
-https://github.com/sate-dev/sate-tools-mac
-
-
-You can use `git clone` command to clone the repository, or just download the zip file (https://github.com/sate-dev/sate-tools-mac/archive/master.zip). 
-
-Then run the `setup.py` command as described under Linux. 
 
 EXECUTION
 ====

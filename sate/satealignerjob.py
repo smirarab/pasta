@@ -23,15 +23,15 @@
 
 import os
 import copy
-from threading import Lock, Event
+from threading import Lock
 from sate import get_logger
 from sate.tree import PhylogeneticTree
 from dendropy.dataobject.tree import Tree
-from sate.alignment import merge_in, CompactAlignment
+from sate.alignment import  CompactAlignment
 _LOG = get_logger(__name__)
 
 from sate.treeholder import TreeHolder
-from sate.scheduler import jobq
+from sate.scheduler import jobq, new_merge_event
 from sate.scheduler import TickableJob
 
 
@@ -74,7 +74,7 @@ class SateAlignerJob(TreeHolder, TickableJob):
                 skip_merge = False,
                 **kwargs):
         self._job_lock = Lock()
-        self._merge_queued_event = Event()
+        self._merge_queued_event = new_merge_event()
         TickableJob.__init__(self)
         TreeHolder.__init__(self, multilocus_dataset.dataset)
         behavior = copy.copy(SateAlignerJob.BEHAVIOUR_DEFAULTS)
@@ -126,16 +126,13 @@ class SateAlignerJob(TreeHolder, TickableJob):
         #_LOG.debug("Dependency ready!")
         if self.killed:
             raise RuntimeError("SateAligner Job killed")
-        try:
-            if not self.align_job_list:
-                if not self.merge_job_list:
-                    assert self.subjob1 and self.subjob2
-                    if not self.skip_merge:
-                        self._start_merger()
-                        return
-            self.postprocess()
-        except KeyboardInterrupt:
-            self.kill()
+        if not self.align_job_list:
+            if not self.merge_job_list:
+                assert self.subjob1 and self.subjob2
+                if not self.skip_merge:
+                    self._start_merger()
+                    return
+        self.postprocess()
         
 
     def _start_merger(self):
@@ -320,27 +317,28 @@ class SateAlignerJob(TreeHolder, TickableJob):
 
     def kill(self):
         self.killed = True
-        for att_n in ['align_job_list', 'merge_job_list', 'subjob1', 'subjob2']:
-            j = self.subjob2
-            if j:
-                _LOG.debug("Killing subjob2")
-                j.kill()
-            j = self.subjob1
-            if j:
-                _LOG.debug("Killing subjob1")
-                j.kill()            
-            j_list = self.merge_job_list
-            if j_list:
-                for j in j_list:
-                    if j:
-                        _LOG.debug("Killing merge job")
-                        j.kill()
-            j_list = self.align_job_list
-            if j_list:
-                for j in j_list:
-                    if j:
-                        _LOG.debug("Killing align job")
-                        j.kill()
+        _LOG.debug("killing sate aligner jobs")
+        j = self.subjob2
+        if j:
+            _LOG.debug("Killing subjob2")
+            j.kill()
+        j = self.subjob1
+        if j:
+            _LOG.debug("Killing subjob1")
+            j.kill()            
+        j_list = self.merge_job_list
+        if j_list:
+            for j in j_list:
+                if j:
+                    _LOG.debug("Killing merge job")
+                    j.kill()
+        j_list = self.align_job_list
+        if j_list:
+            for j in j_list:
+                if j:
+                    _LOG.debug("Killing align job")
+                    j.kill()
+        
 
     def wait(self):
         if self.killed:

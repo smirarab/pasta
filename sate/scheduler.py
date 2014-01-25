@@ -38,7 +38,27 @@ class LoggingQueue(Queue):
         Queue.put(self, job)
 
 jobq = LoggingQueue()
-gid = 0
+
+_all_dispatchable_jobs = []
+
+merged_queue_events = []
+
+def new_merge_event():
+    global merged_queue_events
+    e = Event()
+    merged_queue_events.append(e)
+    return e
+
+def set_all_events():
+    global merged_queue_events
+    for e in merged_queue_events:
+        e.set()
+        
+def kill_all_jobs():
+    global _all_dispatchable_jobs
+    for job in _all_dispatchable_jobs:
+        job.kill()
+    set_all_events()
 
 class LightJobForProcess():
     def __init__(self, invocation, k):
@@ -100,24 +120,25 @@ class pworker():
         self.q = q
         
     def __call__(self):
-        while True:            
-            job = self.q.get()            
+        while True:                                
             try:
+                job = self.q.get()
                 job.run()
                 self.q.task_done()
             except:
                 err = StringIO()
                 traceback.print_exc(file=err)
-                _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())        
+                _LOG.error("Process Worker dying.  Error in job.start = %s" % err.getvalue())
+                raise
         return
 
-m = Manager()
+_manager = Manager()
 
 class worker():
     
     def __init__(self):
-        global m
-        self.pqueue = m.Queue()
+        global _manager
+        self.pqueue = _manager.Queue()
         pw = pworker(self.pqueue)
         self.p = Process(target=pw)
         self.p.daemon = True
@@ -127,26 +148,18 @@ class worker():
         self.p.terminate()
         
     def __call__(self):                            
-        global gid
         while True:            
             job = jobq.get()            
-            gid += 1
-            ID = gid        
+            ID=int(random() *10000000)
             TIMING_LOG.info("%s (%d) started" % (str(job.context_str),ID))
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
                     plj = LightJobForProcess(pa[0],pa[1])
                     self.pqueue.put(plj)
-                else:                    
-                    job.start()
-            except:
-                err = StringIO()
-                traceback.print_exc(file=err)
-                _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
-            else:
-                if isinstance(job, DispatchableJob):
-                    self.pqueue.join()
+                    
+                    self.pqueue.join()       
+                        
                     if plj.error is not None:
                         job.error = Exception(plj.error)
                     job.return_code = plj.return_code
@@ -155,15 +168,24 @@ class worker():
                     
                     job.results = job.result_processor()
                     
-                    job.finished_event.set()     
-                try:
+                    job.finished_event.set() 
                     job.get_results()
                     job.postprocess()
-                except:
-                    err = StringIO()
-                    traceback.print_exc(file=err)
-                    _LOG.error("Worker dying.  Error in job.get_results = %s" % err.getvalue())
-                    raise
+                else:                    
+                    job.start()
+                    job.get_results()
+                    job.postprocess()
+
+            except Exception as e:
+                err = StringIO()
+                traceback.print_exc(file=err)
+                _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
+                job.error=e
+                job.return_code = -1
+                job.finished_event.set() 
+                job.kill()
+                kill_all_jobs()
+                return                
             TIMING_LOG.info("%s (%d) completed" % (str(job.context_str),ID))
             jobq.task_done()
         return
@@ -227,6 +249,7 @@ class FakeJob(JobBase):
 
 class DispatchableJob(JobBase):
     def __init__(self, invocation, result_processor, **kwargs):
+        global _all_dispatchable_jobs
         JobBase.__init__(self, **kwargs)
         self._invocation = invocation
         # _LOG.debug('DispatchableJob.__init__(invocation= %s )' % " ".join(self._invocation))  # Not sure why it does not work with datatype in treebuild.create_job
@@ -236,8 +259,9 @@ class DispatchableJob(JobBase):
         self._id = None
         self._stdout_fo = None
         self._stderr_fo = None
-        self.finished_event = Event()
+        self.finished_event = Event()        
         self.error = None
+        _all_dispatchable_jobs.append(self)
 
     def get_id(self):
         return self._id
@@ -277,7 +301,6 @@ class DispatchableJob(JobBase):
         """
         
         # this branch is actually monitoring the process
-        
         if self.error is not None:
             raise self.error
 
@@ -302,7 +325,7 @@ class DispatchableJob(JobBase):
         pass
     
     def kill(self):
-        pass
+        self.finished_event.set()
             
             
 class TickableJob():
@@ -329,6 +352,7 @@ class TickableJob():
         self._childrenlock.release()
 
     def tick(self, finishedjob):
+        #_LOG.debug("ticking %s" %str(self))
         self._childrenlock.acquire()
         self._unfinished_children.remove(finishedjob)   
         #_LOG.debug("children ... %d" %len(self._unfinished_children))     
@@ -342,14 +366,19 @@ class TickableJob():
         self._parentslock.acquire()
         for parent in self._parents:
             parent.tick(self)
-        self._parentslock.release()
+        self._parentslock.release()  
         
-        
+    def kill(self):    
+        self._parentslock.acquire()
+        for parent in self._parents:
+            parent.kill()
+        self._parentslock.release()          
 
 class TickingDispatchableJob(DispatchableJob):
     def __init__(self, invocation, result_processor, **kwargs):
         DispatchableJob.__init__(self, invocation, result_processor, **kwargs)
         self.parent_tickable_job = []
+        self.killed = False
     
     def add_parent_tickable_job(self, tickableJob):
         self.parent_tickable_job.append(tickableJob)
@@ -357,3 +386,11 @@ class TickingDispatchableJob(DispatchableJob):
     def postprocess(self):
         for parent in self.parent_tickable_job:
             parent.tick(self)
+
+    def kill(self):
+        DispatchableJob.kill(self)
+        if not self.killed:
+            self.killed = True
+            for parent in self.parent_tickable_job:
+                parent.kill()            
+            

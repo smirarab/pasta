@@ -10,15 +10,15 @@ Functions for configuring a runtime logger for the sate module.
 """
 
 PROGRAM_NAME = "PASTA"
-PROGRAM_AUTHOR = ["Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Siavash Mirarab", "Jamie Oaks"]
+PROGRAM_AUTHOR = ["Siavash Mirarab","Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Jamie Oaks"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "1.1.0"
-PROGRAM_YEAR = "2009-2013"
+PROGRAM_VERSION = "1.1.1"
+PROGRAM_YEAR = "2013-2014"
 PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://phylo.bio.ku.edu/software/sate/sate.html"
 PROGRAM_INSTITUTE = "Department of Computer Science, Univesity of Texas at Austin"
 PROGRAM_LONG_DESCRIPTION = """
-PASTA performs iterative realignment and tree inference, similar to SATe. 
+PASTA performs iterative realignment and tree inference, similar to SATe, but uses a very different merge algorithm which improves running time and accuracy. 
 Current code is heavily based on SATe, with lots of modifications, many related to algorithmic differences between PASTA and SATe, but also many scalability improvements (parallelization, tree parsing, defaults, etc.)
 
 Minimally you must provide a sequence file (with the '--input' option) a starting tree is optional.

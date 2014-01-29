@@ -44,13 +44,13 @@ def get_invoke_run_sate_command():
             return ['run_sate.exe']
         elif platform.system() == 'Darwin':
             return [filemgr.quoted_file_path(sys.executable),
-                    filemgr.quoted_file_path(os.path.join(sate.sate_home_dir(), 'run_sate.py'))]
+                    filemgr.quoted_file_path(os.path.join(sate.sate_home_dir(), 'run_pasta.py'))]
         else:
             raise OSError('SATe is not frozen for %s' % platform.system())
     else:
         return [filemgr.quoted_file_path(sys.executable),
                 filemgr.quoted_file_path(os.path.join(sate.sate_home_dir(),
-                        'run_sate.py'))]
+                        'run_pasta.py'))]
 
 _DEFAULT_TOOLS_PATH = None
 

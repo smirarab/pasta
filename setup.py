@@ -39,7 +39,7 @@ param = {
     'test_suite': "sate.test",
     'include_package_data': True,
     'install_requires': ['dendropy>=3.12.0'],
-    'scripts' : [script_name],
+    'scripts' : [script_name,'run_pasta_gui.py'],
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',
     'long_description': """A Python implementation of the Practical Alignment using SATe and Transitivity. 

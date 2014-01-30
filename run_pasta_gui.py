@@ -347,7 +347,7 @@ class SateFrame(wx.Frame):
 #                choices=preset_choices,
 #                style=wx.CB_READONLY)
 
-        tree_and_alignment_choices = ["Best", "Final"]
+        tree_and_alignment_choices = ["Final", "Best"]
         self.cb_tree_and_alignment = wx.ComboBox(self,
                 -1,
                 tree_and_alignment_choices[0],
@@ -673,10 +673,10 @@ class SateFrame(wx.Frame):
                         fn_list = get_list_of_seq_filepaths_from_dir(filepath)
                     else:
                         fn_list = [filepath]
-                    if self.datatype.Value == "Protein":
-                        datatype_list = ["PROTEIN"]
-                    else:
-                        datatype_list = ["DNA", "RNA", "PROTEIN"]
+#                     if self.datatype.Value == "Protein":
+#                         datatype_list = ["PROTEIN"]
+#                     else:
+                    datatype_list = ["DNA", "RNA", "PROTEIN"]
                     careful_parse = False
                     summary_stats = summary_stats_from_parse(fn_list, 
                                                              datatype_list,
@@ -695,7 +695,7 @@ class SateFrame(wx.Frame):
                     self._could_be_aligned = False
                     self.refresh_aligned_checkbox()
                 else:
-                    read_type = summary_stats[0]
+                    read_type = summary_stats[0]                    
                     if read_type == "PROTEIN":
                         self.datatype.SetValue("Protein")
                     else:
@@ -735,10 +735,10 @@ class SateFrame(wx.Frame):
                     self.cb_maxsub2.Enable()
                     
                     if auto_sate_opts['move_to_blind_on_worse_score']:
-                        self.blindmode.Value = True
+                        #self.blindmode.Value = True
                         t_l = auto_sate_opts['after_blind_time_without_imp_limit']                        
                     else:
-                        self.blindmode.Value = False
+                        #self.blindmode.Value = False
                         t_l = auto_sate_opts['time_limit']                        
                     
                     if t_l <= 0:
@@ -747,8 +747,8 @@ class SateFrame(wx.Frame):
                         self.checkbox_stop_time.Value = True
                         
                         
-                    self.cb_apply_stop_rule.SetValue("After Last Improvement")
-                    after_blind_it_lim = auto_sate_opts['after_blind_iter_without_imp_limit']
+#                     self.cb_apply_stop_rule.SetValue("After Last Improvement")
+                    after_blind_it_lim = auto_sate_opts['iter_limit']
                     self.text_stop2.SetValue(str(after_blind_it_lim))
                     
                     if self._could_be_aligned:
@@ -1002,23 +1002,23 @@ class SateFrame(wx.Frame):
             cfg.sate.iter_limit = -1
             cfg.sate.after_blind_time_without_imp_limit = -1
             cfg.sate.after_blind_iter_without_imp_limit = -1
-            if True:
-                cfg.sate.move_to_blind_on_worse_score = True
-                if self.cb_apply_stop_rule.GetValue() == "After Last Improvement":
-                    if self.checkbox_stop_time.Value:
-                        cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
-                    if self.checkbox_stop_iter.Value:
-                        cfg.sate.after_blind_iter_without_imp_limit = int(self.text_stop2.Value)
-                else:
-                    if self.checkbox_stop_time.Value:
-                        cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
-                    if self.checkbox_stop_iter.Value:
-                        cfg.sate.iter_limit = int(self.text_stop2.Value)
-            else:
-                if self.checkbox_stop_time.Value:
-                    cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
-                if self.checkbox_stop_iter.Value:
-                    cfg.sate.iter_limit = int(self.text_stop2.Value)
+#             if True:
+#                 cfg.sate.move_to_blind_on_worse_score = True
+#                 if self.cb_apply_stop_rule.GetValue() == "After Last Improvement":
+#                     if self.checkbox_stop_time.Value:
+#                         cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
+#                     if self.checkbox_stop_iter.Value:
+#                         cfg.sate.after_blind_iter_without_imp_limit = int(self.text_stop2.Value)
+#                 else:
+#                     if self.checkbox_stop_time.Value:
+#                         cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
+#                     if self.checkbox_stop_iter.Value:
+#                         cfg.sate.iter_limit = int(self.text_stop2.Value)
+#             else:
+            if self.checkbox_stop_time.Value:
+                cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
+            if self.checkbox_stop_iter.Value:
+                cfg.sate.iter_limit = int(self.text_stop2.Value)
             cfg.sate.return_final_tree_and_alignment = self.cb_tree_and_alignment.GetValue() == "Final"
 
         cfg.sate.output_directory = self._encode_arg(self.txt_outputdir.GetValue())

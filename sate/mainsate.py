@@ -105,12 +105,12 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         new_sate_defaults['max_subproblem_frac'] = 0.5
     if datatype.lower() == 'protein':
         new_defaults['fasttree'] = {
-            'model' : '-wag -gamma',
+            'model' : '-wag -gamma -fastest',
             'GUI_model' : 'WAG+G20'
             }
     else:
         new_defaults['fasttree'] = {
-            'model' : '-gtr -fastest -nosupport',
+            'model' : '-gtr -fastest',
             'GUI_model' : 'GTR+G20'
             }
      

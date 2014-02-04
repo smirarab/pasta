@@ -44,15 +44,22 @@ Email pasta-users@googlegroups.com for installation issues.
 
 EXECUTION
 ====
-To run, use:
+To run the command-line, use:
 `
-python run_pasta.py -i input_fasta -t starting_tree
+python run_pasta.py -i input_fasta -t starting_tree --auto
 `
+
+The `--auto` option picks the configurations automatically for you. Run 
+`
+python run_pasta.py --help 
+` 
+to see PASTA's various options. 
 
 NOTE that current version of the PASTA code does NOT compute the starting tree through a
 process similar to what is described in the paper. Instead, it simply uses a FastTree on
 the input, if input is aligned, or else runs MAFFT on the input to align it, and then runs FastTree.
-Our approach for getting the starting tree is very simple, and is described below:
+
+The preferred approach for getting the PASTA starting tree is very simple, and is described below:
 
 1. Choose a random subset of your sequences (size 100).
 2. Get a SATe alignment on this subset (you need to install SATe for this; alternatively just run PASTA on it).

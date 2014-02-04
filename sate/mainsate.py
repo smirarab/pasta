@@ -87,7 +87,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     new_sate_defaults = {
         'tree_estimator' : 'fasttree',
         'aligner' : 'mafft',
-        'merger' : 'opal',
+        'merger' : 'muscle' if datatype.lower() == "protein" else 'opal',
         'break_strategy' : 'centroid',
         'move_to_blind_on_worse_score' : True,
         'start_tree_search_from_current' : True,

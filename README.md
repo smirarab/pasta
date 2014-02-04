@@ -12,14 +12,14 @@ directory for documentation of the SATe code.
 INSTALLATION
 ===
 
-Simple MAC application
-======
+From pre-build MAC image file
+------
 1- Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
 2- Open the .dmg file and copy its content to your preferred destination.
 3- Simply run the PASTA app
 
 From Source Code
-=====
+------
 Current version of PASTA has been developed and tested entirely on Linux. It has been tested on MAC as well, but less extensively. 
 Windows won't work currently (future versions may or may not support Windows). 
 
@@ -54,16 +54,25 @@ Email pasta-users@googlegroups.com for installation issues.
 EXECUTION
 ====
 To run the command-line, use:
-`
+
+```
 python run_pasta.py -i input_fasta -t starting_tree --auto
-`
+```
 
-The `--auto` option picks the configurations automatically for you. Run 
-`
-python run_pasta.py --help 
-` 
-to see PASTA's various options. 
+The `--auto` option picks the appropriate configurations automatically for you. 
 
+Run `python run_pasta.py --help` to see PASTA's various options. 
+
+To run the GUI version, 
+* if you have used the MAC .dmg file, you can simply click on your application file to run PASTA. 
+* if you have installed from the source code, cd into your installation directory and run 
+```
+python run_pasta_gui.py
+```
+
+
+Starting Trees
+-------
 NOTE that current version of the PASTA code does NOT compute the starting tree through a
 process similar to what is described in the paper. Instead, it simply uses a FastTree on
 the input, if input is aligned, or else runs MAFFT on the input to align it, and then runs FastTree.

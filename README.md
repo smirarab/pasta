@@ -11,6 +11,15 @@ directory for documentation of the SATe code.
 
 INSTALLATION
 ===
+
+Simple MAC application
+======
+1- Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
+2- Open the .dmg file and copy its content to your preferred destination.
+3- Simply run the PASTA app
+
+From Source Code
+=====
 Current version of PASTA has been developed and tested entirely on Linux. It has been tested on MAC as well, but less extensively. 
 Windows won't work currently (future versions may or may not support Windows). 
 

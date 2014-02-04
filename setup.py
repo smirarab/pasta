@@ -22,6 +22,7 @@ import sys
 import sate
 
 script_name = 'run_pasta.py' 
+gui_script_name = 'run_pasta_gui.py'
 
 def compose_build_distribution_name(build_type):
     return "pasta%s-v%s-%s" % (build_type, sate.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
@@ -29,9 +30,10 @@ def compose_build_distribution_name(build_type):
 param = {
     'name': sate.PROGRAM_NAME,
     'version': sate.PROGRAM_VERSION,
+    'app': {gui_script_name},
     'description': sate.PROGRAM_DESCRIPTION,
     'author': sate.PROGRAM_AUTHOR,
-    'author_email': ['sate-user@googlegroups.com'],
+    'author_email': ['pasta-users@googlegroups.com'],
     'url': sate.PROGRAM_WEBSITE,
     'license': sate.PROGRAM_LICENSE,
     'packages': find_packages(),
@@ -39,7 +41,7 @@ param = {
     'test_suite': "sate.test",
     'include_package_data': True,
     'install_requires': ['dendropy>=3.12.0'],
-    'scripts' : [script_name,'run_pasta_gui.py'],
+    'scripts' : [script_name,gui_script_name],
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',
     'long_description': """A Python implementation of the Practical Alignment using SATe and Transitivity. 

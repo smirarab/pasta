@@ -491,7 +491,7 @@ class SateFrame(wx.Frame):
         self.menuFileSaveLog = self.menuFile.Append(-1, "&Save Log...\tCtrl+S")
         self.menuFileExit = self.menuFile.Append(wx.ID_EXIT, "&Quit SATe\tCtrl+Q")
         self.menuHelpHelp = self.menuHelp.Append( -1, "&Help")
-        self.menuHelpAbout = self.menuHelp.Append(wx.ID_ABOUT, "&About SATe")
+        self.menuHelpAbout = self.menuHelp.Append(wx.ID_ABOUT, "&About PASTA")
         self.menuBar.Append(self.menuFile, "&File")
         self.menuBar.Append(self.menuHelp, "&Help")
         self.SetMenuBar(self.menuBar)
@@ -965,11 +965,11 @@ class SateFrame(wx.Frame):
                 cfg.fasttree.model = ""
             elif model_desc == "JTT+G20":
                 cfg.fasttree.model = "-gamma"
-            elif model_desc == "JTT":
+            elif model_desc == "JTT+CAT":
                 cfg.fasttree.model = ""
             elif model_desc == "WAG+G20":
                 cfg.fasttree.model = "-wag -gamma"
-            elif model_desc == "WAG":
+            elif model_desc == "WAG+CAT":
                 cfg.fasttree.model = "-wag"
             else:
                 raise Exception("Unrecognized model: %s" % model_desc)

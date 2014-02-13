@@ -26,6 +26,7 @@ if __name__ == "__main__":
     import sys
     from sate.mainsate import sate_main
     from sate import MESSENGER
+    sys.setrecursionlimit(100000)
     _SATE_DEBUG = os.environ.get('SATE_DEBUG')
     _DEVELOPER = _SATE_DEBUG and _SATE_DEBUG != '0'
 

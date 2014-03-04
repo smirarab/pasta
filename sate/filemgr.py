@@ -89,6 +89,7 @@ class TempFS(object):
         "trace",
         "log",
         "results",
+        "query.fasta"
         ]
 
     def __init__(self):

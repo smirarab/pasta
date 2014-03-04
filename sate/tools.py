@@ -695,7 +695,7 @@ class FastTree(TreeEstimator):
 
         # TODO: @mth: I added this line following the RAxML tool; is it correct?
         if len(multilocus_dataset) > 1:
-            alignment, partitions = multilocus_dataset.concatenate_alignments() #TODO: will fail for SATe3
+            alignment, partitions = multilocus_dataset.concatenate_alignments() #TODO: will fail for PASTA
         else:
             alignment = multilocus_dataset[0]
                 
@@ -877,12 +877,39 @@ class Raxml(TreeEstimator):
         job = DispatchableJob(invoc, result_processor=rpc, cwd=scratch_dir, context_str=job_id)
         return job
 
+class HMMERAlignAligner(Aligner):
+    section_name = 'hmmeralign'
+    url = 'http://hmmer.janelia.org/'
+    is_bundled = True
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'hmmeralign', temp_fs, **kwargs)
+        
+    def create_job(self, backbone, query_fn, **kwargs):
+        job_id = kwargs.get('context_str', '') + '-hmmeralign'
+        
+        scratch_dir, seqfn, alignedfn = self._prepare_input(backbone, **kwargs)
+        
+        dt = backbone.datatype.lower()
+        if dt == "protein":
+            dt = "amino"
+        
+        invoc = [self.exe, seqfn, query_fn, alignedfn, dt , "1"]
+        #invoc.extend(self.user_opts)
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                                        datatype=backbone.datatype,
+                                        invoc=invoc,
+                                        scratch_dir=scratch_dir,
+                                        job_id=job_id,
+                                        delete_temps=kwargs.get('delete_temps', self.delete_temps))
+
 if GLOBAL_DEBUG:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner)
     MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner, HMMERAlignAligner)
     MergerClasses = (MuscleMerger, OpalMerger, CustomMerger)
     TreeEstimatorClasses = (Raxml, FastTree, CustomTreeEstimator)
 

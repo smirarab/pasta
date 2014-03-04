@@ -56,7 +56,7 @@ directory is hidden by default).
             raise
         message = "SATe is exiting because of an error:\n%s " % str(x)
         try:
-            from pasta import MESSENGER
+            from sate import MESSENGER
             MESSENGER.send_error(message)
         except:
             sys.stderr.write(message)

@@ -17,7 +17,6 @@ from setuptools import setup, find_packages
 from datetime import datetime
 import os
 import platform
-import subprocess
 import sys
 import sate
 
@@ -45,7 +44,7 @@ param = {
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',
     'long_description': """A Python implementation of the Practical Alignment using SATe and Transitivity. 
-    The package requires configuration to refer to third-party tools such as ClustalW2, MAFFT, MUCLE, OPAL, Prank, and RAxML,
+    The package requires configuration to refer to third-party tools such as ClustalW2, MAFFT, MUCLE, OPAL, Prank, and RAxML, HMMMER,
     and the code is heavily based on SATe""",
     'classifiers': ["Environment :: Console",
                     "Intended Audience :: Developers",
@@ -129,7 +128,8 @@ if sys.argv[1] == 'py2exe':
     }
 
     param.update({
-        'console': [script_name, os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft")],
+        'console': [script_name, os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft"),
+                    os.path.join(sate.SATE_SCRIPT_RESOURCES, "hmmeralign")],
         'data_files': my_files,
         'zipfile': None,
         'options': {'py2exe': PY2EXE_OPTIONS},
@@ -180,6 +180,7 @@ if platform.system() != "Windows":
 
     # mafft
     create_symlink(os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft")))
+    create_symlink(os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "hmmeralign")))
 
     # others
     tools_bin_srcdir = sate.sate_tools_dev_dir()

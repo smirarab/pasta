@@ -218,8 +218,8 @@ class TempFS(object):
                 if os.path.isdir(fpath):
                     try:
                         self.remove_dir(fpath)
-                    except ValueError:
-                        sys.stderr.write("Refused to clean '%s': not created by SATe\n" % fpath)
+                    except ValueError as e:
+                        sys.stderr.write("Refused to clean '%s': not created by SATe\n%s\n" % (fpath,str(e)))
                     except OSError:
                         sys.stderr.write("Error trying to remove '%s'\n" % fpath)
             for fname in self.run_generated_filenames:

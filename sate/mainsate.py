@@ -42,6 +42,7 @@ from sate.utility import IndentedHelpFormatterWithNL
 from sate.filemgr import open_with_intermediates
 from sate import filemgr
 from sate import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
+from random import sample
 
 
 _RunningJobs = None
@@ -255,6 +256,8 @@ def finish_sate_execution(sate_team,
         prev_signals.append((sig, prev_handler))
 
     try:
+        sate_config_dict = sate_config.dict()
+        
         if (not options.two_phase) and tree_file:
             # getting the newick string here will allow us to get a string that is in terms of the correct taxon labels
             starting_tree_str = starting_tree.compose_newick()
@@ -268,8 +271,18 @@ def finish_sate_execution(sate_team,
                 delete_aln_temps = not (options.keeptemp and options.keepalignmenttemps)
                 new_alignment_list= []
                 aln_job_list = []
+                query_fns = []
                 for unaligned_seqs in multilocus_dataset:
-                    job = sate_team.aligner.create_job(unaligned_seqs,
+                    backbone = sample(unaligned_seqs.keys(), 10)   
+                    backbone_seqs = unaligned_seqs.sub_alignment(backbone)
+                    
+                    query_seq=set(unaligned_seqs.keys()) - set(backbone)
+                    query_alg = unaligned_seqs.sub_alignment(query_seq)
+                    query_fn = os.path.join(init_aln_dir, "query.fasta")
+                    query_alg.write_filepath(query_fn)
+                    query_fns.append(query_fn)
+                    
+                    job = sate_team.aligner.create_job(backbone_seqs,
                                                        tmp_dir_par=init_aln_dir,
                                                        context_str="initalign",
                                                        delete_temps=delete_aln_temps)
@@ -277,10 +290,20 @@ def finish_sate_execution(sate_team,
                 _RunningJobs = aln_job_list
                 for job in aln_job_list:
                     jobq.put(job)
-                for job in aln_job_list:
+                add_job_list = []
+                for (job,query_fn) in zip(aln_job_list,query_fns):
+                    new_alignment = job.get_results()
+                    job = sate_team.hmmeralign.create_job(new_alignment, query_fn,
+                                                        tmp_dir_par=init_aln_dir,
+                                                        context_str="initalign",
+                                                        delete_temps=delete_aln_temps)
+                    add_job_list.append(job)               
+                _RunningJobs = None
+                for job in add_job_list:
+                    jobq.put(job)
+                for job in add_job_list:
                     new_alignment = job.get_results()
                     new_alignment_list.append(new_alignment)
-                _RunningJobs = None
                 for locus_index, new_alignment in enumerate(new_alignment_list):
                     multilocus_dataset[locus_index] = new_alignment
                 if delete_aln_temps:
@@ -298,7 +321,8 @@ def finish_sate_execution(sate_team,
                                                     context_str="inittree",
                                                     delete_temps=delete_tree_temps,
                                                     sate_products=sate_products,
-                                                    step_num='initialsearch')
+                                                    step_num='initialsearch',
+                                                    mask_gappy_sites = sate_config_dict['mask_gappy_sites'])
             _RunningJobs = job
             jobq.put(job)
             score, starting_tree_str = job.get_results()
@@ -309,7 +333,6 @@ def finish_sate_execution(sate_team,
                 sate_team.temp_fs.remove_dir(init_tree_dir)
         _LOG.debug('We have the tree and whole_alignment, partitions...')
 
-        sate_config_dict = sate_config.dict()
 
         if options.keeptemp:
             sate_config_dict['keep_iteration_temporaries'] = True

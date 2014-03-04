@@ -60,6 +60,7 @@ class SateTeam (object):
             self._temp_fs = TempFS()
             self.aligner = config.create_aligner(temp_fs=self._temp_fs)
             self.aligner.max_mem_mb = max_mem_mb
+            self.hmmeralign = config.create_aligner(temp_fs=self._temp_fs, name = "hmmeralign")
             self.merger = config.create_merger(temp_fs=self._temp_fs)
             self.merger.max_mem_mb = max_mem_mb
             self.tree_estimator = config.create_tree_estimator(temp_fs=self._temp_fs)

@@ -1,0 +1,122 @@
+#! /usr/bin/env python
+import sys
+from subprocess import Popen
+import subprocess
+import re
+import os
+import inspect
+
+def read_stderr(stderrdata,stderr):    
+        '''
+        Used for reading standard error when an error is detected. 
+        '''    
+        if stderrdata is not None:
+            return stderrdata
+        elif isinstance(stderr,file):
+            return open(stderr,'r').read()
+        else:
+            return None
+        
+def log(job, name, stdoutdata, stderrdata, stderrfile):
+    if job.returncode == 0:
+        print "Finished %s Job with return code: %s\n output: %s [continued]" %(name,job.returncode,stdoutdata[0:50])
+    
+    else:         
+        print ("Finished %s Job with return code: %s\n output: %s\n error:%s" 
+                      %(name, job.returncode, stdoutdata, read_stderr(stderrdata, stderrfile)))              
+        raise RuntimeError("\n".join(["The following execution failed:",name,
+                                    read_stderr(stderrdata, stderrfile) if read_stderr(stderrdata, stderrfile)
+                                     else 'No error messages available']))
+
+# def align_query(dt, modelfile, fragment_file, out_file):
+#     invoc = ['hmmalign', "--allcol" ,"--%s" % dt, 
+#              "-o", out_file, "--cpu", "1", modelfile, fragment_file]
+#         
+#     alignjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+#     (stdoutdata, stderrdata) = alignjob.communicate()
+#     log(buildjob,"hmmalign", stdoutdata, stderrdata, "")
+    
+    
+def read_sto(content, alg):
+    '''
+    Reads a sto file and populates this current object. Figures out
+    insertion columns by finding lower case letters, asterisks, and dots. 
+    '''
+    p = re.compile(r'[a-z*.]')
+    insertions = []
+    lastStartInd = -1
+    for line in content.split("\n"):
+        line = line.strip() 
+        if line == "//":
+            break
+        elif line == "" or line[0] == "#":                
+            pass
+        else: # not a comment
+            key, seq = line.split()
+            current = alg.get(key,"")
+            startind = len(current)
+            if startind != lastStartInd: # finding insertion columns in limited to first sequence
+                #s = sum(len(x) for x in current)
+                insertions.extend([m.start()+startind for m in p.finditer(seq)])
+                lastStartInd = startind                                            
+            alg[key] = current + seq.replace(".","-")
+    return set(insertions)
+
+def remove_insertion_columns(alg,cols):
+    '''
+    Outputs a new alignment with insertion columns masked out.
+    '''
+    s=[]
+    a=0
+    for b in cols: 
+        if b > a:
+            s.append((a,b)); 
+        a=b+1;
+    s.append((a,len(alg.values()[0])))
+    for name, seq in alg.items():
+        news = []
+        for c in s:
+            news.append(seq[c[0]:c[1]])
+        alg[name] = "".join(news)
+            
+if __name__ == "__main__":
+    backbone_fn = sys.argv[1]
+    query_fn = sys.argv[2]
+    out_fn = sys.argv[3]
+    dt = sys.argv[4]
+    cpus = sys.argv[5]
+    
+    loc = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    
+    model_file = "%s.hmm" % backbone_fn
+    invoc = [os.path.join(loc,'hmmbuild'), "--symfrac" ,"0.0" ,"--%s" % dt,
+             '--informat', 'afa', model_file , backbone_fn]       
+    buildjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+    (stdoutdata, stderrdata) = buildjob.communicate()
+    log(buildjob,"hmmbuild", stdoutdata, stderrdata, "")
+    
+    query_out_fn = "%s.aligned" %query_fn
+    invoc = [os.path.join(loc,'hmmalign'),"--%s" % dt, 
+             #"--cpu", cpus, 
+             "--mapali", backbone_fn,
+             model_file, query_fn]       
+    alignjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+    (stdoutdata, stderrdata) = alignjob.communicate()
+    log(buildjob,"hmmalign", stdoutdata, stderrdata, "")
+    
+    alg = dict()
+    insertion = read_sto(stdoutdata, alg)
+    out=open("%s" % out_fn,'w')
+    for k,v in alg.iteritems():
+        out.write(">%s\n%s\n" %(k,v))
+    out.close()
+    
+    os.remove(model_file)
+#     remove_insertion_columns(alg, insertion)
+#     out=open("%s.masked" % out_fn,'w')
+#     for k,v in alg.iteritems():
+#         out.write(">%s\n%s\n" %(k,v))
+#     
+    
+    
+    

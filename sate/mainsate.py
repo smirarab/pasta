@@ -273,7 +273,7 @@ def finish_sate_execution(sate_team,
                 aln_job_list = []
                 query_fns = []
                 for unaligned_seqs in multilocus_dataset:
-                    backbone = sample(unaligned_seqs.keys(), 10)   
+                    backbone = sample(unaligned_seqs.keys(), min(100,len(unaligned_seqs)))   
                     backbone_seqs = unaligned_seqs.sub_alignment(backbone)
                     
                     query_seq=set(unaligned_seqs.keys()) - set(backbone)

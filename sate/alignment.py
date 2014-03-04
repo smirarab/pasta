@@ -484,7 +484,7 @@ class Alignment(dict, object):
                     r -= 1
                 if r == 0:
                     break
-            if r != 0:
+            if r > 0:
                 masked.append(c)
                  
         _LOG.debug("%d Columns identified for masking" %len(masked))

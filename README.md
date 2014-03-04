@@ -6,8 +6,7 @@ All questions and inquires should be addressed to our user email group: pasta-us
 
 Acknowledgment 
 ===
-The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc
-directory for documentation of the SATe code. 
+The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc directory for documentation of the SATe code. 
 
 INSTALLATION
 ===
@@ -35,7 +34,7 @@ Insallation steps:
 2. Clone the PASTA repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
 If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip) and decompress it into your desired directory. 
 
-3.  Clone the relevant "tools" directory from the SATe project. Note that there are different repositories for [linux](https://github.com/sate-dev/sate-tools-linux) and [MAC](https://github.com/sate-dev/sate-tools-mac). e.g., you can use `git clone git@github.com:sate-dev/sate-tools-linux.git` on Linux or `git@github.com:sate-dev/sate-tools-mac.git` on MAC. Or you can directly download these as zip files for [Linux](https://github.com/sate-dev/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/sate-dev/sate-tools-mac/archive/master.zip) and decompress them in your target directory for PASTA code.
+3.  Clone the relevant "tools" directory (these are also forked from the SATe project). Note that there are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac). e.g., you can use `git clone git@github.com:smirarab/sate-tools-linux.git` on Linux or `git@github.com:smirarab/sate-tools-mac.git` on MAC. Or you can directly download these as zip files for [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip) and decompress them in your target directory for PASTA code.
 
 4. `cd pasta`
 
@@ -73,19 +72,16 @@ python run_pasta_gui.py
 
 Starting Trees
 -------
-NOTE that current version of the PASTA code does NOT compute the starting tree through a
-process similar to what is described in the paper. Instead, it simply uses a FastTree on
-the input, if input is aligned, or else runs MAFFT on the input to align it, and then runs FastTree.
+Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees
+if none is given. 
 
-The preferred approach for getting the PASTA starting tree is very simple, and is described below:
-
+The PASTA approach for getting the starting tree can be summarized as:
 1. Choose a random subset of your sequences (size 100).
-2. Get a SATe alignment on this subset (you need to install SATe for this; alternatively just run PASTA on it).
+2. Get a MAFFT-linsi alignment on the subset.
 3. Build a HMMER model on the alignment of 100 subsets.
-4. Use HMMAlign to align the remaining sequences into the small subset. 
+4. Use hmmalign to align the remaining sequences into the small subset. 
 5. Run FastTree on the output of step 4.
 
-We do have a separate program that computes this simple starting tree. See https://github.com/smirarab/sepp and use UPP. Make sure you set `-A 100 -P 100` to get the starting tree described in the PASTA paper. 
 
 LICENSE
 ===

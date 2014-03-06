@@ -41,7 +41,7 @@ If you don't have git, you can directly download a [zip file from the repository
 5. Then run:
 
 `
-  python steup.py develop 
+  python setup.py develop 
 `
 
 You probably need to add a `sudo` in front of that command. If you don't have root access, use `--prefix` to install in a different location.

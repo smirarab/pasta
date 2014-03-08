@@ -32,7 +32,7 @@ class SateUserSettings(UserSettingsContainer):
         self.mafft = UserSettingGroup('mafft')
         self._categories.append('mafft')
         self.hmmeralign = UserSettingGroup('hmmeralign')
-        self._categories.append('hammeralign')
+        self._categories.append('hmmeralign')
         self.commandline = UserSettingGroup('commandline')
         self._categories.append('commandline')
         self.prank = UserSettingGroup('prank')

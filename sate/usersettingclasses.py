@@ -392,7 +392,7 @@ class UserSettingsContainer(object):
         except:
             pass
         if not p:
-            raise RuntimeError("Cannot create a wrapper around the merger %s because a path setting was not found in the configuration for this tool" % s)
+            raise RuntimeError("Cannot create a wrapper around the merger %s because a path setting was not found in the configuration for this tool" % p)
 
         from sate.tools import MergerClasses
         d = g.dict()

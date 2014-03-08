@@ -273,6 +273,7 @@ class SateFrame(wx.Frame):
         self.txt_treefn = wx.TextCtrl(self,-1)
 
         self.cb_multilocus = wx.CheckBox(self, -1, "Multi-Locus Data")
+        self.cb_multilocus.Disable()
         self.checkbox_aligned = wx.CheckBox(self, -1, "Use for inital tree")
         self.checkbox_aligned.SetValue(False)
         self._could_be_aligned = False

@@ -1,3 +1,6 @@
+Version 1.4.1:
+    Bug fix: GUI was broken in 1.4.0
+    Disable multi-locus checkbox. Multi-locus is not supported in PASTA. 
 Version 1.4.0:
     Uses hmmer to build the initial alignment if one is not given
     Initial tree also uses a masked alignment

@@ -1,9 +1,9 @@
-"""Main script for SATe GUI on Windows/Mac/Linux
+"""Main script for PASTA GUI on Windows/Mac/Linux
 """
 
-# This file is part of SATe
+# This file is part of PASTA which is forked from SATe
 
-# SATe is free software: you can redistribute it and/or modify
+# PASTA, like SATe is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -26,28 +26,28 @@ import sys
 import time
 import wx
 import string
-from sate import PROGRAM_AUTHOR
-from sate import PROGRAM_INSTITUTE
-from sate import PROGRAM_DESCRIPTION
-from sate import PROGRAM_LICENSE
-from sate import PROGRAM_NAME
-from sate import PROGRAM_VERSION
-from sate import PROGRAM_WEBSITE
-from sate import PROGRAM_YEAR
-from sate import GLOBAL_DEBUG
-from sate import DEFAULT_MAX_MB
+from pasta import PROGRAM_AUTHOR
+from pasta import PROGRAM_INSTITUTE
+from pasta import PROGRAM_DESCRIPTION
+from pasta import PROGRAM_LICENSE
+from pasta import PROGRAM_NAME
+from pasta import PROGRAM_VERSION
+from pasta import PROGRAM_WEBSITE
+from pasta import PROGRAM_YEAR
+from pasta import GLOBAL_DEBUG
+from pasta import DEFAULT_MAX_MB
 from ConfigParser import RawConfigParser
-from sate import sate_is_frozen
-from sate import sate_home_dir
-from sate.configure import get_invoke_run_sate_command
-from sate.tools import AlignerClasses
-from sate.tools import MergerClasses
-from sate.tools import TreeEstimatorClasses
-from sate.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
-from sate import filemgr
-from sate.usersettingclasses import get_list_of_seq_filepaths_from_dir
-from sate.alignment import summary_stats_from_parse
-from sate.mainsate import get_auto_defaults_from_summary_stats
+from pasta import pasta_is_frozen
+from pasta import pasta_home_dir
+from pasta.configure import get_invoke_run_pasta_command
+from pasta.tools import AlignerClasses
+from pasta.tools import MergerClasses
+from pasta.tools import TreeEstimatorClasses
+from pasta.tools import get_aligner_classes, get_merger_classes, get_tree_estimator_classes
+from pasta import filemgr
+from pasta.usersettingclasses import get_list_of_seq_filepaths_from_dir
+from pasta.alignment import summary_stats_from_parse
+from pasta.mainpasta import get_auto_defaults_from_summary_stats
 
 WELCOME_MESSAGE = "%s %s, %s\n\n"% (PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_YEAR)
 GRID_VGAP = 8
@@ -55,7 +55,7 @@ GRID_HGAP = 8
 
 PARSING_FILES_IN_GUI = True
 MAX_NUM_CPU = 16
-SATE_GUI_ONLY_PRINTS_CONFIG = os.environ.get('SATE_GUI_ONLY_PRINTS_CONFIG') == '1'
+PASTA_GUI_ONLY_PRINTS_CONFIG = os.environ.get('PASTA_GUI_ONLY_PRINTS_CONFIG') == '1'
 
 def is_valid_int_str(s, min_v, max_v):
     try:
@@ -109,7 +109,7 @@ class RangedIntValidator(wx.PyValidator):
     def TransferFromWindow(self):
          return True
 
-class SateFrame(wx.Frame):
+class PastaFrame(wx.Frame):
     def __init__(self, size):
         wx.Frame.__init__(self, None, -1, "PASTA - Practical Alignment using SATe and TraAnsitivity", size=(640,480), style=wx.DEFAULT_FRAME_STYLE)
         self.SetBackgroundColour(wx.LIGHT_GREY)
@@ -127,7 +127,7 @@ class SateFrame(wx.Frame):
 
         self.sizer_tool_settings = self._create_tools_sizer()
         self.sizer_data = self._create_data_sizer()
-        self.sizer_sate_settings = self._create_sate_settings_sizer()
+        self.sizer_pasta_settings = self._create_pasta_settings_sizer()
         self.sizer_job_settings = self._create_job_settings_sizer()
         self.sizer_workflow_settings = self._create_workflow_settings_sizer()
 
@@ -140,7 +140,7 @@ class SateFrame(wx.Frame):
 
         sizer2 = wx.BoxSizer(wx.VERTICAL)
         sizer2.Add(self.sizer_job_settings, 0, wx.EXPAND|wx.ALL, 0)
-        sizer2.Add(self.sizer_sate_settings, 0, wx.EXPAND|wx.ALL, 0)
+        sizer2.Add(self.sizer_pasta_settings, 0, wx.EXPAND|wx.ALL, 0)
         self.sizer_settings.Add(sizer2, 0, wx.EXPAND|wx.ALL, 0)
 
         sizer_all.Add(self.sizer_settings, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 10)
@@ -172,7 +172,7 @@ class SateFrame(wx.Frame):
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
         cr = 0
         sizer.Add(wx.StaticText(self, -1, "Job Name"),(cr,0), flag=wx.ALIGN_LEFT )
-        self.txt_jobname = wx.TextCtrl(self,-1,"satejob")
+        self.txt_jobname = wx.TextCtrl(self,-1,"pastajob")
         sizer.Add(self.txt_jobname, (cr,1), flag=wx.EXPAND)
         cr += 1
         self.outputdir_btn = wx.Button(self, label="Output Dir." )
@@ -209,12 +209,12 @@ class SateFrame(wx.Frame):
         dialog.ShowModal()
         self.txt_outputdir.SetValue( dialog.GetPath() )
 
-    def _set_custom_sate_settings(self, event):
+    def _set_custom_pasta_settings(self, event):
         #self.cb_sate_presets.SetValue("(custom)")
         pass
 
     def _create_tools_sizer(self):
-        from sate.configure import get_configuration
+        from pasta.configure import get_configuration
         cfg = get_configuration()
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "External Tools"), wx.VERTICAL)
         sizer = wx.FlexGridSizer(0, 2, GRID_VGAP, GRID_HGAP)
@@ -306,7 +306,7 @@ class SateFrame(wx.Frame):
     def _create_workflow_settings_sizer(self):
         """
         returns a wx.StaticBoxSizer with the widgets that control pre and post
-        processing of SATe output.
+        processing of PASTA output.
         """
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Workflow Settings"), wx.VERTICAL)
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
@@ -337,7 +337,7 @@ class SateFrame(wx.Frame):
         staticboxsizer.Add(sizer, 0, wx.ALL, 0)
         return staticboxsizer
         
-    def _create_sate_settings_sizer(self):
+    def _create_pasta_settings_sizer(self):
         staticboxsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "PASTA Settings"), wx.VERTICAL)
         sizer = wx.GridBagSizer(GRID_VGAP, GRID_HGAP)
 
@@ -391,54 +391,54 @@ class SateFrame(wx.Frame):
         self.cb_decomp = wx.ComboBox(self, -1, "Centroid", choices=strategy_list, style=wx.CB_READONLY)
 
         self.ctrls.append(self.cb_decomp)
-        self.sate_settings_ctrl_list = []
+        self.pasta_settings_ctrl_list = []
         cr = 0
 
 #        sizer.Add(wx.StaticText(self, -1, "Quick Set"), (cr, 0), flag=wx.ALIGN_LEFT )
 #        sizer.Add(self.cb_sate_presets, (cr, 1), flag=wx.EXPAND)
-#        self.sate_settings_ctrl_list.append(self.cb_sate_presets)
+#        self.pasta_settings_ctrl_list.append(self.cb_sate_presets)
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Max. Subproblem"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.rb_maxsub1, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_maxsub1, (cr,2), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.rb_maxsub1, self.cb_maxsub1])
+        self.pasta_settings_ctrl_list.extend([self.rb_maxsub1, self.cb_maxsub1])
 
         cr += 1
         sizer.Add(self.rb_maxsub2, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_maxsub2, (cr,2), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.rb_maxsub2, self.cb_maxsub2])
+        self.pasta_settings_ctrl_list.extend([self.rb_maxsub2, self.cb_maxsub2])
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Decomposition"), (cr,0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_decomp, (cr,1), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.cb_decomp])
+        self.pasta_settings_ctrl_list.extend([self.cb_decomp])
 
 
 #        cr += 1
 #        sizer.Add(wx.StaticText(self, -1, "Apply Stop Rule"), (cr,0), flag=wx.ALIGN_LEFT )
 #        sizer.Add(self.cb_apply_stop_rule, (cr,1), flag=wx.EXPAND)
-#        self.sate_settings_ctrl_list.extend([self.cb_apply_stop_rule])
+#        self.pasta_settings_ctrl_list.extend([self.cb_apply_stop_rule])
 
 #        cr += 1
 #        sizer.Add(wx.StaticText(self, -1, "Stopping Rule"), (cr,0), flag=wx.ALIGN_LEFT )
 #        sizer.Add(self.blindmode, (cr,1), flag=wx.EXPAND)
-#        self.sate_settings_ctrl_list.extend([self.blindmode])
+#        self.pasta_settings_ctrl_list.extend([self.blindmode])
 
         cr += 1
         sizer.Add(self.checkbox_stop_time, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.cb_stop1, (cr,2), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.checkbox_stop_time, self.cb_stop1])
+        self.pasta_settings_ctrl_list.extend([self.checkbox_stop_time, self.cb_stop1])
 
         cr += 1
         sizer.Add(self.checkbox_stop_iter, (cr,1), flag=wx.ALIGN_LEFT)
         sizer.Add(self.text_stop2, (cr,2), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.checkbox_stop_iter, self.text_stop2])
+        self.pasta_settings_ctrl_list.extend([self.checkbox_stop_iter, self.text_stop2])
 
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Return"), (cr, 0), flag=wx.ALIGN_LEFT )
         sizer.Add(self.cb_tree_and_alignment, (cr, 1), flag=wx.EXPAND)
-        self.sate_settings_ctrl_list.extend([self.cb_tree_and_alignment])
+        self.pasta_settings_ctrl_list.extend([self.cb_tree_and_alignment])
 
         self.cb_maxsub1.Disable()
         self.cb_maxsub2.Disable()
@@ -459,11 +459,11 @@ class SateFrame(wx.Frame):
         self.Bind(wx.EVT_RADIOBUTTON, self.OnMaxSubproblem, self.rb_maxsub2)
         self.Bind(wx.EVT_CHECKBOX, self.OnTimeRuleCheckbox, self.checkbox_stop_time)
         self.Bind(wx.EVT_CHECKBOX, self.OnIterRuleCheckbox, self.checkbox_stop_iter)
-        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_decomp)
-        #self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_apply_stop_rule)
-        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_stop1)
-        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.text_stop2)
-        self.Bind(wx.EVT_COMBOBOX, self._set_custom_sate_settings, self.cb_tree_and_alignment)
+        self.Bind(wx.EVT_COMBOBOX, self._set_custom_pasta_settings, self.cb_decomp)
+        #self.Bind(wx.EVT_COMBOBOX, self._set_custom_pasta_settings, self.cb_apply_stop_rule)
+        self.Bind(wx.EVT_COMBOBOX, self._set_custom_pasta_settings, self.cb_stop1)
+        self.Bind(wx.EVT_COMBOBOX, self._set_custom_pasta_settings, self.text_stop2)
+        self.Bind(wx.EVT_COMBOBOX, self._set_custom_pasta_settings, self.cb_tree_and_alignment)
 
         #cr += 1
         #presets = wx.ComboBox(self, -1, "1", choices=map(str, range(1,9)), style=wx.CB_READONLY)
@@ -490,7 +490,7 @@ class SateFrame(wx.Frame):
         self.menuFile = wx.Menu()
         self.menuHelp = wx.Menu()
         self.menuFileSaveLog = self.menuFile.Append(-1, "&Save Log...\tCtrl+S")
-        self.menuFileExit = self.menuFile.Append(wx.ID_EXIT, "&Quit SATe\tCtrl+Q")
+        self.menuFileExit = self.menuFile.Append(wx.ID_EXIT, "&Quit PASTA\tCtrl+Q")
         self.menuHelpHelp = self.menuHelp.Append( -1, "&Help")
         self.menuHelpAbout = self.menuHelp.Append(wx.ID_ABOUT, "&About PASTA")
         self.menuBar.Append(self.menuFile, "&File")
@@ -545,7 +545,7 @@ class SateFrame(wx.Frame):
         fc.close()
 
     def OnMaxSubproblem(self, event):
-        self._set_custom_sate_settings(event)
+        self._set_custom_pasta_settings(event)
         radio_selected = event.GetEventObject()
         if radio_selected.GetName() == "frac":
             self.cb_maxsub1.Enable()
@@ -560,7 +560,7 @@ class SateFrame(wx.Frame):
             controls
         """
         if self.two_phase.Value:
-            for c in self.sate_settings_ctrl_list:
+            for c in self.pasta_settings_ctrl_list:
                 c.Disable()
             self.cb_tools["merger"].Disable()
             self.tree_btn.Disable()
@@ -568,7 +568,7 @@ class SateFrame(wx.Frame):
             self.raxml_after.Disable()
         else:
             fragile_list = [self.cb_maxsub1, self.cb_maxsub2, self.cb_stop1, self.text_stop2]
-            for c in self.sate_settings_ctrl_list:
+            for c in self.pasta_settings_ctrl_list:
                 if c not in fragile_list:
                     c.Enable()
             if self.rb_maxsub1.Value:
@@ -586,14 +586,14 @@ class SateFrame(wx.Frame):
 
 
     def OnTimeRuleCheckbox(self, event):
-        self._set_custom_sate_settings(event)
+        self._set_custom_pasta_settings(event)
         if self.checkbox_stop_time.Value:
             self.cb_stop1.Enable()
         else:
             self.cb_stop1.Disable()
 
     def OnIterRuleCheckbox(self, event):
-        self._set_custom_sate_settings(event)
+        self._set_custom_pasta_settings(event)
         if self.checkbox_stop_iter.Value:
             self.text_stop2.Enable()
         else:
@@ -707,40 +707,40 @@ class SateFrame(wx.Frame):
                     self._could_be_aligned = summary_stats[3]
                     self.refresh_aligned_checkbox()
 
-                    auto_sate_opts = auto_opts["sate"]
-                    te_str = auto_sate_opts["tree_estimator"].upper()
+                    auto_pasta_opts = auto_opts["sate"]
+                    te_str = auto_pasta_opts["tree_estimator"].upper()
                     self.cb_tools["treeestimator"].SetStringSelection(te_str)
                     self.set_char_model()
                     if te_str == "FASTTREE":
                         te_opts = auto_opts['fasttree']
                     self.cb_tools["model"].SetStringSelection(te_opts["GUI_model"])
-                    self.cb_tools["merger"].SetStringSelection(auto_sate_opts["merger"].upper())
-                    self.cb_tools["aligner"].SetStringSelection(auto_sate_opts["aligner"].upper())
-                    self.cb_ncpu.SetStringSelection(str(min(MAX_NUM_CPU, auto_sate_opts["num_cpus"])))
+                    self.cb_tools["merger"].SetStringSelection(auto_pasta_opts["merger"].upper())
+                    self.cb_tools["aligner"].SetStringSelection(auto_pasta_opts["aligner"].upper())
+                    self.cb_ncpu.SetStringSelection(str(min(MAX_NUM_CPU, auto_pasta_opts["num_cpus"])))
                     
                     # Set max decomposition based on data set size (always move to actual # here)
                     self.rb_maxsub1.Value = False
                     self.cb_maxsub1.Disable()
                     self.rb_maxsub2.Value = True
-                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_sate_opts["max_subproblem_size"])))
+                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_pasta_opts["max_subproblem_size"])))
                     self.cb_maxsub2.Enable()
                     
-                    bs = auto_sate_opts["break_strategy"]
+                    bs = auto_pasta_opts["break_strategy"]
                     bs = bs[0].upper() + bs[1:].lower()
                     self.cb_decomp.SetValue(bs)
 
 
                     self.cb_stop1.Disable()
                     self.checkbox_stop_iter.Value = True
-                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_sate_opts["max_subproblem_size"])))
+                    self.cb_maxsub2.SetStringSelection(str(max(1, auto_pasta_opts["max_subproblem_size"])))
                     self.cb_maxsub2.Enable()
                     
-                    if auto_sate_opts['move_to_blind_on_worse_score']:
+                    if auto_pasta_opts['move_to_blind_on_worse_score']:
                         #self.blindmode.Value = True
-                        t_l = auto_sate_opts['after_blind_time_without_imp_limit']                        
+                        t_l = auto_pasta_opts['after_blind_time_without_imp_limit']                        
                     else:
                         #self.blindmode.Value = False
-                        t_l = auto_sate_opts['time_limit']                        
+                        t_l = auto_pasta_opts['time_limit']                        
                     
                     if t_l <= 0:
                         self.checkbox_stop_time.Value = False
@@ -749,7 +749,7 @@ class SateFrame(wx.Frame):
                         
                         
 #                     self.cb_apply_stop_rule.SetValue("After Last Improvement")
-                    after_blind_it_lim = auto_sate_opts['iter_limit']
+                    after_blind_it_lim = auto_pasta_opts['iter_limit']
                     self.text_stop2.SetValue(str(after_blind_it_lim))
                     
                     if self._could_be_aligned:
@@ -883,12 +883,12 @@ class SateFrame(wx.Frame):
             cfg_success = self._create_config_file()
             if not cfg_success:
                 return
-            #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_sate_command()]
-            command = get_invoke_run_sate_command()
+            #command = [filemgr.quoted_file_path(x) for x in get_invoke_run_pasta_command()]
+            command = get_invoke_run_pasta_command()
             treefilename = self._encode_arg(self.txt_treefn.GetValue())
             jobname = self._encode_arg(self.txt_jobname.GetValue())
             if not jobname:
-                wx.MessageBox("Job name cannot be empty, it is REQUIRED by SATe!", "WARNING", wx.OK|wx.ICON_WARNING)
+                wx.MessageBox("Job name cannot be empty, it is REQUIRED by PASTA!", "WARNING", wx.OK|wx.ICON_WARNING)
                 self._remove_config_file()
                 return
 
@@ -904,7 +904,7 @@ class SateFrame(wx.Frame):
                 dt = "protein"
             command.extend(["-d", dt])
             command.extend(["%s" % filemgr.quoted_file_path(self.process_cfg_file)])
-            if SATE_GUI_ONLY_PRINTS_CONFIG:
+            if PASTA_GUI_ONLY_PRINTS_CONFIG:
                 self.log.AppendText("Command is:\n  '%s'\n" % "' '".join(command))
                 self.log.AppendText("config_file:\n#############################################################\n")
                 for line in open(self.process_cfg_file, 'rU'):
@@ -917,7 +917,7 @@ class SateFrame(wx.Frame):
                 self.process.Redirect()
                 self.pid = wx.Execute( " ".join(command), wx.EXEC_ASYNC, self.process)
                 self.button.SetLabel("Stop")
-                self.statusbar.SetStatusText("SATe Running!")
+                self.statusbar.SetStatusText("PASTA Running!")
                 self._FreezeOptions()
 
         else:
@@ -930,9 +930,9 @@ class SateFrame(wx.Frame):
             self._remove_config_file()
             self._ReactivateOptions()
             self.button.SetLabel("Start")
-            self.statusbar.SetStatusText("SATe Ready!")
+            self.statusbar.SetStatusText("PASTA Ready!")
         else:
-            self.log.AppendText("No active SATe jobs to terminate!\n")
+            self.log.AppendText("No active PASTA jobs to terminate!\n")
 
     def _encode_arg(self, arg, encoding='utf-8'):
         if isinstance(arg, unicode):
@@ -940,7 +940,7 @@ class SateFrame(wx.Frame):
         return arg
 
     def _create_config_file(self):
-        from sate.configure import get_configuration
+        from pasta.configure import get_configuration
         cfg = get_configuration()
 
         #if self.txt_resultdir.Value:
@@ -1004,17 +1004,17 @@ class SateFrame(wx.Frame):
             cfg.sate.after_blind_time_without_imp_limit = -1
             cfg.sate.after_blind_iter_without_imp_limit = -1
 #             if True:
-#                 cfg.sate.move_to_blind_on_worse_score = True
+#                 cfg.pasta.move_to_blind_on_worse_score = True
 #                 if self.cb_apply_stop_rule.GetValue() == "After Last Improvement":
 #                     if self.checkbox_stop_time.Value:
-#                         cfg.sate.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
+#                         cfg.pasta.after_blind_time_without_imp_limit = float(self.cb_stop1.Value)*3600
 #                     if self.checkbox_stop_iter.Value:
-#                         cfg.sate.after_blind_iter_without_imp_limit = int(self.text_stop2.Value)
+#                         cfg.pasta.after_blind_iter_without_imp_limit = int(self.text_stop2.Value)
 #                 else:
 #                     if self.checkbox_stop_time.Value:
-#                         cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
+#                         cfg.pasta.time_limit = float(self.cb_stop1.Value)*3600
 #                     if self.checkbox_stop_iter.Value:
-#                         cfg.sate.iter_limit = int(self.text_stop2.Value)
+#                         cfg.pasta.iter_limit = int(self.text_stop2.Value)
 #             else:
             if self.checkbox_stop_time.Value:
                 cfg.sate.time_limit = float(self.cb_stop1.Value)*3600
@@ -1031,17 +1031,17 @@ class SateFrame(wx.Frame):
 
         # this creates a file that cannot be deleted while the Python
         # process is running (under the mess that is called "Windows")
-        #tf, self.process_cfg_file = tempfile.mkstemp(dir=sate_home_dir(),
+        #tf, self.process_cfg_file = tempfile.mkstemp(dir=pasta_home_dir(),
         #        suffix="_internal.cfg")
 
-        tf = tempfile.NamedTemporaryFile(suffix="_internal.cfg", dir=sate_home_dir())
+        tf = tempfile.NamedTemporaryFile(suffix="_internal.cfg", dir=pasta_home_dir())
         self.process_cfg_file = tf.name
         tf.close()
         cfg.save_to_filepath(self.process_cfg_file)
         return True
 
     def _remove_config_file(self):
-        if "SATE_GUIDEVMODE" in os.environ:
+        if "PASTA_GUIDEVMODE" in os.environ:
             return
         if self.process_cfg_file and os.path.exists(self.process_cfg_file):
             try:
@@ -1053,15 +1053,15 @@ class SateFrame(wx.Frame):
                 # so we just:
                 pass
 
-class SateApp(wx.PySimpleApp):
+class PastaApp(wx.PySimpleApp):
     def OnInit(self):
-        self.frame = SateFrame(size=wx.Display().GetClientArea())
+        self.frame = PastaFrame(size=wx.Display().GetClientArea())
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
 
 def main_gui():
-    app = SateApp()
+    app = PastaApp()
     app.MainLoop()
 
 ICO_STR = """AAABAAMAEBAAAAAAIABoBAAANgAAACAgAAAAACAAqBAAAJ6EAAAwMAAAAAAgAKglAABGFQAAKAAA\nABAAAAAgAAAAAQAgAAAAAABABAAAAAAAAAAAAAAAAAAAAAAAAAAAAGsAAADvAAAAqQAAAEUAAACX\n////Af///wEAAAC3AAAAJQAAAGsAAABv////Af///wEAAACHAAAA8QAAAGkAAAD1AAAA/wAAAP8A\nAABpAAAA4f///wEAAAALAAAA/wAAABkAAACPAAAAk////wEAAAAVAAAA+wAAAP8AAADXAAAA8wAA\nALsAAAD7AAAAgQAAAPsAAAAlAAAAQwAAAPkAAAADAAAAjwAAAJP///8BAAAAUQAAAO0AAABfAAAA\ntwAAAGv///8BAAAAsQAAAHsAAAD/AAAA/wAAAP8AAADd////AQAAAI8AAACT////AQAAAHUAAACl\n////AQAAAB3///8B////AQAAAKcAAAB7AAAA6QAAAP8AAAD/AAAAv////wEAAACPAAAAk////wEA\nAACHAAAAsQAAAFMAAABT////AQAAABcAAADlAAAAcwAAAM0AAACvAAAAwQAAAKP///8BAAAAjwAA\nAJP///8BAAAAjwAAAP8AAAD/AAAA/wAAAB0AAADfAAAA/wAAAFsAAACvAAAAawAAAJMAAACH////\nAQAAAI8AAACT////AQAAAIsAAADnAAAAzwAAAPkAAACZAAAA/wAAAP0AAAAhAAAAkwAAAIUAAACv\nAAAAaf///wEAAACPAAAAk////wEAAAB7AAAAmQAAACMAAADrAAAA2QAAAP8AAACF////AQAAAHUA\nAAChAAAAyQAAAE3///8BAAAAjwAAAJP///8BAAAAWwAAANUAAABjAAAAzQAAAPMAAABv////Af//\n/wEAAABZAAAAvQAAAOUAAAAv////AQAAAI8AAACT////AQAAACMAAAD/AAAA/wAAAJUAAAD9AAAA\nE////wH///8BAAAAOwAAANsAAAD7AAAAEf///wEAAACPAAAAk////wH///8BAAAAtwAAAP0AAAAz\nAAAA9QAAACsAAAA3AAAAKQAAAB8AAAD9AAAA8wAAAAMAAAA3AAAApwAAAKkAAAA3AAAAAwAAAAsA\nAAAp////AQAAANkAAADvAAAA/QAAADMAAAAFAAAA+wAAANcAAAAJAAAA/wAAAP8AAAD/AAAA/wAA\nAAsAAAAFAAAAXf///wEAAACdAAAA/wAAAP8AAAAz////AQAAAOMAAAC5AAAACQAAAP8AAAD/AAAA\n/wAAAP8AAAAL////AQAAAKf///8BAAAAJQAAAMUAAACPAAAAC////wEAAAB3AAAAXwAAAAUAAACV\nAAAAlQAAAJUAAACVAAAAB////wEAAACZAAAAIf///wH///8B////Af///wH///8B////Af///wH/\n//8B////Af///wH///8B////Af///wH///8BAAAAXQAAAGsAAP//AAD//wAA//8AAP//AAD//wAA\n//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//KAAAACAAAABAAAAAAQAg\nAAAAAACAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkAAABTAAAAyQAAAPkAAAC7AAAAMwAAAAcAAABb\nAAAAgQAAAEX///8B////Af///wH///8BAAAAbQAAAIEAAAA3////AQAAAB0AAABzAAAAdQAAAB//\n//8B////Af///wH///8BAAAAFwAAAJUAAAD3AAAA0QAAAFUAAAAJAAAAZwAAAOcAAAD/AAAA/wAA\nAP0AAAC1AAAABQAAAK0AAAD/AAAAmf///wH///8B////Af///wEAAADrAAAA/wAAAF3///8BAAAA\nOwAAAOUAAADnAAAAP////wH///8B////Af///wEAAAB5AAAA9wAAAP8AAAD/AAAA5wAAAF8AAADp\nAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAxAAAAkQAAAP8AAAC3////Af///wH///8BAAAACwAAAP8A\nAAD/AAAAPf///wEAAAA7AAAA5QAAAOcAAAA/////Af///wH///8BAAAADQAAAO0AAAD/AAAA/wAA\nAP8AAAD/AAAArwAAAOkAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAHEAAAB3AAAA/wAAAM////8B////\nAf///wEAAAAjAAAA/wAAAP8AAAAj////AQAAADsAAADlAAAA5wAAAD////8B////Af///wEAAABF\nAAAA/wAAAP8AAAD/AAAA/wAAAP8AAACvAAAA6QAAAP8AAAD/AAAA/wAAAP8AAAD/AAAApwAAAFkA\nAAD/AAAA7////wH///8B////AQAAAEEAAAD/AAAA+wAAAAf///8BAAAAOwAAAOUAAADnAAAAP///\n/wH///8B////AQAAAI0AAAD/AAAA+wAAAKsAAAC3AAAA9QAAAK8AAADpAAAA+QAAAIUAAABpAAAA\n8QAAAP8AAAC5AAAASwAAAP8AAAD9AAAASQAAAEcAAABHAAAAgwAAAP8AAADp////Af///wEAAAA7\nAAAA5QAAAOcAAAA/////Af///wEAAAAHAAAArQAAAP8AAAC/AAAACQAAABMAAACPAAAAqwAAANUA\nAABX////Af///wEAAAB7AAAA/wAAAMUAAAA3AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAA\nAMn///8B////AQAAADsAAADlAAAA5wAAAD////8B////AQAAABsAAADFAAAA/QAAAGP///8B////\nAQAAABMAAABXAAAAeQAAAAv///8B////AQAAAFMAAAD5AAAAywAAACcAAAD7AAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAD/AAAArf///wH///8BAAAAOwAAAOUAAADnAAAAP////wH///8BAAAAJQAAAM8A\nAADvAAAARf///wH///8B////AQAAAAkAAAAF////Af///wH///8BAAAATQAAAPcAAADPAAAAJwAA\nAOEAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAACN////Af///wEAAAA7AAAA5QAAAOcAAAA/////\nAf///wEAAAAxAAAA2wAAAOMAAAA5////Af///wH///8B////Af///wH///8B////Af///wEAAABd\nAAAA/QAAANEAAAAnAAAAxwAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAHP///8B////AQAAADsA\nAADlAAAA5wAAAD////8B////AQAAADUAAADfAAAA8wAAALkAAACnAAAApwAAAKcAAACl////Af//\n/wH///8BAAAAAwAAAJ8AAAD/AAAAywAAACEAAACnAAAA/wAAAPEAAADbAAAA3wAAAPkAAAD9AAAA\nVf///wH///8BAAAAOwAAAOUAAADnAAAAP////wH///8BAAAAOQAAAOMAAAD/AAAA/wAAAP8AAAD/\nAAAA/wAAAP////8B////AQAAAAMAAABTAAAA9QAAAP8AAADFAAAAGwAAAI0AAAD/AAAAuwAAADMA\nAABTAAAA3QAAAPEAAABJ////Af///wEAAAA7AAAA5QAAAOcAAAA/////Af///wEAAAA5AAAA4wAA\nAP8AAAD/AAAA/wAAAP8AAAD/AAAA/////wEAAAAHAAAAjwAAAPUAAAD/AAAA/wAAALkAAAARAAAA\nawAAAP8AAAC5AAAADwAAADkAAADhAAAA4QAAADf///8B////AQAAADsAAADlAAAA5wAAAD////8B\n////AQAAADcAAADhAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD3AAAAAwAAAGkAAAD5AAAA/wAAAP8A\nAAD/AAAAoQAAAAMAAABVAAAA+wAAAMUAAAAbAAAARQAAAO0AAADVAAAAK////wH///8BAAAAOwAA\nAOUAAADnAAAAP////wH///8BAAAAMwAAAN0AAADxAAAAqwAAAJUAAACrAAAA/wAAAPEAAAAvAAAA\n1wAAAP8AAAD/AAAA/wAAAP8AAABn////AQAAAEUAAADtAAAA1QAAACsAAABVAAAA+wAAAMMAAAAb\n////Af///wEAAAA7AAAA5QAAAOcAAAA/////Af///wEAAAArAAAA0wAAAOcAAAA/////AQAAADsA\nAAD/AAAA3wAAAGUAAAD7AAAA/wAAAP8AAAD/AAAA9wAAAB3///8BAAAANwAAAOEAAADhAAAANwAA\nAGkAAAD/AAAAtwAAAA3///8B////AQAAADsAAADlAAAA5wAAAD////8B////AQAAACEAAADLAAAA\n9QAAAEv///8BAAAATwAAAP8AAADPAAAAnwAAAP8AAAD/AAAA/wAAAPUAAAB/////Af///wEAAAAn\nAAAA0QAAAPEAAABHAAAAhwAAAP8AAACj////Af///wH///8BAAAAOwAAAOUAAADnAAAAP////wH/\n//8BAAAADwAAALkAAAD/AAAAfwAAAAMAAACFAAAA/wAAAKsAAADLAAAA/wAAAP8AAAD/AAAAiQAA\nABP///8B////AQAAABsAAADDAAAA+wAAAFMAAACfAAAA/wAAAIv///8B////Af///wEAAAA7AAAA\n5QAAAOcAAAA/////Af///wEAAAADAAAAowAAAP8AAADXAAAAPQAAAMcAAAD/AAAAhwAAAOMAAAD/\nAAAA4wAAAFv///8B////Af///wH///8BAAAACQAAALMAAAD/AAAAbQAAAL0AAAD/AAAAa////wH/\n//8B////AQAAADsAAADlAAAA5wAAAD////8B////Af///wEAAABlAAAA/wAAAP8AAAD/AAAA/wAA\nAPcAAABTAAAA7QAAAP8AAAB3AAAAB////wH///8B////Af///wH///8BAAAAowAAAP8AAACHAAAA\n1QAAAP8AAABR////Af///wH///8BAAAAOwAAAOUAAADnAAAAP////wH///8B////AQAAACUAAAD/\nAAAA/wAAAP8AAAD/AAAA2wAAADEAAAD7AAAA/wAAAC////8B////Af///wH///8B////Af///wEA\nAACDAAAA/wAAAKUAAADzAAAA/wAAAC////8B////Af///wEAAAA7AAAA5QAAAOcAAAA/////Af//\n/wH///8B////AQAAALEAAAD/AAAA/wAAAP8AAACZAAAABwAAAPsAAAD/AAAAGf///wH///8B////\nAf///wH///8B////AQAAAGkAAAD/AAAAywAAAP8AAAD/AAAAFf///wH///8B////AQAAADsAAADl\nAAAA5wAAAD////8B////Af///wH///8BAAAARwAAAOUAAAD/AAAA8wAAAC3///8BAAAA9QAAAP8A\nAAAx////Af///wEAAAAdAAAAPf///wH///8BAAAASQAAAP8AAAD7AAAA/wAAAPX///8B////Af//\n/wH///8BAAAAOwAAAOUAAADnAAAAP////wH///8B////Af///wH///8BAAAAKQAAAHMAAAAx////\nAf///wEAAADlAAAA/wAAAHUAAAADAAAAGwAAAKUAAABn////Af///wEAAAAvAAAA/wAAAP8AAAD/\nAAAA2////wEAAAAHAAAAawAAAGsAAACNAAAA7wAAAPEAAACPAAAAawAAAGsAAAAJ////Af///wH/\n//8B////Af///wH///8B////AQAAAMcAAAD/AAAA9QAAAMkAAAD1AAAA/wAAAGf///8B////AQAA\nAA8AAAD/AAAA/wAAAP8AAAC7////AQAAAA8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\n/wAAABf///8B////AQAAAAkAAABDAAAAD////wH///8BAAAAowAAAP8AAAD/AAAA/wAAAP8AAAD/\nAAAAZ////wH///8B////AQAAAPMAAAD/AAAA/wAAAKH///8BAAAADwAAAP8AAAD/AAAA/wAAAP8A\nAAD/AAAA/wAAAP8AAAD/AAAAF////wH///8BAAAACwAAAN8AAABB////Af///wEAAABlAAAA+wAA\nAP8AAAD/AAAA/wAAAP8AAABn////Af///wH///8BAAAA0wAAAP8AAAD/AAAAf////wEAAAAPAAAA\n/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAX////Af///wH///8BAAAAwwAAAIP///8B\n////AQAAADcAAADfAAAA/wAAAP8AAAD/AAAA/wAAAGf///8B////Af///wEAAAC5AAAA/wAAAP8A\nAABl////AQAAAA8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAABf///8B////Af//\n/wEAAACPAAAAyf///wH///8BAAAABQAAAH0AAAD9AAAA/wAAAPkAAADFAAAAKf///wH///8B////\nAQAAAI0AAADrAAAA5QAAAEn///8BAAAADwAAAOsAAADrAAAA6wAAAOsAAADrAAAA6wAAAOsAAADr\nAAAAFf///wH///8B////AQAAAFUAAAD5AAAAIf///wH///8BAAAAEQAAAHsAAACbAAAAYQAAAB//\n//8B////Af///wH///8BAAAAJQAAAEEAAAA9AAAAE////wEAAAAFAAAAQQAAAEEAAABBAAAAQQAA\nAEEAAABBAAAAQQAAAEEAAAAH////Af///wH///8BAAAANwAAAOEAAABj////Af///wH///8B////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B\n////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wEAAAAXAAAAwQAAAK8A\nAAAL////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af//\n/wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////\nAQAAAAMAAACXAAAAxwAAACcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAAAAwAAAAYAAAAAEAIAAAAAAAgCUAAAAA\nAAAAAAAAAAAAAAAAAAD///8B////AQAAAC0AAACTAAAA4QAAAP8AAADNAAAAOf///wH///8BAAAA\nCwAAAEEAAABBAAAAQQAAABH///8B////Af///wH///8B////Af///wEAAAAvAAAAQQAAAEEAAAAt\n////Af///wH///8BAAAAKwAAAEEAAABBAAAAL////wH///8B////Af///wH///8B////Af///wH/\n//8BAAAACwAAAJsAAAD3AAAA7QAAAJ8AAAAx////Af///wH///8BAAAARwAAAPUAAAD/AAAA/wAA\nAP8AAAD/AAAA9QAAADH///8BAAAAHQAAAP8AAAD/AAAA/wAAAFP///8B////Af///wH///8B////\nAf///wEAAADPAAAA/wAAAP8AAACf////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B\n////Af///wH///8B////Af///wH///8BAAAAtwAAAP8AAAD/AAAA/wAAAP8AAAD1AAAARf///wEA\nAABZAAAA+wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAMH///8BAAAAAwAAAPsAAAD/AAAA/wAA\nAG////8B////Af///wH///8B////Af///wEAAADrAAAA/wAAAP8AAACD////Af///wH///8BAAAA\nrwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////Af///wEAAABjAAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAD/AAAA+QAAAEcAAADfAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8A\nAAAv////AQAAAOEAAAD/AAAA/wAAAIn///8B////Af///wH///8B////AQAAAAcAAAD/AAAA/wAA\nAP8AAABl////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////\nAf///wEAAADVAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAIcAAADfAAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAB7////AQAAAMUAAAD/AAAA/wAAAKX///8B////Af///wH/\n//8B////AQAAACEAAAD/AAAA/wAAAP8AAABJ////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf//\n/wH///8B////Af///wH///8B////AQAAADkAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\n/wAAAIcAAADfAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAC/////AQAAAKcAAAD/\nAAAA/wAAAMH///8B////Af///wH///8B////AQAAAD0AAAD/AAAA/wAAAP8AAAAr////Af///wH/\n//8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////AQAAAH8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAIcAAADfAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\n/wAAAP8AAADv////AQAAAIsAAAD/AAAA/wAAAN3///8B////Af///wH///8B////AQAAAFkAAAD/\nAAAA/wAAAP8AAAAN////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH/\n//8B////AQAAAMMAAAD/AAAA/wAAAP8AAAD9AAAA5QAAAP8AAAD/AAAA/wAAAIcAAADfAAAA/wAA\nAP8AAAD/AAAA/QAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAHQAAAG0AAAD/AAAA/wAAAPf///8B////\nAf///wH///8B////AQAAAHUAAAD/AAAA/wAAAPH///8B////Af///wH///8BAAAArwAAAP8AAAD/\nAAAAuf///wH///8B////Af///wH///8B////AQAAAPMAAAD/AAAA/wAAAO8AAAAhAAAAAwAAAFMA\nAADVAAAA/wAAAIcAAADfAAAA/wAAAPMAAABlAAAACwAAACcAAADhAAAA/wAAAP8AAAD/AAAAOQAA\nAE8AAAD/AAAA/wAAAP8AAABxAAAAaQAAAGkAAABpAAAAaQAAALkAAAD/AAAA/wAAANP///8B////\nAf///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAHQAAAP8AAAD/\nAAAA/wAAAHX///8B////Af///wEAAAAfAAAA7wAAAIcAAADfAAAA9QAAADX///8B////Af///wEA\nAABTAAAA/wAAAP8AAAD/AAAASwAAADMAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAALf///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////\nAf///wH///8BAAAARwAAAP8AAAD/AAAA/wAAACX///8B////Af///wH///8BAAAAUQAAAIcAAADf\nAAAAVf///wH///8B////Af///wEAAAALAAAA+wAAAP8AAAD/AAAAXwAAABUAAAD/AAAA/wAAAP8A\nAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAJn///8B////Af///wH///8BAAAArwAA\nAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAYQAAAP8AAAD/AAAA5////wH///8B////\nAf///wH///8B////AQAAACkAAACL////Af///wH///8B////Af///wH///8BAAAA6QAAAP8AAAD/\nAAAAZ////wEAAAD3AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAHv/\n//8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAdwAA\nAP8AAAD/AAAAw////wH///8B////Af///wH///8B////Af///wEAAAAJ////Af///wH///8B////\nAf///wH///8BAAAA3QAAAP8AAAD/AAAAb////wEAAADbAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAF////8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH/\n//8B////Af///wH///8BAAAAiwAAAP8AAAD/AAAAr////wH///8B////Af///wH///8B////Af//\n/wH///8B////Af///wH///8B////Af///wH///8BAAAA8wAAAP8AAAD/AAAAd////wEAAAC9AAAA\n/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAEH///8B////Af///wH///8B\nAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAmwAAAP8AAAD/AAAAm////wH/\n//8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wEAAAAVAAAA/wAA\nAP8AAAD/AAAAc////wEAAAChAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\n/wAAACX///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B\nAAAAoQAAAP8AAAD/AAAA/QAAAPkAAAD5AAAA+QAAAPkAAAD5AAAA+QAAAPf///8B////Af///wH/\n//8B////Af///wEAAAA/AAAA/wAAAP8AAAD/AAAAZf///wEAAACDAAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAAf///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAA\nuf///wH///8B////Af///wH///8BAAAApwAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/\nAAAA/wAAAP////8B////Af///wH///8B////AQAAAA0AAADTAAAA/wAAAP8AAAD/AAAAV////wEA\nAABnAAAA/wAAAP8AAAD7AAAAkQAAAJEAAACRAAAAwQAAAP8AAAD/AAAA6f///wH///8B////Af//\n/wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAArQAAAP8AAAD/AAAA\n/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP////8B////Af///wH///8BAAAABwAAALEAAAD/\nAAAA/wAAAP8AAAD/AAAAS////wEAAABJAAAA/wAAAP8AAAD/AAAACf///wH///8BAAAAgwAAAP8A\nAAD/AAAAzf///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af//\n/wH///8BAAAAqwAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP3///8B////\nAf///wEAAAAlAAAA0wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAO////wEAAAArAAAA/wAAAP8AAAD/\nAAAAI////wH///8BAAAAnwAAAP8AAAD/AAAAr////wH///8B////Af///wH///8BAAAArwAAAP8A\nAAD/AAAAuf///wH///8B////Af///wH///8BAAAApQAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAPX///8B////AQAAAB8AAADjAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\nFf///wEAAAAPAAAA/wAAAP8AAAD/AAAAP////wH///8BAAAAuQAAAP8AAAD/AAAAk////wH///8B\n////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAnwAAAP8A\nAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAO////8BAAAABwAAANsAAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAADj////Af///wH///8BAAAA8QAAAP8AAAD/AAAAW////wH///8BAAAA\n1QAAAP8AAAD/AAAAdf///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B\n////Af///wH///8BAAAAlwAAAP8AAAD/AAAAwwAAAGEAAABhAAAAYQAAAI8AAAD/AAAA/wAAAOf/\n//8BAAAAYwAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAACx////Af///wH///8BAAAA1QAA\nAP8AAAD/AAAAd////wH///8BAAAA8QAAAP8AAAD/AAAAV////wH///8B////Af///wH///8BAAAA\nrwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAhQAAAP8AAAD/AAAAsf///wH///8B\n////AQAAAFUAAAD/AAAA/wAAANf///8BAAAA1wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8A\nAABv////Af///wH///8BAAAAtwAAAP8AAAD/AAAAkf///wEAAAALAAAA/wAAAP8AAAD/AAAAO///\n/wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAA\nbwAAAP8AAAD/AAAAyf///wH///8B////AQAAAGEAAAD/AAAA/wAAAMMAAAAtAAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAOsAAAAL////Af///wH///8BAAAAmQAAAP8AAAD/AAAArf///wEA\nAAAnAAAA/wAAAP8AAAD/AAAAHf///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf//\n/wH///8B////Af///wH///8BAAAAWQAAAP8AAAD/AAAA6////wH///8B////AQAAAH8AAAD/AAAA\n/wAAAK8AAABfAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAHf///8B////Af///wH///8B\nAAAAfQAAAP8AAAD/AAAAyf///wEAAABBAAAA/wAAAP8AAAD9AAAAA////wH///8B////Af///wH/\n//8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8BAAAAOQAAAP8AAAD/AAAA/wAA\nACX///8B////AQAAALEAAAD/AAAA/wAAAI8AAACRAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA\nnwAAAAP///8B////Af///wH///8BAAAAXwAAAP8AAAD/AAAA5f///wEAAABdAAAA/wAAAP8AAADj\n////Af///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH/\n//8BAAAAEQAAAP8AAAD/AAAA/wAAAHf///8BAAAACwAAAO8AAAD/AAAA/wAAAGcAAAC/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAACN////Af///wH///8B////Af///wH///8BAAAAQwAAAP8AAAD/AAAA\n/QAAAAMAAAB3AAAA/wAAAP8AAADF////Af///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/\nAAAAuf///wH///8B////Af///wH///8B////AQAAAOsAAAD/AAAA/wAAAOsAAAA/AAAAkQAAAP8A\nAAD/AAAA/wAAAD8AAADRAAAA/wAAAP8AAAD/AAAA7QAAAEn///8B////Af///wH///8B////Af//\n/wH///8BAAAAJQAAAP8AAAD/AAAA/wAAABsAAACTAAAA/wAAAP8AAACp////Af///wH///8B////\nAf///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////AQAAAK8AAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA+wAAAAsAAADdAAAA/wAAAP8AAAD3AAAAO////wH/\n//8B////Af///wH///8B////Af///wH///8BAAAACQAAAP8AAAD/AAAA/wAAADcAAACvAAAA/wAA\nAP8AAACL////Af///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////\nAf///wH///8B////AQAAAGsAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAxf///wEAAADp\nAAAA/wAAAP8AAACB////Af///wH///8B////Af///wH///8B////Af///wH///8B////AQAAAOsA\nAAD/AAAA/wAAAFMAAADJAAAA/wAAAP8AAABv////Af///wH///8B////Af///wH///8BAAAArwAA\nAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////AQAAAB8AAAD9AAAA/wAAAP8AAAD/AAAA\n/wAAAP8AAAD/AAAAef///wEAAAD3AAAA/wAAAP8AAABT////Af///wH///8B////Af///wH///8B\n////Af///wH///8B////AQAAAM0AAAD/AAAA/wAAAG8AAADlAAAA/wAAAP8AAABR////Af///wH/\n//8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////Af//\n/wEAAACzAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD7AAAAGf///wEAAAD9AAAA/wAAAP8AAAAt////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////AQAAAK8AAAD/AAAA/wAAAI0AAAD9\nAAAA/wAAAP8AAAAz////Af///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH/\n//8B////Af///wH///8B////Af///wEAAAA5AAAA/QAAAP8AAAD/AAAA/wAAAP8AAACf////Af//\n/wEAAAD3AAAA/wAAAP8AAAAj////Af///wH///8B////Af///wH///8B////Af///wH///8B////\nAQAAAJMAAAD/AAAA/wAAAMEAAAD/AAAA/wAAAP8AAAAX////Af///wH///8B////Af///wH///8B\nAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B////Af///wH///8BAAAAiQAAAP8A\nAAD/AAAA/wAAAOUAAAAV////Af///wEAAADzAAAA/wAAAP8AAAA3////Af///wH///8B////Af//\n/wEAAAA7////Af///wH///8B////AQAAAHUAAAD/AAAA/wAAAPUAAAD/AAAA/wAAAPn///8B////\nAf///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAAuf///wH///8B////Af///wH///8B\n////Af///wH///8B////AQAAAF0AAACzAAAAnQAAAB3///8B////Af///wEAAADnAAAA/wAAAP8A\nAABr////Af///wH///8B////AQAAAHsAAACZ////Af///wH///8B////AQAAAFkAAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAN3///8B////Af///wH///8B////Af///wH///8BAAAArwAAAP8AAAD/AAAA\nuf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B\n////Af///wEAAADPAAAA/wAAAP8AAADPAAAACf///wEAAAAFAAAAbQAAAP8AAACZ////Af///wH/\n//8B////AQAAADsAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAL////8B////AQAAAA0AAAChAAAAoQAA\nAKEAAAChAAAA4QAAAP8AAAD/AAAA5QAAAKEAAAChAAAAoQAAAKEAAAAV////Af///wH///8B////\nAf///wH///8B////Af///wH///8B////Af///wEAAAC3AAAA/wAAAP8AAAD/AAAA0wAAAJ0AAADp\nAAAA/wAAAP8AAACZ////Af///wH///8B////AQAAAB0AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAKH/\n//8B////AQAAABcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAAh////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wEAAACTAAAA\n/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAACZ////Af///wH///8B////AQAAAAUAAAD9\nAAAA/wAAAP8AAAD/AAAA/wAAAIX///8B////AQAAABcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8A\nAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAh////Af///wH///8B////AQAAACkAAADpAAAAhf//\n/wH///8B////Af///wEAAABlAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAACZ////\nAf///wH///8B////Af///wEAAADjAAAA/wAAAP8AAAD/AAAA/wAAAGf///8B////AQAAABcAAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAh////Af///wH/\n//8B////AQAAAAMAAADxAAAA3f///wH///8B////Af///wEAAAAtAAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAACZ////Af///wH///8B////Af///wEAAADHAAAA/wAAAP8AAAD/AAAA\n/wAAAEn///8B////AQAAABcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/\nAAAA/wAAAP8AAAAh////Af///wH///8B////Af///wEAAAC5AAAA/wAAACv///8B////Af///wH/\n//8BAAAA4QAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAACZ////Af///wH///8B////Af//\n/wEAAACpAAAA/wAAAP8AAAD/AAAA/wAAAC3///8B////AQAAABcAAAD/AAAA/wAAAP8AAAD/AAAA\n/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAh////Af///wH///8B////Af///wEAAAB/\nAAAA/wAAAHn///8B////Af///wH///8BAAAAgQAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8A\nAACZ////Af///wH///8B////Af///wEAAACLAAAA/wAAAP8AAAD/AAAA/wAAAA////8B////AQAA\nABcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAh////\nAf///wH///8B////Af///wEAAABDAAAA/wAAAMf///8B////Af///wH///8BAAAAEwAAAO0AAAD/\nAAAA/wAAAP8AAAD/AAAA/wAAAPcAAABZ////Af///wH///8B////Af///wEAAABvAAAA/wAAAP8A\nAAD/AAAA8////wH///8B////AQAAABcAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAA\nAP8AAAD/AAAA/wAAAP8AAAAh////Af///wH///8B////Af///wEAAAALAAAA/QAAAP0AAAAX////\nAf///wH///8B////AQAAAEUAAAD1AAAA/wAAAP8AAAD/AAAAxQAAACf///8B////Af///wH///8B\n////Af///wEAAAA/AAAAwQAAAMEAAADBAAAAo////wH///8B////AQAAABEAAADBAAAAwQAAAMEA\nAADBAAAAwQAAAMEAAADBAAAAwQAAAMEAAADBAAAAwQAAAMEAAAAZ////Af///wH///8B////Af//\n/wH///8BAAAAzQAAAP8AAABh////Af///wH///8B////Af///wEAAAAhAAAAcQAAAGcAAAAn////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B\n////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH/\n//8B////Af///wH///8B////Af///wH///8BAAAAkQAAAP8AAACv////Af///wH///8B////Af//\n/wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B\n////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8BAAAAVwAAAP8A\nAAD1AAAACf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af//\n/wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B\n////Af///wH///8BAAAAGwAAAP8AAAD/AAAAS////wH///8B////Af///wH///8B////Af///wH/\n//8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af//\n/wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////\nAf///wH///8B////Af///wH///8B////Af///wH///8B////AQAAAM0AAADpAAAAh////wEAAAAA\nAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAA\nAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA\n//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD/\n/wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//\nAAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8A\nAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD//wAA\nAAAAAP//AAAAAAAA//8AAAAAAAD//wAAAAAAAP//AAAAAAAA//8=\n"""
@@ -1070,6 +1070,6 @@ if __name__ == "__main__":
     try:
         main_gui()
     except Exception, x:
-        sys.exit("SATe GUI is exiting because of an error:\n%s " % str(x))
+        sys.exit("PASTA GUI is exiting because of an error:\n%s " % str(x))
 
 

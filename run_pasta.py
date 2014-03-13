@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
-"""Main script of SATe in command-line mode - this simply invokes the main
-    function found in satelib/mainsate.py
+"""Main script of PASTA in command-line mode - this simply invokes the main
+    function found in pasta/mainpasta.py
 """
 
-# This file is part of SATe
+# This file is part of PASTA which is forked from SATe
 
-# SATe is free software: you can redistribute it and/or modify
+# PASTA like SATe is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -24,19 +24,19 @@
 if __name__ == "__main__":
     import os
     import sys
-    from sate.mainsate import sate_main
-    from sate import MESSENGER
+    from pasta.mainpasta import pasta_main
+    from pasta import MESSENGER
     sys.setrecursionlimit(100000)
-    _SATE_DEBUG = os.environ.get('SATE_DEBUG')
-    _DEVELOPER = _SATE_DEBUG and _SATE_DEBUG != '0'
+    _PASTA_DEBUG = os.environ.get('PASTA_DEBUG')
+    _DEVELOPER = _PASTA_DEBUG and _PASTA_DEBUG != '0'
 
     if not _DEVELOPER:
-        _SATE_DEVELOPER = os.environ.get('SATE_DEVELOPER')
-        _DEVELOPER = _SATE_DEVELOPER and _SATE_DEVELOPER != '0'
+        _PASTA_DEVELOPER = os.environ.get('PASTA_DEVELOPER')
+        _DEVELOPER = _PASTA_DEVELOPER and _PASTA_DEVELOPER != '0'
     try:
-        rc, temp_dir, temp_fs = sate_main()
+        rc, temp_dir, temp_fs = pasta_main()
         if not rc:
-            raise ValueError("Unknown SATe execution error")
+            raise ValueError("Unknown PASTA execution error")
         if (temp_dir is not None) and (os.path.exists(temp_dir)):
             MESSENGER.send_info("Note that temporary files from the run have not been deleted, they can be found in:\n   '%s'\n" % temp_dir)
             if sys.platform.lower().startswith('darwin') and ("'" not in temp_dir):
@@ -54,9 +54,9 @@ directory is hidden by default).
     except Exception, x:
         if _DEVELOPER:
             raise
-        message = "SATe is exiting because of an error:\n%s " % str(x)
+        message = "PASTA is exiting because of an error:\n%s " % str(x)
         try:
-            from sate import MESSENGER
+            from pasta import MESSENGER
             MESSENGER.send_error(message)
         except:
             sys.stderr.write(message)

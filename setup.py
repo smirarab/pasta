@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #############################################################################
-##  this file is part of sate.
+##  this file is part of pasta.
 ##  see "license.txt" for terms and conditions of usage.
 #############################################################################
 
@@ -18,26 +18,26 @@ from datetime import datetime
 import os
 import platform
 import sys
-import sate
+import pasta
 
 script_name = 'run_pasta.py' 
 gui_script_name = 'run_pasta_gui.py'
 
 def compose_build_distribution_name(build_type):
-    return "pasta%s-v%s-%s" % (build_type, sate.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
+    return "pasta%s-v%s-%s" % (build_type, pasta.PROGRAM_VERSION, datetime.now().strftime("%Y%b%d"))
 
 param = {
-    'name': sate.PROGRAM_NAME,
-    'version': sate.PROGRAM_VERSION,
+    'name': pasta.PROGRAM_NAME,
+    'version': pasta.PROGRAM_VERSION,
     'app': {gui_script_name},
-    'description': sate.PROGRAM_DESCRIPTION,
-    'author': sate.PROGRAM_AUTHOR,
+    'description': pasta.PROGRAM_DESCRIPTION,
+    'author': pasta.PROGRAM_AUTHOR,
     'author_email': ['pasta-users@googlegroups.com'],
-    'url': sate.PROGRAM_WEBSITE,
-    'license': sate.PROGRAM_LICENSE,
+    'url': pasta.PROGRAM_WEBSITE,
+    'license': pasta.PROGRAM_LICENSE,
     'packages': find_packages(),
-    'package_dir': {'sate': 'sate'},
-    'test_suite': "sate.test",
+    'package_dir': {'pasta': 'pasta'},
+    'test_suite': "pasta.test",
     'include_package_data': True,
     'install_requires': ['dendropy>=3.12.0'],
     'scripts' : [script_name,gui_script_name],
@@ -96,11 +96,11 @@ if sys.argv[1] == 'py2exe':
                         f) for f in filenames if not os.path.isdir(
                                 os.path.join(dirname, f))]))
 
-    bin_win_src = sate.sate_tools_dev_dir()
-    bin_win_dest = sate.sate_tools_deploy_subpath()
-    sate_src_root = sate.sate_home_dir()
-    data_dir = os.path.join(sate_src_root, 'data')
-    sample_output_dir = os.path.join(sate_src_root, 'sample-output')
+    bin_win_src = pasta.pasta_tools_dev_dir()
+    bin_win_dest = pasta.pasta_tools_deploy_subpath()
+    pasta_src_root = pasta.pasta_home_dir()
+    data_dir = os.path.join(pasta_src_root, 'data')
+    sample_output_dir = os.path.join(pasta_src_root, 'sample-output')
     my_files = []
     my_files.extend( find_data_files(
             bin_win_src,
@@ -111,7 +111,7 @@ if sys.argv[1] == 'py2exe':
             os.path.join(bin_win_dest, 'real_bin'),
             ['*'] ) )
     my_files.extend( find_data_files(
-            os.path.join(sate_src_root, 'doc'),
+            os.path.join(pasta_src_root, 'doc'),
             'doc',
             ['*']))
     os.path.walk(data_dir, extend_data_files, my_files)
@@ -122,14 +122,14 @@ if sys.argv[1] == 'py2exe':
         "optimize": 2,
         "compressed": True,
         "bundle_files": 1,
-        "includes": ['sate'],
+        "includes": ['pasta'],
         "dll_excludes": ['w9xpopen.exe'],
         "dist_dir" : PY2EXE_DIST_DIR,
     }
 
     param.update({
-        'console': [script_name, os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft"),
-                    os.path.join(sate.SATE_SCRIPT_RESOURCES, "hmmeralign")],
+        'console': [script_name, os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft"),
+                    os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "hmmeralign")],
         'data_files': my_files,
         'zipfile': None,
         'options': {'py2exe': PY2EXE_OPTIONS},
@@ -151,11 +151,11 @@ if sys.argv[1] == 'py2exe':
     sys.stderr.write("OK\n")
 
 # On Linux and OS X systems, sym-link all tool scripts
-# to `bin` subdirectory, so SATe can be run from the command-line
+# to `bin` subdirectory, so PASTA can be run from the command-line
 # I know this is ugly. Trust me, I hate it as much as you do.
 if platform.system() != "Windows":
 
-    DEST_DIR_ROOT = sate.sate_tools_deploy_dir(default_to_dev_dir=False)
+    DEST_DIR_ROOT = pasta.pasta_tools_deploy_dir(default_to_dev_dir=False)
     def create_symlink(src_path, subdir=None):
         if subdir:
             dest_dir = os.path.join(DEST_DIR_ROOT, subdir)
@@ -179,11 +179,11 @@ if platform.system() != "Windows":
             os.symlink(src_path, dest_path)
 
     # mafft
-    create_symlink(os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "mafft")))
-    create_symlink(os.path.abspath(os.path.join(sate.SATE_SCRIPT_RESOURCES, "hmmeralign")))
+    create_symlink(os.path.abspath(os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft")))
+    create_symlink(os.path.abspath(os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "hmmeralign")))
 
     # others
-    tools_bin_srcdir = sate.sate_tools_dev_dir()
+    tools_bin_srcdir = pasta.pasta_tools_dev_dir()
     tools_bin_subdirs = ['', 'real_bin']
 
     for subdir in tools_bin_subdirs:

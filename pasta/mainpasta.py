@@ -111,7 +111,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
             }
     else:
         new_defaults['fasttree'] = {
-            'model' : '-gtr -fastest',
+            'model' : '-gtr -gamma -fastest',
             'GUI_model' : 'GTR+G20'
             }
      
@@ -127,7 +127,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
     new_commandline_defaults = {
         'datatype' : datatype.lower()
         }
-    new_commandline_defaults['multilocus'] = bool(len(ntax_nchar_tuple_list) > 1)
+    new_commandline_defaults['multilocus'] = False #bool(len(ntax_nchar_tuple_list) > 1)
     new_defaults['commandline'] = new_commandline_defaults
     _LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
     return new_defaults
@@ -517,6 +517,61 @@ def coerce_string_to_nice_outfilename(p, reason, default):
         MESSENGER.send_warning('%s name changed from "%s" to "%s" (a safer name for filepath)' % (reason, p, j))
     return j
 
+
+def populate_auto_options(user_config, force=False):
+    if user_config.commandline.input is None:
+        sys.exit("ERROR: Input file(s) not specified.")
+    from pasta.usersettingclasses import get_list_of_seq_filepaths_from_dir
+    from pasta.alignment import summary_stats_from_parse
+    try:
+        if user_config.commandline.multilocus:
+            fn_list = get_list_of_seq_filepaths_from_dir(user_config.commandline.input)
+        else:
+            fn_list = [user_config.commandline.input]
+        datatype_list = [user_config.commandline.datatype.upper()]
+        careful_parse = user_config.commandline.untrusted
+        summary_stats = summary_stats_from_parse(fn_list, datatype_list, careful_parse=careful_parse)
+    except:
+        if user_config.commandline.auto:
+            MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
+        else:
+            MESSENGER.send_error("Error reading input\n")
+        raise
+    if force or user_config.commandline.auto:
+        user_config.commandline.auto = False
+        auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
+        user_config.get('sate').set_values_from_dict(auto_opts['sate'])
+        user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
+        user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+
+
+def parse_user_options(argv, parser, user_config, command_line_group):
+    if argv == sys.argv:
+        options, args = parser.parse_args(argv[1:])
+    else:
+        options, args = parser.parse_args(argv)
+
+    if options.multilocus:
+        sys.exit("PASTA: Multilocus mode is not supported by PASTA. It's a legacy option inherited from SATe.")
+    if options.tree_estimator_model and options.tree_estimator and len(args) == 0:
+        if options.tree_estimator.lower() == 'raxml':
+            user_config.raxml.model = options.tree_estimator_model
+        elif options.tree_estimator.lower() == 'fasttree':
+            user_config.fasttree.model = options.tree_estimator_model
+    config_filenames = list(args)
+    for fn in config_filenames:
+        if fn[0] == '"' and fn[-1] == '"':
+            fn = fn[1:-1]
+        if not os.path.exists(fn):
+            raise Exception('The configuration (settings) file "%s" does not exist' % fn)
+        try:
+            user_config.read_config_filepath(fn)
+        except:
+            raise Exception('The file "%s" does not appear to be a valid configuration file format. It lacks section headers.' % fn)
+    
+    user_config.set_values_from_dict(options.__dict__)
+    command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'pastajob')
+
 def pasta_main(argv=sys.argv):
     '''Returns (True, dir, temp_fs) on successful execution or raises an exception.
 
@@ -542,63 +597,18 @@ def pasta_main(argv=sys.argv):
     sate_group = user_config.get('sate')
     sate_group.add_to_optparser(parser)
     
-    group = optparse.OptionGroup(parser, "PASTA tools extra options")
-    group.add_option('--tree-estimator-model', type='string',
-            dest='tree_estimator_model',
-            help='Do not use this option.')
-    parser.add_option_group(group)
+    # This is just to read the input files
+    parse_user_options(argv, parser, user_config, command_line_group)
     
-    if argv == sys.argv:
-        (options, args) = parser.parse_args(argv[1:])
-    else:
-        (options, args) = parser.parse_args(argv)
-    #if options.multilocus:
-    #    sys.exit("PASTA: Multilocus mode is disabled in this release.")
-    if options.tree_estimator_model and options.tree_estimator and len(args) == 0:
-        if options.tree_estimator.lower() == 'raxml':
-            user_config.raxml.model = options.tree_estimator_model
-        elif options.tree_estimator.lower() == 'fasttree':
-            user_config.fasttree.model = options.tree_estimator_model
+    # This is to automatically set the options as default
+    populate_auto_options(user_config, force = True)
 
-    config_filenames = list(args)
-    for fn in config_filenames:
-        if fn[0] == '"' and fn[-1] == '"':
-            fn = fn[1:-1]
-        if not os.path.exists(fn):
-            raise Exception('The configuration (settings) file "%s" does not exist' % fn)
-        try:
-            user_config.read_config_filepath(fn)
-        except:
-            raise Exception('The file "%s" does not appear to be a valid configuration file format. It lacks section headers.' % fn)
-    user_config.set_values_from_dict(options.__dict__)
-    command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'pastajob')
-
-
+    # This is just to read the input files
+    parse_user_options(argv, parser, user_config, command_line_group)
+        
+    # This is now to make sure --auto overwrites user options
     if user_config.commandline.auto or (user_config.commandline.untrusted):
-        if user_config.commandline.input is None:
-            sys.exit("ERROR: Input file(s) not specified.")
-        from pasta.usersettingclasses import get_list_of_seq_filepaths_from_dir
-        from pasta.alignment import summary_stats_from_parse
-        try:
-            if user_config.commandline.multilocus:
-                fn_list = get_list_of_seq_filepaths_from_dir(user_config.commandline.input)
-            else:
-                fn_list = [user_config.commandline.input]
-            datatype_list = [user_config.commandline.datatype.upper()]
-            careful_parse = user_config.commandline.untrusted
-            summary_stats = summary_stats_from_parse(fn_list, datatype_list, careful_parse=careful_parse)
-        except:
-            if user_config.commandline.auto:
-                MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
-            else:
-                MESSENGER.send_error("Error reading input\n")
-            raise
-        if user_config.commandline.auto:
-            user_config.commandline.auto = False
-            auto_opts = get_auto_defaults_from_summary_stats(summary_stats[0], summary_stats[1], summary_stats[2])
-            user_config.get('sate').set_values_from_dict(auto_opts['sate'])
-            user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
-            user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+        populate_auto_options(user_config)
             
     
     if user_config.commandline.raxml_search_after:

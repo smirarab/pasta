@@ -18,10 +18,9 @@ PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://www.cs.utexas.edu/~phylo/software/pasta/"
 PROGRAM_INSTITUTE = "Department of Computer Science, Univesity of Texas at Austin"
 PROGRAM_LONG_DESCRIPTION = """
-PASTA performs iterative realignment and tree inference, similar to SATe, but uses a very different merge algorithm which improves running time and accuracy. 
-Current code is heavily based on SATe, with lots of modifications, many related to algorithmic differences between PASTA and SATe, but also many scalability improvements (parallelization, tree parsing, defaults, etc.)
+PASTA performs iterative realignment and tree inference, similar to SATe, but uses a very different merge algorithm which improves running time, memory usage, and accuracy. Current code is heavily based on SATe, with lots of modifications, many related to algorithmic differences between PASTA and SATe, but also many scalability improvements (parallelization, tree parsing, defaults, etc.)
 
-Minimally you must provide a sequence file (with the '--input' option) a starting tree is optional.
+Minimally you must provide a sequence file (with the '--input' option); a starting tree is optional. By default, important algorithmic parameters are set based on automatic rules. 
 
 The command line allows you to alter the behavior of the algorithm (termination criteria, when the algorithm switches to "Blind" acceptance of new alignments, how the tree is decomposed to find subproblems to be used, and the external tools to use).
 
@@ -36,9 +35,9 @@ option-name = value
 option-name = value
 ####################################################
 
-If you tell pasta to keep its temporary files (-k option), then the configuration for the run will be stored in a file "last_used.cfg" in the "temporary" directory.
+With every run, PASTA saves the configuration file for that run as a temporary file called [jobname]_temp_pasta_config.txt in your output directory.
 
-If configuration files are read in the order they occur as arguments (with values in later files replacing previously read values). Options specified in the command line are read last. Thus these values "overwrite" any settings from the configuration files.
+Configuration files are read in the order they occur as arguments (with values in later files replacing previously read values). Options specified in the command line are read last. Thus these values "overwrite" any settings from the configuration files. Note that the use of --auto option can overwrite some of the other options provided by commandline or through configuration files.
 """
 
 TEMP_SEQ_ALIGNMENT_TAG = "seq_alignment.txt"

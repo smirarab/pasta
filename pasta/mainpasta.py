@@ -553,11 +553,6 @@ def parse_user_options(argv, parser, user_config, command_line_group):
 
     if options.multilocus:
         sys.exit("PASTA: Multilocus mode is not supported by PASTA. It's a legacy option inherited from SATe.")
-    if options.tree_estimator_model and options.tree_estimator and len(args) == 0:
-        if options.tree_estimator.lower() == 'raxml':
-            user_config.raxml.model = options.tree_estimator_model
-        elif options.tree_estimator.lower() == 'fasttree':
-            user_config.fasttree.model = options.tree_estimator_model
     config_filenames = list(args)
     for fn in config_filenames:
         if fn[0] == '"' and fn[-1] == '"':

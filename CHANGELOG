@@ -1,11 +1,13 @@
-Version 1.5 (Backward compatibility implications):
+Version 1.5 (Has major backward compatibility implications):
+    --auto option is not necessary anymore. By default, important settings are picked by the software based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
+    Fasttree for DNA was missing -gamma option by default. Added!
+    blind_after_total_iter is set by default to 0, so that all changes are logged as accepted (before it used to switch to blind on first worse score, which is the same thing)
     pasta local home is now under ~/.pasta instead of ~/.sate
     file path config file is called ~/.pasta/pasta_tool_paths.cfg instead of ~/.sate/sate_tool_paths.cfg
     If no job name is given, it will be set by default to pastajob instead of satejob
     PASTA output (and logs) will say "PASTA INFO" instead of "SATe INFO". More generally, the logs will say PASTA instead of SATe.
     To turn on the debugging, now you need to use PASTA_DEBUG and PASTA_LOGGING_LEVEL=DEBUG instead of SATE_DEBUG and SATE_LOGGING_LEVEL
     PASTA code changed such that in most places it uses "pasta" instead of "sate"
-    Fasttree for DNA was missing -gamma option by default. Added!
     Note: the config file still has a section named [sate]. This was not renamed to maintain compatibility. 
 Version 1.4.1:
     Bug fix: GUI was broken in 1.4.0

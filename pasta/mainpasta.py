@@ -94,6 +94,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         'start_tree_search_from_current' : True,
         'after_blind_iter_without_imp_limit' : -1,
         'time_limit' : -1,
+        'blind_after_total_iter': 0,
         'iter_limit' : 3,
         'after_blind_time_without_imp_limit' : -1,
         'mask_gappy_sites' : total_num_tax / 1000

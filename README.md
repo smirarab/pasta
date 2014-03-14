@@ -55,10 +55,10 @@ EXECUTION
 To run the command-line, use:
 
 ```
-python run_pasta.py -i input_fasta -t starting_tree --auto
+python run_pasta.py -i input_fasta -t starting_tree 
 ```
 
-The `--auto` option picks the appropriate configurations automatically for you. 
+PASTA by default picks the appropriate configurations automatically for you. 
 
 Run `python run_pasta.py --help` to see PASTA's various options. 
 

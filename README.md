@@ -1,6 +1,6 @@
 PASTA
 ===
-This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm. This version is currently for testing purposes only. 
+This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#). 
 
 All questions and inquires should be addressed to our user email group: pasta-users@googlegroups.com
 

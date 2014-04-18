@@ -1,11 +1,9 @@
-PASTA
-===
 This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#). 
 
 All questions and inquires should be addressed to our user email group: pasta-users@googlegroups.com
 
 Acknowledgment 
-===
+---
 The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc directory for documentation of the SATe code. 
 
 INSTALLATION
@@ -13,9 +11,9 @@ INSTALLATION
 
 From pre-build MAC image file
 ------
-1- Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
-2- Open the .dmg file and copy its content to your preferred destination.
-3- Simply run the PASTA app
+1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
+2. Open the .dmg file and copy its content to your preferred destination.
+3. Simply run the PASTA app
 
 From Source Code
 ------

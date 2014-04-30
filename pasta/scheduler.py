@@ -61,11 +61,13 @@ def kill_all_jobs():
     set_all_events()
 
 class LightJobForProcess():
-    def __init__(self, invocation, k):
+
+    def __init__(self, invocation, k, environ):
         self._invocation = invocation
         self._k = k
         self.error = None
         self.return_code = None
+        self.environ = environ
 
     def read_stderr(self,_stderr_fo):
         if os.path.exists(_stderr_fo.name):
@@ -93,7 +95,9 @@ class LightJobForProcess():
             _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
         k['stderr'] = _stderr_fo
 
-        
+	for key,v in self.environ.items():
+            os.environ[key] = v
+
         process = Popen(self._invocation, stdin = PIPE, **k)
 
         err_msg = []                
@@ -155,7 +159,7 @@ class worker():
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
-                    plj = LightJobForProcess(pa[0],pa[1])
+                    plj = LightJobForProcess(pa[0],pa[1],os.environ)
                     self.pqueue.put(plj)
                     
                     self.pqueue.join()       

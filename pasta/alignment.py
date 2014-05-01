@@ -1020,8 +1020,12 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
     is_multi_locus = len(filepath_list) > 1
     appears_aligned = True
     caught_exception = None
+    should_read = False if md else True
     for datatype in datatype_list:
         try:
+            if should_read:
+                md = MultiLocusDataset()
+                md.read_files(filepath_list, datatype, careful_parse=careful_parse)
             total_n_leaves = 0
             taxa_char_tuple_list = []
             for element in md:

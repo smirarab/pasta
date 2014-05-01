@@ -681,6 +681,7 @@ class PastaFrame(wx.Frame):
                     careful_parse = False
                     summary_stats = summary_stats_from_parse(fn_list, 
                                                              datatype_list,
+                                                             None,
                                                              careful_parse=careful_parse)
                     progress_dialog.Update(100, "Done")
                 except Exception, x:

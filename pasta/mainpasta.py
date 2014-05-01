@@ -553,7 +553,9 @@ def parse_user_options(argv, parser, user_config, command_line_group):
         options, args = parser.parse_args(argv)
 
     if options.multilocus:
-        sys.exit("PASTA: Multilocus mode is not supported by PASTA. It's a legacy option inherited from SATe.")
+        MESSENGER.send_error(''' Multilocus mode is not supported by PASTA. 
+It's a legacy option inherited from SATe.''')
+        sys.exit(1)
     config_filenames = list(args)
     for fn in config_filenames:
         if fn[0] == '"' and fn[-1] == '"':
@@ -567,6 +569,13 @@ def parse_user_options(argv, parser, user_config, command_line_group):
     
     user_config.set_values_from_dict(options.__dict__)
     command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'pastajob')
+
+def check_user_options(user_config):
+    if user_config.sate.max_subproblem_size == 1:
+        MESSENGER.send_error(''' You have specified a max subproblem size of 1.
+PASTA requires a max subproblem size of at least 2.  ''')
+        sys.exit(1)
+    
 
 def pasta_main(argv=sys.argv):
     '''Returns (True, dir, temp_fs) on successful execution or raises an exception.
@@ -599,14 +608,15 @@ def pasta_main(argv=sys.argv):
     # This is to automatically set the options as default
     populate_auto_options(user_config, force = True)
 
-    # This is just to read the input files
+    # This is to actually read the config files and commandline args
     parse_user_options(argv, parser, user_config, command_line_group)
         
     # This is now to make sure --auto overwrites user options
     if user_config.commandline.auto or (user_config.commandline.untrusted):
         populate_auto_options(user_config)
             
-    
+    check_user_options(user_config)
+
     if user_config.commandline.raxml_search_after:
         if user_config.sate.tree_estimator.upper() != 'FASTTREE':
             sys.exit("ERROR: the 'raxml_search_after' option is only supported when the tree_estimator is FastTree")

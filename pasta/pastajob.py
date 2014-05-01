@@ -419,6 +419,10 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
     the specified aligner tool *without* any decomposition, you can ignore this
     message.\n'''.format(configuration['max_subproblem_size'],
                        self.tree.n_leaves))
+        if configuration['max_subproblem_size'] == 1:
+             MESSENGER.send_error(''' You have specified a max subproblem size of 1. PASTA requires a max subproblem size of at least 2.  ''')
+             sys.exit(1)
+
         delete_iteration_temps = not self.keep_iteration_temporaries
         delete_realignment_temps = delete_iteration_temps or (not self.keep_realignment_temporaries)
         configuration['delete_temps'] = delete_realignment_temps

@@ -130,7 +130,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         }
     new_commandline_defaults['multilocus'] = False #bool(len(ntax_nchar_tuple_list) > 1)
     new_defaults['commandline'] = new_commandline_defaults
-    _LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
+    #_LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
     return new_defaults
 
 def killed_handler(n, frame):
@@ -161,7 +161,8 @@ def read_input_sequences(seq_filename_list,
 def finish_pasta_execution(pasta_team,
                           user_config,
                           temporaries_dir,
-                          pasta_products):
+                          pasta_products,
+			  multilocus_dataset):
     global _RunningJobs
 
     options = user_config.commandline
@@ -179,10 +180,10 @@ def finish_pasta_execution(pasta_team,
     start_worker(pasta_config.num_cpus)
     
     
-    _LOG.debug("start reading the input alignment")
-    multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
-            datatype=user_config.commandline.datatype,
-            missing=user_config.commandline.missing)
+    #_LOG.debug("start reading the input alignment")
+    #multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
+    #        datatype=user_config.commandline.datatype,
+    #        missing=user_config.commandline.missing)
         
     ############################################################################
     # We must read the incoming tree in before we call the get_sequences_for_pasta
@@ -463,7 +464,7 @@ def finish_pasta_execution(pasta_team,
             else:
                 signal.signal(sig, prev_handler)
 
-def run_pasta_from_config(user_config, pasta_products):
+def run_pasta_from_config(user_config, pasta_products, multilocus_dataset):
     """
     Returns (None, None) if no temporary directory is left over from the run
     or returns (dir, temp_fs) where `dir` is the path to the temporary
@@ -498,7 +499,8 @@ def run_pasta_from_config(user_config, pasta_products):
         finish_pasta_execution(pasta_team=pasta_team,
                               user_config=user_config,
                               temporaries_dir=temporaries_dir,
-                              pasta_products=pasta_products)
+                              pasta_products=pasta_products,
+                              multilocus_dataset=multilocus_dataset)
 #    except:
 #        stop_worker()
 #        raise
@@ -520,7 +522,7 @@ def coerce_string_to_nice_outfilename(p, reason, default):
     return j
 
 
-def populate_auto_options(user_config, force=False):
+def populate_auto_options(user_config, md, force=False):
     if user_config.commandline.input is None:
         sys.exit("ERROR: Input file(s) not specified.")
     from pasta.usersettingclasses import get_list_of_seq_filepaths_from_dir
@@ -532,7 +534,7 @@ def populate_auto_options(user_config, force=False):
             fn_list = [user_config.commandline.input]
         datatype_list = [user_config.commandline.datatype.upper()]
         careful_parse = user_config.commandline.untrusted
-        summary_stats = summary_stats_from_parse(fn_list, datatype_list, careful_parse=careful_parse)
+        summary_stats = summary_stats_from_parse(fn_list, datatype_list, md, careful_parse=careful_parse)
     except:
         if user_config.commandline.auto:
             MESSENGER.send_error("Error reading input while setting options for the --auto mode\n")
@@ -554,7 +556,9 @@ def parse_user_options(argv, parser, user_config, command_line_group):
         options, args = parser.parse_args(argv)
 
     if options.multilocus:
-        sys.exit("PASTA: Multilocus mode is not supported by PASTA. It's a legacy option inherited from SATe.")
+        MESSENGER.send_error(''' Multilocus mode is not supported by PASTA. 
+It's a legacy option inherited from SATe.''')
+        sys.exit(1)
     config_filenames = list(args)
     for fn in config_filenames:
         if fn[0] == '"' and fn[-1] == '"':
@@ -568,6 +572,13 @@ def parse_user_options(argv, parser, user_config, command_line_group):
     
     user_config.set_values_from_dict(options.__dict__)
     command_line_group.job = coerce_string_to_nice_outfilename(command_line_group.job, 'Job', 'pastajob')
+
+def check_user_options(user_config):
+    if user_config.sate.max_subproblem_size == 1:
+        MESSENGER.send_error(''' You have specified a max subproblem size of 1.
+PASTA requires a max subproblem size of at least 2.  ''')
+        sys.exit(1)
+    
 
 def pasta_main(argv=sys.argv):
     '''Returns (True, dir, temp_fs) on successful execution or raises an exception.
@@ -594,20 +605,28 @@ def pasta_main(argv=sys.argv):
     sate_group = user_config.get('sate')
     sate_group.add_to_optparser(parser)
     
-    # This is just to read the input files
+    # This is just to read the configurations so that auto value could be set
     parse_user_options(argv, parser, user_config, command_line_group)
     
-    # This is to automatically set the options as default
-    populate_auto_options(user_config, force = True)
+    # Read the input file, this is needed for auto values
+    user_config.read_seq_filepaths(src=user_config.commandline.input,
+            multilocus=user_config.commandline.multilocus)
+    multilocus_dataset = read_input_sequences(user_config.input_seq_filepaths,
+            datatype=user_config.commandline.datatype,
+            missing=user_config.commandline.missing)
 
-    # This is just to read the input files
+    # This is to automatically set the auto default options
+    populate_auto_options(user_config, multilocus_dataset, force = True)
+
+    # This is to actually read the config files and commandline args and overwrite auto value
     parse_user_options(argv, parser, user_config, command_line_group)
         
     # This is now to make sure --auto overwrites user options
     if user_config.commandline.auto or (user_config.commandline.untrusted):
-        populate_auto_options(user_config)
+        populate_auto_options(user_config, multilocus_dataset)
             
-    
+    check_user_options(user_config)
+
     if user_config.commandline.raxml_search_after:
         if user_config.sate.tree_estimator.upper() != 'FASTTREE':
             sys.exit("ERROR: the 'raxml_search_after' option is only supported when the tree_estimator is FastTree")
@@ -627,8 +646,6 @@ def pasta_main(argv=sys.argv):
 
     # note: need to read sequence files first to allow PastaProducts to
     # correctly self-configure
-    user_config.read_seq_filepaths(src=user_config.commandline.input,
-            multilocus=user_config.commandline.multilocus)
     pasta_products = filemgr.PastaProducts(user_config)
     
     export_config_as_temp = True
@@ -641,7 +658,7 @@ def pasta_main(argv=sys.argv):
 
     MESSENGER.run_log_streams.append(pasta_products.run_log_stream)
     MESSENGER.err_log_streams.append(pasta_products.err_log_stream)
-    temp_dir, temp_fs = run_pasta_from_config(user_config, pasta_products)
+    temp_dir, temp_fs = run_pasta_from_config(user_config, pasta_products, multilocus_dataset)
     _TIME_SPENT = time.time() - _START_TIME
     MESSENGER.send_info("Total time spent: %ss" % _TIME_SPENT)
     return True, temp_dir, temp_fs

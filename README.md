@@ -1,11 +1,9 @@
-PASTA
-===
-This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm. This version is currently for testing purposes only. 
+This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#). 
 
 All questions and inquires should be addressed to our user email group: pasta-users@googlegroups.com
 
 Acknowledgment 
-===
+---
 The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc directory for documentation of the SATe code. 
 
 INSTALLATION
@@ -13,9 +11,9 @@ INSTALLATION
 
 From pre-build MAC image file
 ------
-1- Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
-2- Open the .dmg file and copy its content to your preferred destination.
-3- Simply run the PASTA app
+1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
+2. Open the .dmg file and copy its content to your preferred destination.
+3. Simply run the PASTA app
 
 From Source Code
 ------
@@ -69,11 +67,14 @@ To run the GUI version,
 python run_pasta_gui.py
 ```
 
+Debug
+-------
+To show debug information, set the following environmental variables: `PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
+
 
 Starting Trees
 -------
-Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees
-if none is given. 
+Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees if none is given. 
 
 The PASTA approach for getting the starting tree can be summarized as:
 1. Choose a random subset of your sequences (size 100).

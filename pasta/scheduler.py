@@ -61,11 +61,13 @@ def kill_all_jobs():
     set_all_events()
 
 class LightJobForProcess():
-    def __init__(self, invocation, k):
+
+    def __init__(self, invocation, k, environ):
         self._invocation = invocation
         self._k = k
         self.error = None
         self.return_code = None
+        self.environ = environ
 
     def read_stderr(self,_stderr_fo):
         if os.path.exists(_stderr_fo.name):
@@ -93,7 +95,9 @@ class LightJobForProcess():
             _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
         k['stderr'] = _stderr_fo
 
-        
+	for key,v in self.environ.items():
+            os.environ[key] = v
+
         process = Popen(self._invocation, stdin = PIPE, **k)
 
         err_msg = []                
@@ -155,7 +159,7 @@ class worker():
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
-                    plj = LightJobForProcess(pa[0],pa[1])
+                    plj = LightJobForProcess(pa[0],pa[1],os.environ)
                     self.pqueue.put(plj)
                     
                     self.pqueue.join()       
@@ -224,28 +228,6 @@ class JobBase(object):
             del kwargs['context_str']
         self._kwargs = kwargs
 
-class FakeJob(JobBase):
-    """FakeJob instances are used in cases in which we know have the results of
-    an operation, but need to emulate the API of DispatchableJob.
-    """
-    def __init__(self, results, **kwargs):
-        JobBase.__init__(self, **kwargs)
-        self.results = results
-
-    def start(self):
-        pass
-
-    def wait(self):
-        pass
-
-    def get_results(self):
-        return self.results
-    
-    def postprocess(self):
-        pass
-
-    def kill(self):
-        pass
 
 class DispatchableJob(JobBase):
     def __init__(self, invocation, result_processor, **kwargs):
@@ -374,9 +356,8 @@ class TickableJob():
             parent.kill()
         self._parentslock.release()          
 
-class TickingDispatchableJob(DispatchableJob):
-    def __init__(self, invocation, result_processor, **kwargs):
-        DispatchableJob.__init__(self, invocation, result_processor, **kwargs)
+class TickingJob():
+    def __init__(self):
         self.parent_tickable_job = []
         self.killed = False
     
@@ -386,11 +367,43 @@ class TickingDispatchableJob(DispatchableJob):
     def postprocess(self):
         for parent in self.parent_tickable_job:
             parent.tick(self)
-
+            
     def kill(self):
-        DispatchableJob.kill(self)
         if not self.killed:
             self.killed = True
             for parent in self.parent_tickable_job:
                 parent.kill()            
-            
+
+class TickingDispatchableJob(DispatchableJob,TickingJob):
+    def __init__(self, invocation, result_processor, **kwargs):
+        DispatchableJob.__init__(self, invocation, result_processor, **kwargs)
+        TickingJob.__init__(self)
+
+    def kill(self):
+        DispatchableJob.kill(self)
+        TickingJob.kill(self)
+
+    def postprocess(self):
+        TickingJob.postprocess(self)
+
+
+class FakeJob(JobBase, TickingJob):
+    """FakeJob instances are used in cases in which we know have the results of
+    an operation, but need to emulate the API of DispatchableJob.
+    """
+    def __init__(self, results, **kwargs):
+        JobBase.__init__(self, **kwargs)
+        TickingJob.__init__(self)
+        self.results = results
+
+    def start(self):
+        pass
+
+    def wait(self):
+        pass
+
+    def get_results(self):
+        return self.results
+    
+    def kill(self):
+        pass

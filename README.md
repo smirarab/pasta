@@ -1,10 +1,15 @@
-This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#). 
+This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#):
+``
+Mirarab, S., Nguyen, N., & Warnow, T. (2014). PASTA: Ultra-Large Multiple Sequence Alignment. In R. Sharan (Ed.), Research in Computational Molecular Biology (RECOMB) (pp. 177–191).
+``
 
-All questions and inquires should be addressed to our user email group: pasta-users@googlegroups.com
+All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`
 
 Acknowledgment 
 ---
-The current version of this code is heavily based on the SATe code (http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc directory for documentation of the SATe code. 
+The current version of this code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html). Refer to sate-doc directory for documentation of the SATe code, including the list of authors, licence, etc.  
+
+
 
 INSTALLATION
 ===
@@ -17,7 +22,7 @@ From pre-build MAC image file
 
 From Source Code
 ------
-Current version of PASTA has been developed and tested entirely on Linux. It has been tested on MAC as well, but less extensively. 
+Current version of PASTA has been developed and tested entirely on Linux and MAC. 
 Windows won't work currently (future versions may or may not support Windows). 
 
 You need to have:
@@ -25,7 +30,7 @@ You need to have:
 - Dendropy (http://packages.python.org/DendroPy/)
 - Java (for OPAL)
 
-Insallation steps:
+Installation steps:
 
 1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
 
@@ -58,30 +63,49 @@ python run_pasta.py -i input_fasta -t starting_tree
 
 PASTA by default picks the appropriate configurations automatically for you. 
 
-Run `python run_pasta.py --help` to see PASTA's various options. 
+Run ``python run_pasta.py --help`` to see PASTA's various options. 
 
 To run the GUI version, 
 * if you have used the MAC .dmg file, you can simply click on your application file to run PASTA. 
 * if you have installed from the source code, cd into your installation directory and run 
 ```
 python run_pasta_gui.py
-```
+```.
+
+Algorithmic Options
+------
+PASTA estimates alignments from unaligned sequences. It also produces ML trees on the estimated alignment.
+PASTA is iterative, and in each iteration first a multiple sequence alignment is estimate and then a ML tree
+is estimated on (a masked version of) the alignment. By default PASTA performs 3 iterations, but a host of 
+options enable changing that behavior. In each iteration, a divide-and-conquer strategy is used for estimating
+the alignment. The set of sequences is divided into smaller subsets, each of which is aligned using an external
+alignment tool (default is MAFFT), and then these subset alignments are pairwise merged (by default using Opal)
+and finally the pairwise merged alignments are merged into a final alignment using transitivity merge. The division
+of the dataset into smaller subsets and selecting which alignments should be pairwise merged is guided by the tree
+from the previous iteration. The first step therefore needs an initial tree. 
+
+The following is a list of important options used by PASTA. Note that by default PASTA picks these parameters
+for you, and thus you might not need to ever change these:
+
+   * Initial tree: 
+     If a starting tree is provided using `-t` option, then that tree is used.
+     If the input sequence file is already aligned and `--aligned` option is provided, then PASTA computes a ML tree on the input alignment and uses that as the starting tree. 
+     If the input sequences are not aligned,  PASTA uses the procedure described in the PASTA paper for estimating the starting alignment and tree. PASTA 
+	1. randomly selects a subset of your sequences (size 100).
+	2. estimates an alignment on the subset using subset alignment tool (default MAFFT-l-insi).
+	3. builds a HMMER model on this "backbone" alignment.
+	4. uses hmmalign to align the remaining sequences into the backbone alignment. 
+	5. runs FastTree on the alignment obtained in step 4.
+
+   * Maximum subset size: two options are provided to set the maximum subset size: `--max-subproblem-frac` and `--max-subproblem-size`. 
+     -frac is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset. -size sets the maximum size as a absolute number.
+     When both numbers are provided (in either configuration file or the command line), the *LARGER* number is used. 
+     This is an unfortunate design (legacy of SATe) and can be quite confusing. Please always double check the actual subset size reported by PASTA and make sure it is the value intended.
+
 
 Debug
 -------
 To show debug information, set the following environmental variables: `PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
-
-
-Starting Trees
--------
-Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees if none is given. 
-
-The PASTA approach for getting the starting tree can be summarized as:
-1. Choose a random subset of your sequences (size 100).
-2. Get a MAFFT-linsi alignment on the subset.
-3. Build a HMMER model on the alignment of 100 subsets.
-4. Use hmmalign to align the remaining sequences into the small subset. 
-5. Run FastTree on the output of step 4.
 
 
 LICENSE

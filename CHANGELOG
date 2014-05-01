@@ -1,26 +1,28 @@
 Version 1.5.1:
-    Longest branch decomposition fixed - subsets of size 1 do no fail
-    Subproblem size is forced to be at least 2
-    FastTree is fixed to use the (at most) the requested number of cpus
-    FastTree is not helped with more than 3 cpus. Max it at 3
-    Mafft is moved to version 7.15
-    Opal is moved to version 2.1.2
-    Mafft is passed a --thread option to use multiple threads for starting alignment 
-    Mafft-linsi is used for upto 50,000 length
+    [Bug fix]	Longest branch decomposition fixed - subsets of size 1 do not fail anymore
+    [Change]	User set or automatically set subproblem size is forced to be at least 2
+    [Bug fix]	FastTree is fixed to use the (at most) the requested number of cpus
+    [Change]	FastTree does not seem to be helped with more than 3 cpus. Max it at 3 cpus.
+    [Change]	Mafft is moved to version 7.15
+    [Chande]	Opal is moved to version 2.1.2
+    [Change]	Mafft is passed a --thread option to use multiple threads for starting alignment 
+    [Change]	Mafft-linsi is used for upto 50,000 length
+
 Version 1.5 (Has major backward compatibility implications):
-    --auto option is not necessary anymore. By default, important settings are picked by the software based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
-    Fasttree for DNA was missing -gamma option by default. Added!
-    blind_after_total_iter is set by default to 0, so that all changes are logged as accepted (before it used to switch to blind on first worse score, which is the same thing)
-    pasta local home is now under ~/.pasta instead of ~/.sate
-    file path config file is called ~/.pasta/pasta_tool_paths.cfg instead of ~/.sate/sate_tool_paths.cfg
-    If no job name is given, it will be set by default to pastajob instead of satejob
-    PASTA output (and logs) will say "PASTA INFO" instead of "SATe INFO". More generally, the logs will say PASTA instead of SATe.
-    To turn on the debugging, now you need to use PASTA_DEBUG and PASTA_LOGGING_LEVEL=DEBUG instead of SATE_DEBUG and SATE_LOGGING_LEVEL
-    PASTA code changed such that in most places it uses "pasta" instead of "sate"
-    Note: the config file still has a section named [sate]. This was not renamed to maintain compatibility. 
+    [Major Change]	--auto option is not necessary anymore. By default, important settings are picked by the software based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
+    [Bug fix]		Fasttree for DNA was missing -gamma option by default. Added!
+    [Change]		blind_after_total_iter is set by default to 0, so that all changes are logged as accepted (before it used to switch to blind on first worse score, which is the same thing)
+    [Change]		pasta local home is now under ~/.pasta instead of ~/.sate
+    [Major Change]	file path config file is called ~/.pasta/pasta_tool_paths.cfg instead of ~/.sate/sate_tool_paths.cfg
+    [Change]		If no job name is given, it will be set by default to pastajob instead of satejob
+    [Change]		PASTA output (and logs) will say "PASTA INFO" instead of "SATe INFO". More generally, the logs will say PASTA instead of SATe.
+    [Change]		To turn on the debugging, now you need to use PASTA_DEBUG and PASTA_LOGGING_LEVEL=DEBUG instead of SATE_DEBUG and SATE_LOGGING_LEVEL
+    [Change]		PASTA code changed such that in most places it uses "pasta" instead of "sate". Note: the config file still has a section named [sate]. This was not renamed to maintain compatibility. 
+
 Version 1.4.1:
     Bug fix: GUI was broken in 1.4.0
     Disable multi-locus checkbox. Multi-locus is not supported in PASTA. 
+
 Version 1.4.0:
     Uses hmmer to build the initial alignment if one is not given
     Initial tree also uses a masked alignment

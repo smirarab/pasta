@@ -128,7 +128,7 @@ if sys.argv[1] == 'py2exe':
     }
 
     param.update({
-        'console': [script_name, os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft"),
+        'console': [script_name, #os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft"),
                     os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "hmmeralign")],
         'data_files': my_files,
         'zipfile': None,
@@ -166,7 +166,7 @@ if platform.system() != "Windows":
         if os.path.exists(dest_path) and os.path.islink(dest_path):
             real_dest = os.path.abspath(os.path.realpath(dest_path))
             if real_dest != os.path.abspath(os.path.realpath(src_path)):
-                msg = "ERROR: Symbolic link '%s' already exists, but points to different source: '%s'\n[Aborting]\n" % (dest_path, real_path)
+                msg = "ERROR: Symbolic link '%s' already exists, but points to different source: '%s'\n[Aborting]\nIf the old file was part of older PASTA versions, remove the old path manually and rerun." % (src_path, real_dest)
                 sys.exit(msg)
             else:
                 sys.stderr.write("Path already exists and is linked correctly.\n")
@@ -179,12 +179,12 @@ if platform.system() != "Windows":
             os.symlink(src_path, dest_path)
 
     # mafft
-    create_symlink(os.path.abspath(os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft")))
+    #create_symlink(os.path.abspath(os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "mafft")))
     create_symlink(os.path.abspath(os.path.join(pasta.PASTA_SCRIPT_RESOURCES, "hmmeralign")))
 
     # others
     tools_bin_srcdir = pasta.pasta_tools_dev_dir()
-    tools_bin_subdirs = ['', 'real_bin']
+    tools_bin_subdirs = ['', 'mafftdir/bin','mafftdir/libexec']
 
     for subdir in tools_bin_subdirs:
         if subdir:

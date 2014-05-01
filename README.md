@@ -116,6 +116,20 @@ for you, and thus you might not need to ever change these:
 	4. uses hmmalign to align the remaining sequences into the backbone alignment. 
 	5. runs FastTree on the alignment obtained in the previous step.
 
+   * Data Type: PASTA does not automatically detect your data type. Unless your data is DNA, you need to set the data type using `-d` command. 
+   
+   * Subset alignment tool: the default is MAFFT, but you can change it using `--aligner` command.
+   
+   * Pairwise merge tool: the default is OPAL for dna and Muscle for protein. Change it using `--merger` command. 
+  
+   * Tree estimation tool: the default is FastTree. You can also set it to RAxML using `--tree-estimator` option.
+     Be aware that RAxML takes much longer. If you really want to have a RAxML tree, I suggest obtaining one by
+     running it on the final PASTA alignment. 
+
+   * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`.
+     You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached, and then continues to run until the current iteration is finished, and then stops. If both values are set, PASTA stops after the first limit is reached. The remaining options for setting iteration limits are legacies of SATe and should not be used. 
+   * Masking: Since PASTA produces very gappy alignments, it is a good idea to remove sites that are almost exclusively gaps before running the ML tree estimation. By default, PASTA removes sites that are more than 99.9% gaps. You can change that by adjusting `--mask-gappy-sites`.
+   
    * Maximum subset size: two options are provided to set the maximum subset size: `--max-subproblem-frac` and `--max-subproblem-size`. 
      The `--max-subproblem-frac` option is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset. `--max-subproblem-size` sets the maximum size as an absolute number.
      When both numbers are provided (in either configuration file or the command line), the *LARGER* number is used. 

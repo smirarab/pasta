@@ -573,7 +573,7 @@ class FastaCustomReader(FastaReader):
                 if self.simple_rows:
                     m = re_ilegal.search(s)
                     if m:
-                        raise DataParseError(message='Unrecognized sequence symbol "%s"' % m.group(0), row=line_index + 1, column=m.start(), stream=stream)
+                        raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), row=line_index + 1, column=m.start(), stream=stream)
                     curr_vec.append(s)
                 else:
                     for col_ind, c in enumerate(s):
@@ -1002,7 +1002,7 @@ class MultiLocusDataset(list):
     def get_num_loci(self):
         return len(self)
 
-def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
+def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
     """
     Returns a tuple of information about the datafiles found in `filepath_list`
     `datatype_list` provides the order that datatypes should be checked. The 
@@ -1021,9 +1021,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
     appears_aligned = True
     caught_exception = None
     for datatype in datatype_list:
-        md = MultiLocusDataset()
         try:
-            md.read_files(filepath_list, datatype, careful_parse=careful_parse)
             total_n_leaves = 0
             taxa_char_tuple_list = []
             for element in md:
@@ -1041,7 +1039,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, careful_parse):
                 t_c_pair = (ntax, nchar)
                 taxa_char_tuple_list.append(t_c_pair)
             num_tax_total = len(md.dataset.taxon_sets[0])
-            return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned)
+            return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned, md)
         except Exception, e:
             caught_exception = e
     raise e

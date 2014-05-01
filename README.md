@@ -67,11 +67,14 @@ To run the GUI version,
 python run_pasta_gui.py
 ```
 
+Debug
+-------
+To show debug information, set the following environmental variables: `PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
+
 
 Starting Trees
 -------
-Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees
-if none is given. 
+Since version 1.4.0, PASTA uses the procedure described in the paper for estimating the starting alignment and trees if none is given. 
 
 The PASTA approach for getting the starting tree can be summarized as:
 1. Choose a random subset of your sequences (size 100).

@@ -286,7 +286,8 @@ def finish_pasta_execution(pasta_team,
                     job = pasta_team.aligner.create_job(backbone_seqs,
                                                        tmp_dir_par=init_aln_dir,
                                                        context_str="initalign",
-                                                       delete_temps=delete_aln_temps)
+                                                       delete_temps=delete_aln_temps,
+						       num_cpus=pasta_config.num_cpus)
                     aln_job_list.append(job)
                 _RunningJobs = aln_job_list
                 for job in aln_job_list:

@@ -240,12 +240,14 @@ class MafftAligner(Aligner):
             invoc.append(self.exe)
         else:
             invoc.extend([self.exe])
-        if len(alignment) <= 200 and new_alignment.max_sequence_length() < 10000:
+        if len(alignment) <= 200 and new_alignment.max_sequence_length() < 50000:
             invoc.extend(['--localpair', '--maxiterate', '1000'])
         if '--ep' not in self.user_opts:
             invoc.extend(['--ep', '0.123'])
-        invoc.extend(['--quiet', seqfn])
+        invoc.extend(['--quiet'])
         invoc.extend(self.user_opts)
+	invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
+	invoc.append(seqfn)
 
         # The MAFFT job creation is slightly different from the other
         #   aligners because we redirect and read standard output.

@@ -760,7 +760,7 @@ class FastTree(TreeEstimator):
             else:
                 mp_path = self.exe + 'MP'
             if os.path.exists(mp_path):
-                os.environ["OMP_NUM_THREADS"] = str(num_cpus)
+                os.environ["OMP_NUM_THREADS"] = str(num_cpus if num_cpus < 4 else 3)
                 invoc[0] = mp_path
 
         dirs_to_delete = []

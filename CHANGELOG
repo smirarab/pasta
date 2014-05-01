@@ -1,3 +1,8 @@
+Version 1.5.1:
+    Longest branch decomposition fixed - subsets of size 1 do no fail
+    Subproblem size is forced to be at least 2
+    FastTree is fixed to use the (at most) the requested number of cpus
+    FastTree is not helped with more than 3 cpus. Max it at 3
 Version 1.5 (Has major backward compatibility implications):
     --auto option is not necessary anymore. By default, important settings are picked by the software based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
     Fasttree for DNA was missing -gamma option by default. Added!

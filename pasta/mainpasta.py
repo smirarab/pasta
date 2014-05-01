@@ -130,7 +130,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         }
     new_commandline_defaults['multilocus'] = False #bool(len(ntax_nchar_tuple_list) > 1)
     new_defaults['commandline'] = new_commandline_defaults
-    _LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
+    #_LOG.debug('Auto defaults dictionary: %s' % str(new_defaults))
     return new_defaults
 
 def killed_handler(n, frame):

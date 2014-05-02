@@ -33,9 +33,15 @@ Installation steps:
 1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
 
 2. Clone the PASTA repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
-If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip) and decompress it into your desired directory. 
+If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
+and decompress it into your desired directory. 
 
-3.  Clone the relevant "tools" directory (these are also forked from the SATe project). Note that there are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac). e.g., you can use `git clone git@github.com:smirarab/sate-tools-linux.git` on Linux or `git@github.com:smirarab/sate-tools-mac.git` on MAC. Or you can directly download these as zip files for [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip) and decompress them in your target directory for PASTA code.
+3.  Clone the relevant "tools" directory (these are also forked from the SATe project). There are different repositories for 
+[linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac).
+You can use `git clone git@github.com:smirarab/sate-tools-linux.git` on Linux or `git@github.com:smirarab/sate-tools-mac.git` on MAC. 
+Or you can directly download these as zip files for 
+[Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
+and decompress them in your target directory for PASTA code.
 
 4. `cd pasta`
 
@@ -45,25 +51,34 @@ If you don't have git, you can directly download a [zip file from the repository
   python setup.py develop 
 `
 
-You probably need to add a `sudo` in front of that command. If you don't have root access, use `--prefix` to install in a different location.
+You probably need to add a `sudo` in front of that last command. 
+If you don't have root access, use `--prefix` to install in a different location.
 That different location needs to be part of your `PYTHONPATH` environmental variable. 
 
-Email pasta-users@googlegroups.com for installation issues. 
+Email `pasta-users@googlegroups.com` for installation issues. 
 
 
 EXECUTION
 ====
-To run the command-line, use:
+To run PASTA using the command-line:
 
 ```
 python run_pasta.py -i input_fasta [-t starting_tree] 
 ```
 
-PASTA by default picks the appropriate configurations automatically for you. The starting tree is optional. If not provided, PASTA estimates a starting tree. Run ``python run_pasta.py --help`` to see PASTA's various options. 
+PASTA by default picks the appropriate configurations automatically for you. 
+The starting tree is optional. If not provided, PASTA estimates a starting tree. 
+
+Run
+
+```python run_pasta.py --help``` 
+
+to see PASTA's various options and description of how they work. 
 
 To run the GUI version, 
 * if you have used the MAC .dmg file, you can simply click on your application file to run PASTA. 
 * if you have installed from the source code, cd into your installation directory and run 
+
 ```
 python run_pasta_gui.py
 ```
@@ -80,7 +95,9 @@ and finally the pairwise merged alignments are merged into a final alignment usi
 of the dataset into smaller subsets and selecting which alignments should be pairwise merged is guided by the tree
 from the previous iteration. The first step therefore needs an initial tree. 
 
-When GUI is used, a limited set of important options can be adjusted on the GUI. The command line also allows you to alter the behavior of the algorithm, and provides a larger sets of options that can be adjusted.
+When GUI is used, a limited set of important options can be adjusted on the GUI.
+The command line also allows you to alter the behavior of the algorithm,
+and provides a larger sets of options that can be adjusted.
 
 Options can also be passed in as configuration files with the format:
 ```
@@ -92,19 +109,20 @@ option-name = value
 ```
 
 With every run, PASTA saves the configuration file for that run as a temporary
-file called `[jobname]_temp_pasta_config.txt` in your output directory.
+file called ``[jobname]_temp_pasta_config.txt`` in your output directory.
 
 Multiple configuration files can be provided. Configuration files are read in 
 the order they occur as arguments (with values in later files replacing previously 
 read values). Options specified in the command line are read last. Thus these values
 "overwrite" any settings from the configuration files. 
 
-*Note*: the use of --auto option can overwrite some of the other options provided by commandline or through configuration files. 
+*Note*: the use of --auto option can overwrite some of the other options provided by
+commandline or through configuration files. 
 The use of this option is generally not suggested (a legacy option from SATe).
 
 
-The following is a list of important options used by PASTA. Note that by default PASTA picks these parameters
-for you, and thus you might not need to ever change these:
+The following is a list of important options used by PASTA. 
+Note that by default PASTA picks these parameters for you, and thus you might not need to ever change these:
 
    * Initial tree: 
      If a starting tree is provided using the `-t` option, then that tree is used.
@@ -122,16 +140,29 @@ for you, and thus you might not need to ever change these:
    
    * Pairwise merge tool: the default is OPAL for dna and Muscle for protein. Change it using `--merger` command. 
   
-   * Tree estimation tool: the default is FastTree. You can also set it to RAxML using `--tree-estimator` option. Be aware that RAxML takes much longer. If you really want to have a RAxML tree, I suggest obtaining one by running it on the final PASTA alignment. 
+   * Tree estimation tool: the default is FastTree. You can also set it to RAxML using `--tree-estimator` option. 
+     Be aware that RAxML takes much longer than FastTree. 
+     If you really want to have a RAxML tree, we suggest obtaining one by running it on the final PASTA alignment. 
+     You can change the model used by FastTree (default: -gtr -gammaq for nt and -wag -gamma for aa) 
+     or RAxML (default GTRGAMMA for nt and PROTWAGCAT for AA) by updating the `[model]` parameter under `[FastTree]` or `[RAxML]` header in the config file.
+     The model cannot be currently updated in the command line.
 
-   * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`. You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached, and then continues to run until the current iteration is finished, and then stops. If both values are set, PASTA stops after the first limit is reached. The remaining options for setting iteration limits are legacies of SATe and are not recommended. 
+   * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`. 
+    You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached,
+    and then continues to run until the current iteration is finished, and then stops. 
+    If both values are set, PASTA stops after the first limit is reached. 
+    The remaining options for setting iteration limits are legacies of SATe and are not recommended. 
    
-   * Masking: Since PASTA produces very gappy alignments, it is a good idea to remove sites that are almost exclusively gaps before running the ML tree estimation. By default, PASTA removes sites that are more than 99.9% gaps. You can change that by adjusting `--mask-gappy-sites`.
+   * Masking: Since PASTA produces very gappy alignments, it is a good idea to remove sites that are almost exclusively gaps before running the ML tree estimation. 
+     By default, PASTA removes sites that are more than 99.9% gaps. 
+     You can change that using the `--mask-gappy-sites` option.
    
    * Maximum subset size: two options are provided to set the maximum subset size: `--max-subproblem-frac` and `--max-subproblem-size`. 
-     The `--max-subproblem-frac` option is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset. `--max-subproblem-size` sets the maximum size as an absolute number.
+     The `--max-subproblem-frac` option is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset.
+     The `--max-subproblem-size` option sets the maximum size as an absolute number.
      When both numbers are provided (in either configuration file or the command line), the *LARGER* number is used. 
-     This is an unfortunate design (legacy of SATe) and can be quite confusing. Please always double check the actual subset size reported by PASTA and make sure it is the value intended.
+     This is an unfortunate design (legacy of SATe) and can be quite confusing. 
+     Please always double check the actual subset size reported by PASTA and make sure it is the value intended.
 
    * Temporary files: PASTA creates many temporary files, and deletes most at the end.
       You can control the behavior of temporary files using `--temporaries` (to set the tempdirectory),
@@ -154,7 +185,8 @@ The remaining options available in PASTA are mostly legacies from SATe and are g
 
 Debug
 -------
-To show debug information, set the following environmental variables: `PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
+To show debug information, set the following environmental variables: 
+`PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
 
 
 LICENSE

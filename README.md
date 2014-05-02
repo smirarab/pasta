@@ -1,11 +1,11 @@
-This is an implementation of the PASTA (Practical Alignment using SATe and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#):
+This is an implementation of the PASTA (Practical Alignment using Sate and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#):
 
 Mirarab, S., Nguyen, N., & Warnow, T. (2014). PASTA: Ultra-Large Multiple Sequence Alignment. In R. Sharan (Ed.), Research in Computational Molecular Biology (RECOMB) (pp. 177–191).
 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`
 
 
-**Acknowledgment**: The current version of this code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, licence, etc.  
+**Acknowledgment**: The current version of this code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc.  
 
 
 
@@ -71,7 +71,7 @@ python run_pasta_gui.py
 Options
 ------
 PASTA estimates alignments and ML trees from unaligned sequences using an iterative approach. In each iteration, 
-it first estiamtes a multiple sequence alignment and then a ML tree is estimated on (a masked version of) the alignment. 
+it first estimates a multiple sequence alignment and then a ML tree is estimated on (a masked version of) the alignment. 
 By default PASTA performs 3 iterations, but a host of options enable changing that behavior. 
 In each iteration, a divide-and-conquer strategy is used for estimating the alignment. 
 The set of sequences is divided into smaller subsets, each of which is aligned using an external
@@ -80,7 +80,7 @@ and finally the pairwise merged alignments are merged into a final alignment usi
 of the dataset into smaller subsets and selecting which alignments should be pairwise merged is guided by the tree
 from the previous iteration. The first step therefore needs an initial tree. 
 
-When GUI is used, a limited set of important options can be adjusted on the GUI. The command line also allows you to alter the behavior of the algorithm.
+When GUI is used, a limited set of important options can be adjusted on the GUI. The command line also allows you to alter the behavior of the algorithm, and provides a larger sets of options that can be adjusted.
 
 Options can also be passed in as configuration files with the format:
 ```
@@ -99,8 +99,8 @@ the order they occur as arguments (with values in later files replacing previous
 read values). Options specified in the command line are read last. Thus these values
 "overwrite" any settings from the configuration files. 
 
-*Note*: the use of --auto option can overwrite some of the other options provided by
-commandline or through configuration files and is not suggested (a legacy option from SATe).
+*Note*: the use of --auto option can overwrite some of the other options provided by commandline or through configuration files. 
+The use of this option is generally not suggested (a legacy option from SATe).
 
 
 The following is a list of important options used by PASTA. Note that by default PASTA picks these parameters
@@ -109,31 +109,47 @@ for you, and thus you might not need to ever change these:
    * Initial tree: 
      If a starting tree is provided using the `-t` option, then that tree is used.
      If the input sequence file is already aligned and `--aligned` option is provided, then PASTA computes a ML tree on the input alignment and uses that as the starting tree. 
-     If the input sequences are not aligned,  PASTA uses the procedure described below for estimating the starting alignment and tree.
-	1. randomly selects a subset of your sequences (size 100).
-	2. estimates an alignment on the subset using subset alignment tool (default MAFFT-l-insi).
+     If the input sequences are not aligned (or if they are aligned and `--aligned` is not given), PASTA uses the procedure described below for estimating the starting alignment and tree.
+	1. randomly selects a subset of 100 sequences.
+	2. estimates an alignment on the subset using the subset alignment tool (default MAFFT-l-insi).
 	3. builds a HMMER model on this "backbone" alignment.
 	4. uses hmmalign to align the remaining sequences into the backbone alignment. 
 	5. runs FastTree on the alignment obtained in the previous step.
 
-   * Data Type: PASTA does not automatically detect your data type. Unless your data is DNA, you need to set the data type using `-d` command. 
+   * Data type: PASTA does not automatically detect your data type. Unless your data is DNA, you need to set the data type using `-d` command. 
    
    * Subset alignment tool: the default is MAFFT, but you can change it using `--aligner` command.
    
    * Pairwise merge tool: the default is OPAL for dna and Muscle for protein. Change it using `--merger` command. 
   
-   * Tree estimation tool: the default is FastTree. You can also set it to RAxML using `--tree-estimator` option.
-     Be aware that RAxML takes much longer. If you really want to have a RAxML tree, I suggest obtaining one by
-     running it on the final PASTA alignment. 
+   * Tree estimation tool: the default is FastTree. You can also set it to RAxML using `--tree-estimator` option. Be aware that RAxML takes much longer. If you really want to have a RAxML tree, I suggest obtaining one by running it on the final PASTA alignment. 
 
-   * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`.
-     You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached, and then continues to run until the current iteration is finished, and then stops. If both values are set, PASTA stops after the first limit is reached. The remaining options for setting iteration limits are legacies of SATe and should not be used. 
+   * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`. You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached, and then continues to run until the current iteration is finished, and then stops. If both values are set, PASTA stops after the first limit is reached. The remaining options for setting iteration limits are legacies of SATe and are not recommended. 
+   
    * Masking: Since PASTA produces very gappy alignments, it is a good idea to remove sites that are almost exclusively gaps before running the ML tree estimation. By default, PASTA removes sites that are more than 99.9% gaps. You can change that by adjusting `--mask-gappy-sites`.
    
    * Maximum subset size: two options are provided to set the maximum subset size: `--max-subproblem-frac` and `--max-subproblem-size`. 
      The `--max-subproblem-frac` option is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset. `--max-subproblem-size` sets the maximum size as an absolute number.
      When both numbers are provided (in either configuration file or the command line), the *LARGER* number is used. 
      This is an unfortunate design (legacy of SATe) and can be quite confusing. Please always double check the actual subset size reported by PASTA and make sure it is the value intended.
+
+   * Temporary files: PASTA creates many temporary files, and deletes most at the end.
+      You can control the behavior of temporary files using `--temporaries` (to set the tempdirectory),
+    `-k` (to keep temporaries) and `--keepalignmenttemps` (to keep even more temporaries) options. 
+    Note that PASTA also creates a bunch of temporary files in the output directory and never deletes them, 
+    because these temporary files are potentially useful for the useres. These files are all of the form
+    `[jobname]_temp_*`. Some of the important files created are alignments and tree produced in individual 
+    steps (alignments are saved both in masked and unmasked versions). These intermediate files all have 
+    internal PASTA sequence names, which are slightly different from your actual sequence names.
+    The mapping between PASTA and real names are given als as a temporary file: `[jobname]_temp_name_translation.txt`.
+
+   * Dry run: The `--exportconfig` option can be used to crate a config file that can be checked for 
+     correctness before running the actual job. 
+
+   * CPUs: PASTA tries to use all the available cpus by default. You can use  `num_cpus` to adjust the number of threads used. 
+
+
+The remaining options available in PASTA are mostly legacies from SATe and are generally not useful for PASTA runs. 
 
 
 Debug

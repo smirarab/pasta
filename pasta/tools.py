@@ -806,7 +806,15 @@ class Raxml(TreeEstimator):
         scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
         seqfn = os.path.join(scratch_dir, "input.phy")
         model = self.model
+                    
         alignment, partitions = multilocus_dataset.concatenate_alignments()
+        
+        if kwargs.has_key("mask_gappy_sites"):
+            self.store_unmasked_input(alignment, **kwargs)
+            alignment = copy.deepcopy(alignment)
+            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
+                
+            
         alignment.write_filepath(seqfn, 'PHYLIP')
 
         if alignment.datatype == 'DNA':

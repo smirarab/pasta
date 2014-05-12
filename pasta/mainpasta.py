@@ -395,7 +395,8 @@ def finish_pasta_execution(pasta_team,
                                     tmp_dir_par=post_tree_dir,
                                     delete_temps=delete_tree_temps,
                                     pasta_products=pasta_products,
-                                    step_num="postraxtree")
+                                    step_num="postraxtree",
+                                    mask_gappy_sites = pasta_config_dict['mask_gappy_sites'])
                 _RunningJobs = post_job
                 jobq.put(post_job)
                 post_score, post_tree = post_job.get_results()

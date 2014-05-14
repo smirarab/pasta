@@ -12,6 +12,11 @@ All questions and inquires should be addressed to our user email group: `pasta-u
 INSTALLATION
 ===
 
+Dependencies: 
+
+1. You need to have python 2.7 or later.
+2. You need to have java installed (required for Opal). The bundled version of Opal requires Java 1.7 or later. If you have older versions of Java and you don't whish to upgrade, you can subtitute opal.jar your tools directory with older versions. If you don't want to install java, you can use Muscle instead of Opal. 
+
 From pre-build MAC image file
 ------
 1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).

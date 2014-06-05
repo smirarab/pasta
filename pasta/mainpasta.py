@@ -101,7 +101,7 @@ def get_auto_defaults_from_summary_stats(datatype, ntax_nchar_tuple_list, total_
         }
     if total_num_tax > 400:
         new_pasta_defaults['max_subproblem_size'] = 200
-        new_pasta_defaults['max_subproblem_frac'] = 200.0/total_num_tax
+        new_pasta_defaults['max_subproblem_frac'] = 0
     else:
         new_pasta_defaults['max_subproblem_size'] = int(math.ceil(total_num_tax/2.0))
         new_pasta_defaults['max_subproblem_frac'] = 0.5

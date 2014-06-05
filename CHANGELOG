@@ -1,6 +1,7 @@
 Version 1.5.2:
     [Bug fix]   Sometimes, max subset size was set to 201. fixed the issue
 Version 1.5.1:
+    [Bug fix]   RAxML post alignment step is fixed, and it uses the masked alignment
     [Bug fix]	Longest branch decomposition fixed - subsets of size 1 do not fail anymore
     [Change]	User set or automatically set subproblem size is forced to be at least 2
     [Bug fix]	FastTree is fixed to use the (at most) the requested number of cpus

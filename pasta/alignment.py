@@ -952,6 +952,10 @@ class MultiLocusDataset(list):
         base = 0
         for a in self:
             assert(a.is_aligned())
+            if isinstance(a, CompactAlignment):
+                t = Alignment()
+                a.update_dict_from(t)
+                a = t
             this_el_len = a.sequence_length()
             partitions.append( a.partition_info(base) )
             for k in a.keys():

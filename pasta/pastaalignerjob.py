@@ -360,15 +360,15 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             self.kill()
 
     def bipartition_by_tree(self, option):
-        _LOG.debug("tree before bipartition by %s = %s" % (option, self.tree.compose_newick()))
+        _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
 
         tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
         assert tree1.n_leaves > 0
         assert tree2.n_leaves > 0
         assert tree1.n_leaves + tree2.n_leaves == self.tree.n_leaves
 
-        _LOG.debug("tree1 = %s" % tree1.compose_newick())
-        _LOG.debug("tree2 = %s" % tree2.compose_newick())
+        _LOG.debug("tree1 = %s ..." % tree1.compose_newick() [0:200])
+        _LOG.debug("tree2 = %s ..." % tree2.compose_newick() [0:200])
 
         multilocus_dataset1 = self.multilocus_dataset.sub_alignment(tree1.leaf_node_names())
         multilocus_dataset2 = self.multilocus_dataset.sub_alignment(tree2.leaf_node_names())
@@ -452,7 +452,7 @@ class PASTAMergerJob(PASTAAlignerJob):
             self.context_str = ''
         node_count = self.tree.count_nodes()
         _LOG.debug("Recursive merge on a branch with %d subsets" % (node_count))
-        prefix = "subsets tree: %s" %self.tree.compose_newick()
+        prefix = "subsets tree: %s" %self.tree.compose_newick()[0:200]
         if node_count == 2:
             nodes = self.tree._tree.nodes()
             _LOG.debug("%s ... pairwise merge " % prefix)
@@ -473,7 +473,7 @@ class PASTAMergerJob(PASTAAlignerJob):
             ce = self.tree.get_centroid_edge(spanning=True)
             nr = ce.head_node if not ce.head_node.is_leaf() else ce.tail_node
             self.tree._tree.reroot_at_node(nr,delete_outdegree_one=False)            
-            _LOG.debug("rerooted to: %s" % self.tree.compose_newick())   
+            _LOG.debug("rerooted to: %s ..." % self.tree.compose_newick()[0:200])   
             # For each path from root to its children, create a new merge job         
             merge_job_list = []
             nr = self.tree._tree.seed_node
@@ -487,7 +487,7 @@ class PASTAMergerJob(PASTAAlignerJob):
                 remchilds.reverse()
                 for child in remchilds:
                     nr.reinsert_nodes(child)
-                _LOG.debug("child = %s" % t1.compose_newick())
+                _LOG.debug("child = %s ..." % t1.compose_newick()[0:200])
                 multilocus_dataset1 = self.multilocus_dataset.new_with_shared_meta()
                 
                 if t1.count_nodes() == 2:            

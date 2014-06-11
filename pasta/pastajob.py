@@ -479,11 +479,14 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                              reset_recursion_index=True,   
                                              #delete_temps2=False,                                      
                                              **configuration)
+                                                
+                        pmj.launch_alignment(context_str=context_str)
+                        
                         # Start alignment jobs
                         for job in self.pasta_team.alignmentjobs:
                             jobq.put(job)
-                                                
-                        pmj.launch_alignment(context_str=context_str)
+                            
+                            
                         new_multilocus_dataset = pmj.get_results()
                         del pmj  
                     

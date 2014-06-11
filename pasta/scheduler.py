@@ -338,11 +338,10 @@ class TickableJob():
         self._childrenlock.acquire()
         self._unfinished_children.remove(finishedjob)   
         #_LOG.debug("children ... %d" %len(self._unfinished_children))     
-        if not bool(self._unfinished_children):
-            self._childrenlock.release()
+        nochildleftbehind = not bool(self._unfinished_children)
+        self._childrenlock.release()
+        if nochildleftbehind:
             self.on_dependency_ready()
-        else:
-            self._childrenlock.release()
             
     def tick_praents(self):
         self._parentslock.acquire()

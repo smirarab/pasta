@@ -12,5 +12,5 @@ def compact_to_fasta(inf, out):
     a.write(out, 'FASTA')
 
 if __name__ == '__main__':
-    compact_to_fasta(sys.argv[1], '%s.FASTA' %sys.argv[1] if len(sys.argv) == 1 else sys.argv[2])
+    compact_to_fasta(sys.argv[1], '%s.FASTA' %sys.argv[1] if len(sys.argv) == 2 else sys.argv[2])
     

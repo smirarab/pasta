@@ -482,7 +482,7 @@ class Alignment(dict, object):
             for seq in allseqs:
                 if seq[c] != "-":
                     r -= 1
-                if r == 0:
+                if r <= 0:
                     break
             if r > 0:
                 masked.append(c)
@@ -491,6 +491,8 @@ class Alignment(dict, object):
         if not masked:
             return
         included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
+        if not included:
+            included.append((masked[-1]+1,n))
         if included[-1][1] < n and masked[-1]+1 != n:
             included.append((masked[-1]+1,n))
         for k,seq in self.iteritems():

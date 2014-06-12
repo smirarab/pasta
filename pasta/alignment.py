@@ -300,7 +300,7 @@ def write_phylip(alignment, dest):
         assert len(k.split()) == 1
         seq = alignment[k]
         assert len(seq) == nchar
-        file_obj.write('%s\n%s\n' % (k, seq))
+        file_obj.write('%s %s\n' % (k, seq))
     if isinstance(dest, str):
         file_obj.close()
 

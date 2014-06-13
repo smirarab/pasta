@@ -136,8 +136,6 @@ if sys.argv[1] == 'py2exe':
         }
     )
 
-setup(**param)
-
 ### hack upon hack upon hack ...
 if sys.argv[1] == 'py2exe':
     sys.stderr.write("\nMoving 'mafft.exe' into bundled binary directory ... \n")
@@ -195,3 +193,7 @@ if platform.system() != "Windows":
             src_path = os.path.join(tdir, fpath)
             if os.path.isfile(src_path) and not src_path.endswith('.txt'):
                 create_symlink(src_path, subdir)
+                
+
+
+setup(**param)

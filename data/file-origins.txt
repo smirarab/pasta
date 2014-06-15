@@ -1,3 +1,4 @@
 The BBA0067 files are from BAliBASE.
 The figwasp and hummingbirds files are from treebase (see the *nex.txt files 
     in those directory).
+16S.E.ALL files are from http://www.rna.ccbb.utexas.edu/DAT/3C/Alignment/, restricted to the first 990 base pairs

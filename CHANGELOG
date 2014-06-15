@@ -1,3 +1,5 @@
+Version 1.6 (has backward compatibility implications):
+    [Change]    We use opal now for pairwise mergers regardless of whether the datatype is AA or DNA.
 Version 1.5.3:
     [Feature]   A new script called seqtools.py is added that can be used to manipulate alignments
     [Bug fix]   In the initial alignment if all the masked sites were at the beginning, an error occurred. 

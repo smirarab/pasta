@@ -15,7 +15,7 @@ INSTALLATION
 Dependencies: 
 
 1. You need to have python 2.7 or later.
-2. You need to have java installed (required for Opal). The bundled version of Opal requires Java 1.7 or later. If you have older versions of Java and you don't whish to upgrade, you can subtitute opal.jar your tools directory with older versions. If you don't want to install java, you can use Muscle instead of Opal. 
+2. You need to have java installed (required for Opal).
 
 From pre-build MAC image file
 ------
@@ -30,35 +30,38 @@ Windows won't work currently (future versions may or may not support Windows).
 
 You need to have:
 - Python 
-- Dendropy (http://packages.python.org/DendroPy/)
+- [Dendropy](http://packages.python.org/DendroPy/)
 - Java (for OPAL)
+- [wxPython](http://www.wxpython.org/) - only required if you are going to use the GUI. 
 
-Installation steps:
+**Installation steps**:
 
 1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
 
-2. Clone the PASTA repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
+2. Clone the PASTA code repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
 If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
 and decompress it into your desired directory. 
 
 3.  Clone the relevant "tools" directory (these are also forked from the SATe project). There are different repositories for 
 [linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac).
-You can use `git clone git@github.com:smirarab/sate-tools-linux.git` on Linux or `git@github.com:smirarab/sate-tools-mac.git` on MAC. 
+You can use `git clone git@github.com:smirarab/sate-tools-linux.git` for Linux or `git@github.com:smirarab/sate-tools-mac.git` for MAC. 
 Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
-and decompress them in your target directory for PASTA code.
+and decompress them in your target directory (e.g. `pasta-code`). Note that the tools directory and the PASTA code directory should be under the same parent directory. Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. You need to rename thse directories and remove the `-master` part.
 
-4. `cd pasta`
+4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
 5. Then run:
 
-`
-  python setup.py develop 
-`
+```
+ sudo python setup.py develop 
+```
+ 
+If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternativley, you can `--prefix` to install in a different location, but that different location needs to be part of your `PYTHONPATH` environmental variable. 
 
-You probably need to add a `sudo` in front of that last command. 
-If you don't have root access, use `--prefix` to install in a different location.
-That different location needs to be part of your `PYTHONPATH` environmental variable. 
+**Common Problems:**
+ * If you get an error that `Could not find SATe tools bundle directory:`, it means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
+
 
 Email `pasta-users@googlegroups.com` for installation issues. 
 

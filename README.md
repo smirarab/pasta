@@ -44,7 +44,7 @@ and decompress it into your desired directory.
 
 3.  Clone the relevant "tools" directory (these are also forked from the SATe project). There are different repositories for 
 [linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac).
-You can use `git clone git@github.com:smirarab/sate-tools-linux.git` for Linux or `git@github.com:smirarab/sate-tools-mac.git` for MAC. 
+You can use `git clone https://github.com/smirarab/sate-tools-linux.git` for Linux or `git clone https://github.com/smirarab/sate-tools-mac.git` for MAC. 
 Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
 and decompress them in your target directory (e.g. `pasta-code`). Note that the tools directory and the PASTA code directory should be under the same parent directory. Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. You need to rename thse directories and remove the `-master` part.

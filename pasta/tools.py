@@ -246,8 +246,8 @@ class MafftAligner(Aligner):
             invoc.extend(['--ep', '0.123'])
         invoc.extend(['--quiet'])
         invoc.extend(self.user_opts)
-	invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
-	invoc.append(seqfn)
+        invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
+        invoc.append(seqfn)
 
         # The MAFFT job creation is slightly different from the other
         #   aligners because we redirect and read standard output.
@@ -449,6 +449,7 @@ class PadAligner(Aligner):
 class Merger(ExternalTool):
     def __init__(self, name, temp_fs, **kwargs):
         ExternalTool.__init__(self, name, temp_fs, **kwargs)
+        self.user_opts = kwargs.get('args', ' ').split()
 
     def _prepare_input(self, alignment1, alignment2, **kwargs):
         scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
@@ -536,6 +537,7 @@ class MuscleMerger (Merger):
         scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
 
         invoc = [self.exe, '-in1', seqfn1, '-in2', seqfn2, '-out', outfn, '-quiet', '-profile']
+        invoc.extend(self.user_opts)
 
         return self._finish_standard_job(alignedfn=outfn,
                                          datatype=alignment1.datatype,
@@ -566,7 +568,8 @@ class OpalMerger (Merger):
         assert(alignment1.datatype == alignment2.datatype)
 
         invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
-
+        invoc.extend(self.user_opts)
+        
         return self._finish_standard_job(alignedfn=outfn,
                                          datatype=alignment1.datatype,
                                          invoc=invoc,
@@ -583,11 +586,11 @@ class TreeEstimator(ExternalTool):
             self.user_opts = kwargs.get('args').split()
 
     def _prepare_input(self, alignment, **kwargs):
-        raise NotImplmentedError('Abstract TreeEstimator class!')
+        raise NotImplementedError('Abstract TreeEstimator class!')
 
     @staticmethod
     def _read_results(fn):
-        raise NotImplmentedError('Abstract TreeEstimator class!')
+        raise NotImplementedError('Abstract TreeEstimator class!')
 
     def store_input(self, seqfn, **kwargs):
         """

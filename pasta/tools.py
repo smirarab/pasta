@@ -321,6 +321,34 @@ class Clustalw2Aligner(Aligner):
                                         job_id=job_id,
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
 
+class MuscleAligner(Aligner):
+    section_name = 'muscle aligner'
+    url = 'http://www.drive5.com/muscle'
+    is_bundled = True
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'muscle', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_muscle'
+        if alignment.get_num_taxa() == 0:
+            return FakeJob(alignment, context_str=job_id)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
+
+        invoc = [self.exe, '-in', seqfn, '-out', alignedfn, '-quiet']
+        invoc.extend(self.user_opts)
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                                        datatype=alignment.datatype,
+                                        invoc=invoc,
+                                        scratch_dir=scratch_dir,
+                                        job_id=job_id,
+                                        delete_temps=kwargs.get('delete_temps', self.delete_temps))
+
+
 class ProbalignAligner(Aligner):
     section_name = 'probalign'
     url = 'http://probalign.njit.edu'
@@ -919,7 +947,7 @@ if GLOBAL_DEBUG:
     MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, CustomAligner, HMMERAlignAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, MuscleAligner, CustomAligner, HMMERAlignAligner)
     MergerClasses = (MuscleMerger, OpalMerger, CustomMerger)
     TreeEstimatorClasses = (Raxml, FastTree, CustomTreeEstimator)
 

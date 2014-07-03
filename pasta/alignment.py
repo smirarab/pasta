@@ -18,13 +18,15 @@ from pasta.filemgr import open_with_intermediates
 _LOG = get_logger(__name__)
 _INDEL = re.compile(r"[-]")
 _DANGEROUS_NAME_CHARS = re.compile(r"[^a-zA-Z0-9]")
+ILLEGAL_CHARS = re.compile(r"[^a-zA-Z?-]")
+
 
 DATASET_TAXA_ATTR = "taxon_sets"
 DATASET_CHAR_ATTR = "char_matrices"
 
 def is_sequence_legal(seq):
     """Check for illegal characters -- TODO, currently returns True"""
-    return True
+    return re.search(ILLEGAL_CHARS, seq) is None
 
 def read_fasta(src):
     """generator that returns (name, sequence) tuples from either a FASTA
@@ -129,6 +131,23 @@ def write_compact_to_fasta(alignment, dest):
     for name in alignment.keys():
         s = alignment.as_string_sequence(name)
         file_obj.write('>%s\n%s\n' % (name, s) )
+    if isinstance(dest, str):
+        file_obj.close()
+        
+
+def write_compact_to_phylip(alignment, dest):
+    """Writes the `alignment` in FASTA format to either a file object or file"""
+    assert(isinstance(alignment,CompactAlignment))
+    file_obj = None       
+    if isinstance(dest, str):
+        file_obj = open(dest, "w")
+    else:
+        file_obj = dest
+
+    file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length) )
+    for name in alignment.keys():
+        s = alignment.as_string_sequence(name)
+        file_obj.write('%s %s\n' % (name, s) )
     if isinstance(dest, str):
         file_obj.close()
 
@@ -268,6 +287,8 @@ def read_compact3(src):
             seq = ''.join(i.strip().upper().split())
             if not is_sequence_legal(seq):
                 raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
+            if seq.find("-") > -1 :
+                raise Exception("gaps found in sequence portion. This does not seem to be COMPACT3 format.")
             seq_list.append(seq)
     seq = []
     lastpos = 0
@@ -1238,6 +1259,8 @@ class CompactAlignment(dict,object):
             read_func = read_fasta        
         elif ( file_format.upper() == 'COMPACT' ):
             read_func = read_compact
+        elif ( file_format.upper() == 'COMPACT3' ):
+            read_func = read_compact3
         else:
             raise NotImplementedError("Unknown file format (%s) is not supported" % file_format)
         self.colcount = 0
@@ -1247,7 +1270,7 @@ class CompactAlignment(dict,object):
             #print cseq.seq
             #print cseq.pos
             self.colcount = max(l, self.colcount)
-        print self.colcount
+        #print self.colcount
         
     def as_string_sequence(self,name):
         seq = self[name]
@@ -1307,8 +1330,10 @@ class CompactAlignment(dict,object):
             write_func = write_compact_to_compact
         elif ( file_format.upper() == 'COMPACT3' ):
             write_func = write_compact_to_compact3 
+        elif ( file_format.upper() == 'PHYLIP' ):
+            write_func = write_compact_to_phylip 
         else:
-            write_func = write_fasta
+            write_func = write_compact_to_fasta
         write_func(self, file_obj)
 
 def get_insertion_columns(shared,alg):

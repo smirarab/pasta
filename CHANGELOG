@@ -1,3 +1,5 @@
+Version 1.7
+    [Change]    run_seqtools.py is redesigned. It does not use actions anymore. 
 Version 1.6 (has backward compatibility implications):
     [Change]    We use opal now for pairwise mergers regardless of whether the datatype is AA or DNA.
 Version 1.5.3:

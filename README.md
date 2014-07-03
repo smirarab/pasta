@@ -5,9 +5,9 @@ Mirarab, S., Nguyen, N., & Warnow, T. (2014). PASTA: Ultra-Large Multiple Sequen
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`
 
 
-**Acknowledgment**: The current version of this code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc.  
+**Acknowledgment**: The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc.  
 
-
+**Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
 
 INSTALLATION
 ===
@@ -20,8 +20,8 @@ Dependencies:
 From pre-build MAC image file
 ------
 1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
-2. Open the .dmg file and copy its content to your preferred destination.
-3. Simply run the PASTA app
+2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
+3. Simply run the PASTA app from where you copied it.
 
 From Source Code
 ------
@@ -29,10 +29,11 @@ Current version of PASTA has been developed and tested entirely on Linux and MAC
 Windows won't work currently (future versions may or may not support Windows). 
 
 You need to have:
-- Python 
-- [Dendropy](http://packages.python.org/DendroPy/)
-- Java (for OPAL)
-- [wxPython](http://www.wxpython.org/) - only required if you are going to use the GUI. 
+
+- Python (version 2.7 or later)
+- [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
+- Java (only required for using OPAL)
+- [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
 
 **Installation steps**:
 

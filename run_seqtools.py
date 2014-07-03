@@ -6,7 +6,7 @@ Created on Aug 8, 2013
 @author: smirarab
 '''
 import sys
-from pasta.alignment import Alignment, CompactAlignment
+from pasta.alignment import CompactAlignment
 import argparse
 from copy import copy
 

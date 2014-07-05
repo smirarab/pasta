@@ -24,7 +24,7 @@ import os, traceback
 from cStringIO import StringIO
 from Queue import Queue
 from threading import Thread, Event, Lock
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Value
 from subprocess import Popen, PIPE
 from pasta import get_logger, TIMING_LOG
 from pasta.filemgr import open_with_intermediates
@@ -95,7 +95,7 @@ class LightJobForProcess():
             _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
         k['stderr'] = _stderr_fo
 
-	for key,v in self.environ.items():
+        for key,v in self.environ.items():
             os.environ[key] = v
 
         process = Popen(self._invocation, stdin = PIPE, **k)
@@ -120,14 +120,16 @@ class LightJobForProcess():
         _LOG.debug('Finished %s.\n Return code: %s; %s' % (" ".join(self._invocation), self.return_code, self.error))    
 
 class pworker():
-    def __init__(self, q):
+    def __init__(self, q, err_shared_obj):
         self.q = q
+        self.err_shared_obj = err_shared_obj
         
     def __call__(self):
         while True:                                
             try:
                 job = self.q.get()
                 job.run()
+                self.err_shared_obj.value = job.return_code
                 self.q.task_done()
             except:
                 err = StringIO()
@@ -143,7 +145,8 @@ class worker():
     def __init__(self):
         global _manager
         self.pqueue = _manager.Queue()
-        pw = pworker(self.pqueue)
+        self.err_shared_obj = Value('i', 0)
+        pw = pworker(self.pqueue, self.err_shared_obj)
         self.p = Process(target=pw)
         self.p.daemon = True
         self.p.start()
@@ -162,13 +165,17 @@ class worker():
                     plj = LightJobForProcess(pa[0],pa[1],os.environ)
                     self.pqueue.put(plj)
                     
-                    self.pqueue.join()       
-                        
+                    self.pqueue.join()   
+                    
+                    plj.return_code = self.err_shared_obj.value
+                                             
                     if plj.error is not None:
                         job.error = Exception(plj.error)
+                        
                     job.return_code = plj.return_code
-                    if job.return_code:
-                        raise job.error
+                    
+                    if job.return_code is not None and job.return_code != 0:
+                        raise Exception("Job:\n %s\n failed with error code: %d" %(' '.join(plj._invocation), job.return_code))
                     
                     job.results = job.result_processor()
                     

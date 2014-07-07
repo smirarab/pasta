@@ -65,8 +65,8 @@ class LightJobForProcess():
     def __init__(self, invocation, k, environ):
         self._invocation = invocation
         self._k = k
-        self.error = None
-        self.return_code = None
+        self.error = None # NOTE: This is NOT sent back to the main process
+        self.return_code = None # NOTE: This is sent back to the main process
         self.environ = environ
 
     def read_stderr(self,_stderr_fo):
@@ -113,12 +113,13 @@ class LightJobForProcess():
                 if errorFromFile:
                     err_msg.append(errorFromFile)
                 self.error = "\n".join(err_msg)
+                raise Exception("")
+            _LOG.debug('Finished %s.\n Return code: %s; %s' % (" ".join(self._invocation), self.return_code, self.error))        
         except Exception as e:
             err_msg.append(str(e))
-            self.error = "\n".join(err_msg)    
+            self.error = "\n".join(err_msg) 
+            _LOG.error(self.error)   
             
-        _LOG.debug('Finished %s.\n Return code: %s; %s' % (" ".join(self._invocation), self.return_code, self.error))    
-
 class pworker():
     def __init__(self, q, err_shared_obj):
         self.q = q

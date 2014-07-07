@@ -21,13 +21,11 @@
 # Jiaye Yu and Mark Holder, University of Kansas
 
 import os
-import random
 import sys
 import time
 import platform
 import shutil
 
-from alignment import Alignment
 from pasta import get_logger, GLOBAL_DEBUG, PASTA_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB,\
     TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
@@ -35,7 +33,6 @@ from pasta.filemgr import open_with_intermediates
 from pasta.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
     TickingDispatchableJob
 
-from cStringIO import StringIO
 from alignment import Alignment
 import copy
 
@@ -73,11 +70,11 @@ def read_internal_alignment(fn,
         if dirs_to_delete:
             assert(temp_fs)
             for d in dirs_to_delete:
-                time.sleep(1) #TODO: not sure why this is here!
+                time.sleep(.1) #TODO: not sure why this is here!
                 temp_fs.remove_dir(d)
         return alignment
     else:
-        raise ValueError("The alignment file has no sequences. PASTA quits." % fn)
+        raise ValueError("The alignment file %s has no sequences. PASTA quits." % fn)
 
 
 def copy_temp_tree(src_treef, pasta_products, step_num):

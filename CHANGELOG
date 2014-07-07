@@ -1,9 +1,9 @@
 Version 1.6.1:
     [Change]    run_seqtools.py is redesigned. It does not use actions anymore. 
-    [Feature]   Muscle is now available as an alignment tool
     [Change]    args can be set in configuration files and these will be passed to respective tools
-    [Bug fix]   When errors happen, PASTA should stop right away
-    
+    [Feature]   Muscle is now available as an alignment tool
+    [Bug fix]   When errors happen, PASTA stops right away (also checks for empty alignments)
+
 Version 1.6 (has backward compatibility implications):
     [Change]    We use opal now for pairwise mergers regardless of whether the datatype is AA or DNA.
 
@@ -26,9 +26,9 @@ Version 1.5.1:
     [Change]	Mafft-linsi is used for upto 50,000 length
 
 Version 1.5 (Has major backward compatibility implications):
-    [Major Change]	--auto option is not necessary anymore. By default, important settings are picked by the software based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
+    [Major Change]	--auto option is not necessary anymore. Important settings are picked automatically based on the input file. These automatically picked defaults can be overwritten by the user. If --auto option is provided, it behaves like before (it overwrites the user provided options)
     [Bug fix]		Fasttree for DNA was missing -gamma option by default. Added!
-    [Change]		blind_after_total_iter is set by default to 0, so that all changes are logged as accepted (before it used to switch to blind on first worse score, which is the same thing)
+    [Change]		blind_after_total_iter is set by default to 0, so that all changes are logged as accepted (before it switched to blind on first worse score)
     [Change]		pasta local home is now under ~/.pasta instead of ~/.sate
     [Major Change]	file path config file is called ~/.pasta/pasta_tool_paths.cfg instead of ~/.sate/sate_tool_paths.cfg
     [Change]		If no job name is given, it will be set by default to pastajob instead of satejob

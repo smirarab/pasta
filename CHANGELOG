@@ -1,8 +1,9 @@
 Version 1.6.1:
     [Change]    run_seqtools.py is redesigned. It does not use actions anymore. 
-    [Engancement] Muscle is now available as an alignment tool
-    [Change]    args in configuration files can be set, and these will be passed passed to respective tools
-
+    [Feature]   Muscle is now available as an alignment tool
+    [Change]    args can be set in configuration files and these will be passed to respective tools
+    [Bug fix]   When errors happen, PASTA should stop right away
+    
 Version 1.6 (has backward compatibility implications):
     [Change]    We use opal now for pairwise mergers regardless of whether the datatype is AA or DNA.
 

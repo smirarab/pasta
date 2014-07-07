@@ -1,5 +1,7 @@
 Version 1.6.2:
     [Bug fix]   When errors happen, PASTA stops right away (also checks for empty alignments)
+    [Bug fix]   RAxML partition file was not updated according to masked sites
+    [Buf fix]   -gtr was hard-coded for FastTree when model was empty. Removed it to enable JK with fasttree
 
 Version 1.6.1:
     [Change]    run_seqtools.py is redesigned. It does not use actions anymore. 

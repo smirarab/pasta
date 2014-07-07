@@ -55,7 +55,8 @@ def read_fasta(src):
             if not is_sequence_legal(seq):
                 raise Exception("Error: illegal characeters in sequence at line %d" % line_number)
             seq_list.append(seq)
-    yield name, ''.join(seq_list)
+    if name:
+        yield name, ''.join(seq_list)
     if isinstance(src, str):
         file_obj.close()
 

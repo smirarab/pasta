@@ -2,6 +2,7 @@
 from random import random
 import sys
 from dendropy.dataobject.taxon import Taxon
+from copy import deepcopy
 #############################################################################
 ##  this file is part of pasta.
 ##  see "license.txt" for terms and conditions of usage.
@@ -969,13 +970,16 @@ class MultiLocusDataset(list):
     def convert_dna_to_rna(self):
         self._convert_rna_to_dna(reverse=True)
 
-    def concatenate_alignments(self):
+    def concatenate_alignments(self, mask = None):
         _LOG.debug('Inside concatenate_alignments')
         combined_alignment = Alignment()
         partitions = []
         base = 0
         for a in self:
             assert(a.is_aligned())
+            if mask:
+                a = deepcopy(a)
+                a.mask_gapy_sites(mask)
             if isinstance(a, CompactAlignment):
                 t = Alignment()
                 a.update_dict_from(t)

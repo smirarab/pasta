@@ -610,9 +610,7 @@ class TreeEstimator(ExternalTool):
     def store_unmasked_input(self, alignment, **kwargs):
         """
         If pasta_products and step_num are both found in the `kwargs` then this
-            function will copy `seqfn` to the filepath obtained by a call to
-            pasta_products.get_abs_path_for_iter_output
-            with the 'seq_unmasked_alignment.txt' suffix.
+            function will write the unmasked alignment to file (zipped).
         """
         pasta_products = kwargs.get('pasta_products')
         if pasta_products:
@@ -834,15 +832,12 @@ class Raxml(TreeEstimator):
         scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
         seqfn = os.path.join(scratch_dir, "input.phy")
         model = self.model
-                    
-        alignment, partitions = multilocus_dataset.concatenate_alignments()
         
         if kwargs.has_key("mask_gappy_sites"):
-            self.store_unmasked_input(alignment, **kwargs)
-            alignment = copy.deepcopy(alignment)
-            alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
-                
-            
+            self.store_unmasked_input(multilocus_dataset[0], **kwargs)
+                    
+        alignment, partitions = multilocus_dataset.concatenate_alignments(mask=kwargs.get("mask_gappy_sites"))
+                           
         alignment.write_filepath(seqfn, 'PHYLIP')
 
         if alignment.datatype == 'DNA':

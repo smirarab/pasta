@@ -1,14 +1,17 @@
+Version 1.6.3:
+    [Change]    Initial alignment now uses multiple cpus when available
+    
 Version 1.6.2:
     [Bug fix]   When errors happen, PASTA stops right away (also checks for empty alignments)
     [Bug fix]   RAxML partition file was not updated according to masked sites
-    [Buf fix]   -gtr was hard-coded for FastTree when model was empty. Removed it to enable JK with fasttree
+    [Buf fix]   -gtr was hard-coded for FastTree when model was empty; now -gtr is NOT automatically added when a configuration file is used and this enables using JK model.  (has backward compatibility issues when a configuration file is used and model is not set in the configuration file)
 
 Version 1.6.1:
-    [Change]    run_seqtools.py is redesigned. It does not use actions anymore. 
+    [Change]    run_seqtools.py is redesigned. It does not use actions anymore (backward incompatible). 
     [Change]    args can be set in configuration files and these will be passed to respective tools
     [Feature]   Muscle is now available as an alignment tool
 
-Version 1.6 (has backward compatibility implications):
+Version 1.6 (has important backward compatibility implications):
     [Change]    We use opal now for pairwise mergers regardless of whether the datatype is AA or DNA.
 
 Version 1.5.3:
@@ -22,8 +25,8 @@ Version 1.5.1:
     [Bug fix]   RAxML post alignment step is fixed, and it uses the masked alignment
     [Bug fix]	Longest branch decomposition fixed - subsets of size 1 do not fail anymore
     [Change]	User set or automatically set subproblem size is forced to be at least 2
-    [Bug fix]	FastTree is fixed to use the (at most) the requested number of cpus
-    [Change]	FastTree does not seem to be helped with more than 3 cpus. Max it at 3 cpus.
+    [Bug fix]	FastTree is fixed to use (at most) the requested number of cpus
+    [Change]	FastTree does not seem to be helped with more than 4 cpus. Max it at 4 cpus.
     [Change]	Mafft is moved to version 7.15
     [Chande]	Opal is moved to version 2.1.2
     [Change]	Mafft is passed a --thread option to use multiple threads for starting alignment 

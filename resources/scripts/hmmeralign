@@ -85,7 +85,6 @@ if __name__ == "__main__":
     query_fn = sys.argv[2]
     out_fn = sys.argv[3]
     dt = sys.argv[4]
-    cpus = sys.argv[5]
     
     loc = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     

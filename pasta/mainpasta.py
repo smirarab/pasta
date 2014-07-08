@@ -21,28 +21,22 @@
 # Jiaye Yu and Mark Holder, University of Kansas
 
 
-import os
-import re
-import sys
-import signal
-import time
-import glob
+from math import ceil
 import optparse
-import pasta
+from random import sample
+import re
+import signal
 
-from pasta import PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_LONG_DESCRIPTION, get_logger, set_timing_log_filepath, TIMING_LOG, MESSENGER
-from pasta.alignment import Alignment, SequenceDataset, MultiLocusDataset
-from pasta.configure import get_configuration, get_input_source_directory
-from pasta.tools import *
+from pasta import PROGRAM_NAME, PROGRAM_VERSION, PROGRAM_LONG_DESCRIPTION, set_timing_log_filepath
+from pasta import filemgr
+from pasta.alignment import MultiLocusDataset, compact
+from pasta.configure import get_configuration
 from pasta.pastajob import *
+from pasta.scheduler import  stop_worker
+from pasta.tools import *
 from pasta.treeholder import read_and_encode_splits,\
     generate_tree_with_splits_from_tree
-from pasta.scheduler import start_worker, jobq, stop_worker
 from pasta.utility import IndentedHelpFormatterWithNL
-from pasta.filemgr import open_with_intermediates
-from pasta import filemgr
-from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
-from random import sample
 
 
 _RunningJobs = None
@@ -271,18 +265,27 @@ def finish_pasta_execution(pasta_team,
                 init_aln_dir = os.path.join(temporaries_dir, 'init_aln')
                 init_aln_dir = pasta_team.temp_fs.create_subdir(init_aln_dir)
                 delete_aln_temps = not (options.keeptemp and options.keepalignmenttemps)
-                new_alignment_list= []
                 aln_job_list = []
                 query_fns = []
                 for unaligned_seqs in multilocus_dataset:
+                    #backbone = sorted(unaligned_seqs.keys())[0:100]
                     backbone = sample(unaligned_seqs.keys(), min(100,len(unaligned_seqs)))   
                     backbone_seqs = unaligned_seqs.sub_alignment(backbone)
                     
-                    query_seq=set(unaligned_seqs.keys()) - set(backbone)
-                    query_alg = unaligned_seqs.sub_alignment(query_seq)
-                    query_fn = os.path.join(init_aln_dir, "query.fasta")
-                    query_alg.write_filepath(query_fn)
-                    query_fns.append(query_fn)
+                    if GLOBAL_DEBUG:
+                        query_seq=list(set(unaligned_seqs.keys()) - set(backbone))
+                    else:
+                        query_seq=list(sorted(set(unaligned_seqs.keys()) - set(backbone)))
+                    qn = len(query_seq)
+                    chunks = min(int(4*pasta_config.num_cpus),int(ceil(qn/50.0)))
+                    _LOG.debug("Will align the remaining %d sequences in %d chunks" %(qn,chunks))
+                    for ch in xrange(0,chunks):
+                        query_fn = os.path.join(init_aln_dir, "query-%d.fasta"%ch)
+                        qa = unaligned_seqs.sub_alignment(query_seq[ch:qn:chunks])
+                        _LOG.debug("Chunk with %d sequences built" %len(qa))
+                        qa.write_filepath(query_fn)
+                        query_fns.append(query_fn)
+                    
                     
                     job = pasta_team.aligner.create_job(backbone_seqs,
                                                        tmp_dir_par=init_aln_dir,
@@ -293,22 +296,25 @@ def finish_pasta_execution(pasta_team,
                 _RunningJobs = aln_job_list
                 for job in aln_job_list:
                     jobq.put(job)
+                
+                new_alignment = compact(job.get_results())
+                
                 add_job_list = []
-                for (job,query_fn) in zip(aln_job_list,query_fns):
-                    new_alignment = job.get_results()
+                for query_fn in query_fns:
                     job = pasta_team.hmmeralign.create_job(new_alignment, query_fn,
                                                         tmp_dir_par=init_aln_dir,
                                                         context_str="initalign",
                                                         delete_temps=delete_aln_temps)
-                    add_job_list.append(job)               
+                    add_job_list.append(job)
                 _RunningJobs = None
                 for job in add_job_list:
                     jobq.put(job)
                 for job in add_job_list:
-                    new_alignment = job.get_results()
-                    new_alignment_list.append(new_alignment)
-                for locus_index, new_alignment in enumerate(new_alignment_list):
-                    multilocus_dataset[locus_index] = new_alignment
+                    new_alignment.merge_in(compact(job.get_results()))
+                    #new_alignment_list.apend(new_alignment)
+                #for locus_index, new_alignment in enumerate(new_alignment_list):
+                multilocus_dataset[0] = new_alignment
+                
                 if delete_aln_temps:
                     pasta_team.temp_fs.remove_dir(init_aln_dir)
             else:

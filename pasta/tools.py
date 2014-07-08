@@ -927,7 +927,7 @@ class HMMERAlignAligner(Aligner):
         if dt == "protein":
             dt = "amino"
         
-        invoc = [self.exe, seqfn, query_fn, alignedfn, dt , "1"]
+        invoc = [self.exe, seqfn, query_fn, alignedfn, dt]
         #invoc.extend(self.user_opts)
 
         return self._finish_standard_job(alignedfn=alignedfn,

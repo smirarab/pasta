@@ -1095,6 +1095,24 @@ class AlignmentSequence:
         s.pos.extend(self.pos)
         s.seq = self.seq.replace(match_char, replace_char)
         return s
+    
+    def as_string(self, pad_to):
+        s=[]
+        nxt = 0
+        for i,p in enumerate(self.pos):
+            if nxt != p:
+                s.append("-" * (p-nxt))
+            s.append(self.seq[i]) 
+            nxt = p+1
+        if (pad_to > nxt):
+            s.append("-" * (pad_to-nxt))
+        return "".join(s)
+    
+    def __str__(self):
+        return self.as_string(0)
+    
+    def __repr__(self):
+        return self.__str__()
 
 class CompactAlignment(dict,object):
     def __init__(self):
@@ -1214,6 +1232,26 @@ class CompactAlignment(dict,object):
         masked = set(self.iter_columns_with_maximum_char_count(minimum_seq_requirement-1))
         
         _LOG.debug("%d Columns identified for masking" %len(masked))
+        
+        self.mask_sites(masked)
+        
+    def mask_unaligned_sites(self):
+        _LOG.debug("Masking alignment sites with lower case letters from an alignment with %d sites" 
+                   %(self.colcount))
+
+        masked = set()
+        for seq in self.itervalues():
+            for c,i in zip(seq.seq,seq.pos):
+                if c > 'a' and c < 'z':
+                    masked.add(i)
+        
+        _LOG.debug("%d Columns identified for masking" %len(masked))
+        
+        self.mask_sites(masked)     
+        
+        return self   
+        
+    def mask_sites(self, masked):
         if not masked:
             return
         
@@ -1244,8 +1282,8 @@ class CompactAlignment(dict,object):
             seq.pos = [colmap[x] for x in (p for p in seq.pos if p not in masked)]
                 
         self.colcount -= off
-        _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" 
-                   %(self.colcount+off,self.colcount,minimum_seq_requirement))
+        _LOG.debug("Masking done. Before masking: %d; After masking: %d;" 
+                   %(self.colcount+off,self.colcount))
         
     def read_filepath(self, filename, file_format='FASTA'):
         """Augments the matrix by reading the filepath.
@@ -1279,17 +1317,7 @@ class CompactAlignment(dict,object):
         
     def as_string_sequence(self,name):
         seq = self[name]
-        s = []
-        nxt = 0
-        for i,p in enumerate(seq.pos):
-            if nxt != p:
-                s.append("-" * (p-nxt))
-            s.append(seq.seq[i]) 
-            nxt = p+1
-        p = self.colcount
-        if (p != nxt):
-            s.append("-" * (p-nxt))
-        return "".join(s)
+        return seq.as_string(self.colcount)
             
     def get_alignment_seq_object(self, seq):
         cseq = AlignmentSequence()
@@ -1340,6 +1368,11 @@ class CompactAlignment(dict,object):
         else:
             write_func = write_compact_to_fasta
         write_func(self, file_obj)
+
+def compact(alg):
+    comp = CompactAlignment()
+    comp.update_from_alignment(alg)
+    return comp
 
 def get_insertion_columns(shared,alg):
     n = len(alg.values()[0])

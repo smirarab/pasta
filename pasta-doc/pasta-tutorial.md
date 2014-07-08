@@ -384,6 +384,14 @@ run_pasta.py -i small.fasta  2>log.err 1>log.out
 
 This will produce two log files log.err and log.out that would be very useful for our debugging. Please send us those in addition to your error report.
 
+Also useful for debugging is keeping temporary files that can be inspected after the job finishes. To keep the temporary files, run:
+
+```
+run_pasta.py -i small.fasta -k --keepalignmenttemps 2>log.err 1>log.out
+```
+
+This will leave back temporary files, which could be useful for testing. 
+
 Step 9: Analyzing your own data
 ---
 At this stage, if you have input files that you like to have analyzed, you can start doing that. 

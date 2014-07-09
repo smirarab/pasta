@@ -12,19 +12,25 @@ All questions and inquires should be addressed to our user email group: `pasta-u
 INSTALLATION
 ===
 
-Dependencies: 
+**Dependencies**: 
 
 1. You need to have python 2.7 or later.
 2. You need to have java installed (required for Opal).
 
-From pre-build MAC image file
-------
+You have three options for installing PASTA. 
+
+ - **Windows:** If you have a Windows machine, currently using the Virtual Machine (VM) image we provide is your only option. 
+ - **Linux:** If you have Linux (or other *nix systems), you can still use VM, but downloading the code from github and installing it is what we strongly recommend. 
+ - **MAC:** We have three options for MAC: VM, installing from the code, and downloading .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code).
+
+
+### 1. From pre-build MAC image file
+
 1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
 
-From Source Code
-------
+### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 
 Windows won't work currently (future versions may or may not support Windows). 
 
@@ -43,12 +49,18 @@ You need to have:
 If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
 and decompress it into your desired directory. 
 
-3.  Clone the relevant "tools" directory (these are also forked from the SATe project). There are different repositories for 
-[linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac).
+3.  Clone the relevant "tools" directory (these are also forked from the SATe project).
+There are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) 
+and [MAC](https://github.com/smirarab/sate-tools-mac).
 You can use `git clone https://github.com/smirarab/sate-tools-linux.git` for Linux or `git clone https://github.com/smirarab/sate-tools-mac.git` for MAC. 
 Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
-and decompress them in your target directory (e.g. `pasta-code`). Note that the tools directory and the PASTA code directory should be under the same parent directory. Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. You need to rename thse directories and remove the `-master` part.
+and decompress them in your target directory (e.g. `pasta-code`).
+Note that the tools directory and the PASTA code directory should be under the same parent directory. 
+Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. 
+You need to rename thse directories and remove the `-master` part.
+Finally, those with 32-bit Linux machines need to be aware that the master branch has 64bit binaries.
+32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
@@ -64,6 +76,10 @@ If you don't have root access, remove the `sudo` part and instead  use  `--user`
  * If you get an error that `Could not find SATe tools bundle directory:`, it means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
  * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get and error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run: `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` (but note there are other ways of installing setuptools as well).
 
+
+### 3. From Virtual Machine (VM)
+
+VM Image (mostly for Windows users) is available for [download](http://www.cs.utexas.edu/~phylo/software/Phylolab.ova) (1.7 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the Phylolab.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
 
 Email `pasta-users@googlegroups.com` for installation issues. 
 

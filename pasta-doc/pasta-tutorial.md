@@ -32,11 +32,9 @@ You have three options for installing PASTA.
 
 ### 1. From pre-build MAC image file
 
-
 1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
-
 
 ### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 
@@ -49,7 +47,7 @@ You need to have:
 - Java (only required for using OPAL)
 - [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
 
-Installation steps:
+**Installation steps**:
 
 1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
 
@@ -57,12 +55,18 @@ Installation steps:
 If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
 and decompress it into your desired directory. 
 
-3.  Clone the relevant "tools" directory (these are also forked from the SATe project). There are different repositories for 
-[linux](https://github.com/smirarab/sate-tools-linux) and [MAC](https://github.com/smirarab/sate-tools-mac).
+3.  Clone the relevant "tools" directory (these are also forked from the SATe project). 
+There are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) 
+and [MAC](https://github.com/smirarab/sate-tools-mac).
 You can use `git clone https://github.com/smirarab/sate-tools-linux.git` for Linux or `git clone https://github.com/smirarab/sate-tools-mac.git` for MAC. 
 Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
-and decompress them in your target directory (e.g. `pasta-code`). Note that the tools directory and the PASTA code directory should be under the same parent directory. Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. You need to rename thse directories and remove the `-master` part.
+and decompress them in your target directory (e.g. `pasta-code`). 
+Note that the tools directory and the PASTA code directory should be under the same parent directory.
+Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`.
+You need to rename thse directories and remove the `-master` part.
+Finally, those with 32-bit Linux machines need to be aware that the master branch has 64bit binaries.
+32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
@@ -83,6 +87,7 @@ If you don't have root access, remove the `sudo` part and instead  use  `--user`
 
 VM Image (mostly for Windows users) is available for [download](http://www.cs.utexas.edu/~phylo/software/Phylolab.ova) (1.7 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the Phylolab.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
 
+Email `pasta-users@googlegroups.com` for installation issues. 
 
 ---------
 Using PASTA

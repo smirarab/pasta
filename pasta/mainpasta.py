@@ -272,10 +272,7 @@ def finish_pasta_execution(pasta_team,
                     backbone = sample(unaligned_seqs.keys(), min(100,len(unaligned_seqs)))   
                     backbone_seqs = unaligned_seqs.sub_alignment(backbone)
                     
-                    if GLOBAL_DEBUG:
-                        query_seq=list(set(unaligned_seqs.keys()) - set(backbone))
-                    else:
-                        query_seq=list(sorted(set(unaligned_seqs.keys()) - set(backbone)))
+                    query_seq=list(set(unaligned_seqs.keys()) - set(backbone))
                     qn = len(query_seq)
                     chunks = min(int(4*pasta_config.num_cpus),int(ceil(qn/50.0)))
                     _LOG.debug("Will align the remaining %d sequences in %d chunks" %(qn,chunks))

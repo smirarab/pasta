@@ -26,7 +26,7 @@ Installation
 You have three options for installing PASTA. 
 
  - **Windows:** If you have a Windows machine, currently using the Virtual Machine (VM) image we provide is your only option. 
- - **Linux:** If you have Linux (or other *nix systems), you can still use VM, but downloading the code from github and installing it is what we strongly recommend. 
+ - **Linux:** If you have Linux (or other \*nix systems), you can still use VM, but downloading the code from github and installing it is what we strongly recommend. 
  - **MAC:** We have three options for MAC: VM, installing from the code, and downloading .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code).
 
 
@@ -35,6 +35,25 @@ You have three options for installing PASTA.
 1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
+
+**Common Problems:**
+  * In some cases, your python installation might be in a location different from
+    where PASTA is hoping to find python. In these caes, you get the following error
+    message: "PASTA has encoutered a fatal error, and will now terminate.
+    A Python runtime not could be located. 
+    You may need to install a framework build of Python,
+    or edit the PyRuntimeLocations array in this application's info.plist file.". 
+    If you get this message, make sure you have python 2.7 installed. Then, run
+    `python -c 'import sys; print sys.prefix'`. This will tell you where your python
+    is located. Now click on the PASTA app and select `Show Package Content`. 
+    Navigate to `Contents` and open `Info.plist` with the text editor. 
+    Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
+    with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
+    Try running the App again and see if it works. 
+  * If the agove solution does not work, or if you get other errors, try first
+    installing PASTA from the source code (see below) and then run 
+    `./make-app.sh` from the pasta directory. It will create an app under
+    `dist` directory. 
 
 ### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 

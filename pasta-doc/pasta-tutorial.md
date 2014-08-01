@@ -38,11 +38,12 @@ You have three options for installing PASTA.
 
 **Common Problems:**
   * In some cases, your python installation might be in a location different from
-    where PASTA is hoping to find python. In these caes, you get the following error
-    message: "PASTA has encoutered a fatal error, and will now terminate.
-    A Python runtime not could be located. 
+  where PASTA is hoping to find it. In these caes, you get the following error
+    message: 
+```PASTA has encoutered a fatal error, and will now terminate.
+    A Python runtime could not be located. 
     You may need to install a framework build of Python,
-    or edit the PyRuntimeLocations array in this application's info.plist file.". 
+    or edit the PyRuntimeLocations array in this application's info.plist file.```. 
     If you get this message, make sure you have python 2.7 installed. Then, run
     `python -c 'import sys; print sys.prefix'`. This will tell you where your python
     is located. Now click on the PASTA app and select `Show Package Content`. 
@@ -52,8 +53,8 @@ You have three options for installing PASTA.
     Try running the App again and see if it works. 
   * If the agove solution does not work, or if you get other errors, try first
     installing PASTA from the source code (see below) and then run 
-    `./make-app.sh` from the pasta directory. It will create an app under
-    `dist` directory. 
+    `./make-app.sh` from the pasta directory. This will create an app under
+    `dist` directory, which you should be able to run and copy to any other location. 
 
 ### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 

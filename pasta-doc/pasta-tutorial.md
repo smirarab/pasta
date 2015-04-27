@@ -187,8 +187,11 @@ Similarly, many applications exist for viewing multiple sequence alignment. Some
 
 In this tutorial, we will use both a text editor and the Seaview. But feel free to use your own favorite tools. We will open ``pastajob.marker001.small.aln`` using a text editor and using SeaView and will look at them. 
 
+##### Note about support values:
+PASTA does not perfom bootstrapping. The tree outputted by PASTA, depending on the options used, might include support values on the branches. These are *not* bootstrap support values. Instead, they are SH-like local support values computed by FastTree, and are generally believed to be not as reliable as bootstrap support values. In our exerpeince they tend to over-estimate support. Thus, if you want to have support values that can be trusted, we suggest that you use the PASTA alignment and an external tool (e.g., RAxML) for bootstrapping. If your alignment is too big for bootstrapping using RAxML, you can always use FastTree for bootstapping. 
+
 ### Other PASTA output files:
-PASTA also generates a few other "output" files. `pastajob.out.txt` and `pastajob2.err.txt` will contain output and error messages respectively. `pastajob2.score.txt` gives the likelihood score produced by PASTA's internal ML tool on the (masked -- see below) alignment. 
+PASTA also generates a few other "output" files. `pastajob.out.txt` and `pastajob.err.txt` will contain output and error messages respectively. `pastajob.score.txt` gives the likelihood score produced by PASTA's internal ML tool on the (masked -- see below) alignment. 
 
 Besides these, many "temporary files" are also produced. The most important temporary file is called `pastajob_temp_pasta_config.txt`. This file contains all the PASTA configurations used in the current run. You should 1) inspect this file to make sure the configurations are what you intended, and 2) keep this file for future reference (so that you know what exact options where used). We will see in the next steps how configuration files can be used for running PASTA with a reproducible set of configurations.  
 

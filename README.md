@@ -2,7 +2,11 @@ This is an implementation of the PASTA (Practical Alignment using Sate and TrAns
 
 Mirarab, S., Nguyen, N., & Warnow, T. (2014). PASTA: Ultra-Large Multiple Sequence Alignment. In R. Sharan (Ed.), Research in Computational Molecular Biology (RECOMB) (pp. 177–191).
 
-All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`
+and also at [JCB](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156):
+
+Mirarab, S., Nguyen, N. Guo, S., Wang, L., Kim, J. and Warnow, T.. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. Journal of Computational Biology (2014)
+
+All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
 
 **Acknowledgment**: The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc.  
@@ -228,6 +232,9 @@ Note that by default PASTA picks these parameters for you, and thus you might no
 
 The remaining options available in PASTA are mostly legacies from SATe and are generally not useful for PASTA runs. 
 
+Output
+-------
+PASTA outputs an alignment and a tree, in addition to a host of other files. These various output files are described in more detail in our [tutorial](pasta-doc/pasta-tutorial.md#step-2-inspecting-the-output-of-pasta). Note that the support values on the PASTA output tree are local SH-like support values computed by FastTree, and not bootstrap support values. To get a more reliable measure of support, please use the bootstrapping procedure, applied to the final PASTA alignments (you can use RAxML for this purpose). 
 
 Debug
 -------

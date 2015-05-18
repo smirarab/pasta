@@ -153,7 +153,7 @@ The `-i` option is used to specify the input sequence file. The input file needs
 For a test run, use the `cd` command to go to the `data` directory under your PASTA installation directory. From there, run
 
 ```
-run_pasta.py -i small.data
+run_pasta.py -i small.fasta
 ```
 
 This will start PASTA and will finish quickly (30 seconds to 5 minutes based on your machine). Read PASTA output and make sure it finishes without producing any errors. If PASTA runs successfully, it produces a multiple sequence alignment and a tree, which we will explore in the next step.

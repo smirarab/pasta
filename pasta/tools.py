@@ -346,6 +346,38 @@ class MuscleAligner(Aligner):
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
 
 
+class ProbconsAligner(Aligner):
+    section_name = 'probcons aligner'
+    url = 'http://http://probcons.stanford.edu/'
+    is_bundled_tool = False
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'probcons', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_probcons'
+        if alignment.get_num_taxa() == 0:
+            return FakeJob(alignment, context_str=job_id)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
+
+        invoc = [self.exe, seqfn]
+        invoc.extend(self.user_opts)
+        
+        # The probcons job creation is slightly different from the other
+        #   aligners because we redirect and read standard output.
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                datatype=alignment.datatype,
+                invoc=invoc,
+                scratch_dir=scratch_dir,
+                job_id=job_id,
+                delete_temps=kwargs.get('delete_temps', self.delete_temps),
+                stdout=alignedfn)        
+
+
 class ProbalignAligner(Aligner):
     section_name = 'probalign'
     url = 'http://probalign.njit.edu'
@@ -938,7 +970,7 @@ class HMMERAlignAligner(Aligner):
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
 
 if GLOBAL_DEBUG:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner)
+    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner, ProbconsAligner)
     MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:

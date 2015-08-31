@@ -19,7 +19,7 @@ INSTALLATION
 **Dependencies**: 
 
 1. You need to have python 2.7 or later.
-2. You need to have java installed (required for Opal).
+2. You need to have java installed (required for Opal, which is by the default used in PASTA for merging small alignments).
 
 You have three options for installing PASTA. 
 

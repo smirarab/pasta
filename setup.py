@@ -39,7 +39,7 @@ param = {
     'package_dir': {'pasta': 'pasta'},
     'test_suite': "pasta.test",
     'include_package_data': True,
-    'install_requires': ['dendropy<=3.12'],
+    'install_requires': ['dendropy<=3.13'],
     'scripts' : [script_name,gui_script_name,'run_seqtools.py'],
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',

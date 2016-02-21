@@ -1,3 +1,6 @@
+- Version 1.6.4:
+	- ** Change:** Fix the copyright year to 2013-2016 
+
 - Version 1.6.3:
     - **Change:**    Initial alignment now uses multiple cpus when available
     

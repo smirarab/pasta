@@ -105,7 +105,7 @@ If you don't have root access, remove the `sudo` part and instead  use  `--user`
 
 ### 3. From Virtual Machine (VM)
 
-VM Image (mostly for Windows users) is available for [download](http://www.cs.utexas.edu/~phylo/software/Phylolab.ova) (1.7 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the Phylolab.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
+VM Image (mostly for Windows users) is available for [download](https://www.dropbox.com/s/vt0juhd77f8r1ax/WARNOW_LAB.ova?dl=0) (~2 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the .ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
 
 Email `pasta-users@googlegroups.com` for installation issues. 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from random import random
 import sys
-from dendropy.dataobject.taxon import Taxon
+from dendropy.datamodel.taxonmodel import Taxon
 from copy import deepcopy
 #############################################################################
 ##  this file is part of pasta.
@@ -22,7 +22,7 @@ _DANGEROUS_NAME_CHARS = re.compile(r"[^a-zA-Z0-9]")
 ILLEGAL_CHARS = re.compile(r"[^a-zA-Z?-]")
 
 
-DATASET_TAXA_ATTR = "taxon_sets"
+DATASET_TAXA_ATTR = "taxon_namespaces"
 DATASET_CHAR_ATTR = "char_matrices"
 
 def is_sequence_legal(seq):
@@ -432,7 +432,7 @@ class Alignment(dict, object):
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
         for name, seq in self.iteritems():
-            new_seq = re.sub(_INDEL, '', seq)
+            new_seq = re.sub(_INDEL, '', str(seq))
             if new_seq != '':
                 new_alignment[name] = new_seq
         return new_alignment
@@ -530,10 +530,10 @@ class Alignment(dict, object):
     def merge_in(self, she):
         merge_in(self,she)
 
-from dendropy.dataio.fasta import FastaReader
-from dendropy import dataobject
+from dendropy.dataio.fastareader import FastaReader
+from dendropy import datamodel
 from dendropy.utility.error import DataParseError
-from dendropy.dataio import fasta
+#from dendropy.dataio import fasta
 
 class FastaCustomReader(FastaReader):
     
@@ -629,7 +629,7 @@ class ProteinCustomFastaReader(FastaCustomReader):
         FastaCustomReader.__init__(self, char_matrix_type=dataobject.ProteinCharacterMatrix, **kwargs)        
 
 import dendropy
-from dendropy.dataio import ioclient        
+from dendropy.dataio import ioservice        
 class SequenceDataset(object):
     """Class for creating a dendropy reader, validating the input, and
     keeping mapping of real taxa names to "safe" versions that will not
@@ -688,10 +688,6 @@ class SequenceDataset(object):
         self.safe_to_real_names = {}
         self.datatype = None
         self.filename = '<unknown>'
-        ioclient.register("fasta", FastaCustomReader, fasta.FastaWriter, None)
-        ioclient.register("dnafasta", DNACustomFastaReader, fasta.FastaWriter, None)
-        ioclient.register("rnafasta", RNACustomFastaReader, fasta.FastaWriter, None)
-        ioclient.register("proteinfasta", ProteinCustomFastaReader, fasta.FastaWriter, None)
 
     def get_character_matrix(self):
         """Returns the first character matrix or raises IndexError if no
@@ -723,10 +719,10 @@ class SequenceDataset(object):
         try:            
             self.dataset = dendropy.DataSet()
             if careful_parse:
-                self.dataset.read(file_obj, schema=file_format)
+                self.dataset.read(file=file_obj, schema=file_format)
             else:
-
-                self.dataset.read(file_obj, schema=file_format, row_type='str')
+                #self.dataset.read(file_obj, schema=file_format, row_type='str')
+                self.dataset.read(file=file_obj, schema=file_format)
                 # do some cursory checks of the datatype
                 _LOG.debug("File read. checking input ... ")
                 import re
@@ -736,17 +732,17 @@ class SequenceDataset(object):
                     pattern = re.compile(r"([^-ACUGN?RYMKSWHBVD])", re.I)
                 elif dup == "PROTEIN":
                     pattern = re.compile(r"([^-ABCDEFGHIKLMNPQRSTVWY?XZ])", re.I)
-                taxa_block = self.dataset.taxon_sets[0]
+                taxa_block = self.dataset.taxon_namespaces[0]
                 char_block = self.dataset.char_matrices[0]
                 for taxon in taxa_block:
-                    char_vec = char_block[taxon]
+                    char_vec = str(char_block[taxon])
                     m = pattern.search(char_vec)
                     if m:
                         sym = m.groups(1)
                         raise ValueError("Unexpected symbol %s in file of datatype %s" % (sym, datatype))
 
-            n1 = len(self.dataset.taxon_sets[0].labels())
-            n2 = len(set(self.dataset.taxon_sets[0].labels()))
+            n1 = len(self.dataset.taxon_namespaces[0].labels())
+            n2 = len(set(self.dataset.taxon_namespaces[0].labels()))
             if n1 != n2:
                 raise ValueError("There are redundant sequence names in your data set!")
         except:
@@ -757,7 +753,7 @@ class SequenceDataset(object):
             self.datatype = dup
         except:
             raise ValueError("No data was read from the file.")
-        tb.lock()
+        #tb.lock()
 
     def sequences_are_valid(self, remap_missing=False, map_missing_to=None):
         """Check for ? in sequences"""
@@ -770,11 +766,11 @@ class SequenceDataset(object):
         try:
             sa_list = char_block.state_alphabets
             self.alphabet = sa_list[0]
-            missing = self.alphabet.missing
+            #missing = self.alphabet.missing
         except:
             raise ValueError("Expecting a simple datatype with one state alphabet")
-        if missing is None:
-            raise ValueError("Expecting a DNA, RNA, or amino acid sequences")
+        #if missing is None:
+        #    raise ValueError("Expecting a DNA, RNA, or amino acid sequences")
 
         for taxon in taxa_block:
             char_vec = char_block[taxon]
@@ -891,8 +887,8 @@ class MultiLocusDataset(list):
 
     def create_dendropy_dataset(self):
         _LOG.debug("creating dendropy dataset")
-        from dendropy import DataSet, TaxonSet
-        taxon_set = TaxonSet()
+        from dendropy import DataSet, TaxonNamespace
+        taxon_set = TaxonNamespace()
         self.taxa_label_to_taxon = {}
         for n, element in enumerate(self):
             if not isinstance(element, SequenceDataset):
@@ -904,8 +900,8 @@ class MultiLocusDataset(list):
                     self.taxa_label_to_taxon[taxon.label] = nt
                     taxon_set.append(nt)
         self.dataset = DataSet()
-        self.dataset.attach_taxon_set(taxon_set)
-        taxon_set.lock()
+        self.dataset.attach_taxon_namespace(taxon_set)
+        #taxon_set.lock()
         _LOG.debug("dendropy dataset created and locked")
 
     def relabel_for_pasta(self):
@@ -1074,7 +1070,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
                         nchar = max(ncr, nchar)
                 t_c_pair = (ntax, nchar)
                 taxa_char_tuple_list.append(t_c_pair)
-            num_tax_total = len(md.dataset.taxon_sets[0])
+            num_tax_total = len(md.dataset.taxon_namespaces[0])
             return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned, md)
         except Exception, e:
             caught_exception = e
@@ -1161,9 +1157,12 @@ class CompactAlignment(dict,object):
                 yield i
 
     def iter_columns_with_maximum_char_count(self, x, seqsubset = None):
+        print "non-gap chars: "
         for i,c in enumerate(self.iter_column_character_count(seqsubset)):
+            print c,
             if c <= x:
                 yield i
+            
                 
     def get_insertion_columns(self,shared):
         return set(i for i in self.iter_columns_with_maximum_char_count(0,shared)) 

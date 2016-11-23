@@ -23,14 +23,190 @@ from cStringIO import StringIO
 from pasta.tree import PhylogeneticTree
 from pasta.errors import TaxaLabelsMismatchError
 from pasta import get_logger
-from dendropy.dataio.newick import tree_source_iter
+from dendropy import Tree, TreeList
 _LOG = get_logger(__name__)
 
 # Provide a random number generator
 import random
-POLYTOMY_RNG = random.Random()
 
-from dendropy.treesplit import delete_outdegree_one
+# StrToTaxon class from Dendropy 3
+from dendropy.utility.error import DataParseError
+class StrToTaxon(object):
+
+    class MultipleTaxonUseError(DataParseError):
+        def __init__(self, *args, **kwargs):
+            DataParseError.__init__(self, *args, **kwargs)
+
+    def __init__(self,
+            taxon_namespace,
+            translate_dict=None,
+            allow_repeated_use=False,
+            case_sensitive=True):
+        """
+        __init__ creates a StrToTaxon object with the requested policy of taxon
+        repitition.
+        If `allow_repeated_use` is True, then get_taxon and require_taxon
+        can be called multiple times to get the same taxon.  If it is false then
+        calling the functions with the same label will generate a DataParseError
+        indicating that the taxon has been used multiple times."""
+        self.taxon_namespace = taxon_namespace
+        self.case_sensitive = case_sensitive
+        if translate_dict is not None:
+            self.translate = translate_dict
+        else:
+            if self.case_sensitive:
+                self.translate = containers.OrderedCaselessDict()
+            else:
+                self.translate = {}
+        if self.case_sensitive:
+            self.label_taxon = {}
+        else:
+            self.label_taxon = containers.OrderedCaselessDict()
+        for t in self.taxon_namespace:
+            self.label_taxon[t.label] = t
+        if allow_repeated_use:
+            self.returned_taxon_namespace = None
+        else:
+            self.returned_taxon_namespace = set()
+
+    def _returning(self, t, label):
+        #_LOG.debug("Checking if we can return %s" % str(t))
+        if (self.returned_taxon_namespace is not None) and (t is not None):
+            if t in self.returned_taxon_namespace:
+                raise StrToTaxon.MultipleTaxonUseError(message="Taxon %s used twice (it appears as %s the second time)" % (str(t), label))
+            self.returned_taxon_namespace.add(t)
+        return t
+
+    def get_taxon(self, label):
+        t = self.translate.get(label)
+        if t is None:
+            t = self.label_taxon.get(label)
+        if t is None:
+            for taxon in self.taxon_namespace:
+                if taxon.label == label:
+                    t = taxon
+                    break
+        if t is not None:
+            self.label_taxon[label] = t
+            return self._returning(t, label)
+        else:
+            return None
+
+    def require_taxon(self, label):
+        t = self.get_taxon(label)
+        if t is not None:
+            return t
+        t = Taxon(label=label)
+        self.taxon_namespace.add(t)
+        self.label_taxon[label] = t
+        return self._returning(t, label)
+
+    def index(self, t):
+        return self.taxon_namespace.index(t)
+
+# RootingInterpreter class from Dendropy 3
+class RootingInterpreter(object):
+
+    def evaluate_as_rooted_kwargs(kwdict, default):
+        if "as_rooted" in kwdict and "as_unrooted" in kwdict \
+                and (kwdict["as_rooted"] != (not kwdict["as_unrooted"])):
+            raise TypeError("Conflict rooting specification: 'as_rooted'=%s and 'as_unrooted'=%s" \
+                    % (kwdict["as_rooted"], kwdict["as_unrooted"]))
+        if "as_rooted" in kwdict:
+            if kwdict["as_rooted"] is None:
+                return default
+            if kwdict["as_rooted"] is True or kwdict["as_rooted"] is False:
+                return kwdict["as_rooted"]
+            else:
+                raise ValueError("Invalid value for 'as_rooted' (expecting True/False, but received '%s')" \
+                        % kwdict["as_rooted"])
+        elif "as_unrooted" in kwdict:
+            if kwdict["as_unrooted"] is None:
+                return default
+            if kwdict["as_unrooted"] is True or kwdict["as_unrooted"] is False:
+                return not kwdict["as_unrooted"]
+            else:
+                raise ValueError("Invalid value for 'as_unrooted' (expecting True/False, but received '%s')" \
+                        % kwdict["as_rooted"])
+        else:
+            return default
+
+    evaluate_as_rooted_kwargs = staticmethod(evaluate_as_rooted_kwargs)
+
+    def evaluate_default_as_rooted_kwargs(kwdict, default=None):
+        if "default_as_rooted" in kwdict and "default_as_unrooted" in kwdict \
+                and (kwdict["default_as_rooted"] != (not kwdict["default_as_unrooted"])):
+            raise TypeError("Conflict rooting specification: 'default_as_rooted'=%s and 'default_as_unrooted'=%s" \
+                    % (kwdict["default_as_rooted"], kwdict["default_as_unrooted"]))
+        if "default_as_rooted" in kwdict:
+            if kwdict["default_as_rooted"] is True or kwdict["default_as_rooted"] is False:
+                return kwdict["default_as_rooted"]
+            else:
+                raise ValueError("Invalid value for 'default_as_rooted' (expecting True/False, but received '%s')" \
+                        % kwdict["default_as_rooted"])
+        elif "default_as_unrooted" in kwdict:
+            if kwdict["default_as_unrooted"] is True or kwdict["default_as_unrooted"] is False:
+                return not kwdict["default_as_unrooted"]
+            else:
+                raise ValueError("Invalid value for 'default_as_unrooted' (expecting True/False, but received '%s')" \
+                        % kwdict["default_as_rooted"])
+        else:
+            return default
+
+    evaluate_default_as_rooted_kwargs = staticmethod(evaluate_default_as_rooted_kwargs)
+
+    def __init__(self, **kwargs):
+        self._as_rooted = RootingInterpreter.evaluate_as_rooted_kwargs(kwargs, None)
+        self._default_as_rooted = RootingInterpreter.evaluate_default_as_rooted_kwargs(kwargs, False)
+
+    def update(self, **kwargs):
+        self._as_rooted = RootingInterpreter.evaluate_as_rooted_kwargs(kwargs, self._as_rooted)
+        self._default_as_rooted = RootingInterpreter.evaluate_default_as_rooted_kwargs(kwargs, self._default_as_rooted)
+
+    def _get_as_rooted(self):
+        return self._as_rooted
+
+    def _set_as_rooted(self, val):
+        self._as_rooted = val
+
+    as_rooted = property(_get_as_rooted, _set_as_rooted)
+
+    def _get_as_unrooted(self):
+        return not self._as_rooted
+
+    def _set_as_unrooted(self, val):
+        self._as_rooted = not val
+
+    as_unrooted = property(_get_as_unrooted, _set_as_unrooted)
+
+    def _get_default_as_rooted(self):
+        return self._default_as_rooted
+
+    def _set_default_as_rooted(self, val):
+        self._default_as_rooted = val
+
+    default_as_rooted = property(_get_default_as_rooted, _set_default_as_rooted)
+
+    def _get_default_as_unrooted(self):
+        return not self._default_as_rooted
+
+    def _set_default_as_unrooted(self, val):
+        self._default_as_rooted = not val
+
+    default_as_unrooted = property(_get_default_as_unrooted, _set_default_as_unrooted)
+
+    def interpret_as_rooted(self, tree_rooting_comment=None, **kwargs):
+        if self.as_rooted is not None:
+            return self.as_rooted
+        elif tree_rooting_comment is not None:
+            return tree_rooting_comment.upper() == "&R"
+        else:
+            return self.default_as_rooted
+
+    def interpret_as_unrooted(self, **kwargs):
+        return not self.interpret_as_rooted(**kwargs)
+
+POLYTOMY_RNG = random.Random()
 
 def resolve_polytomies(tree, update_splits=False, rng=None):
     """
@@ -90,28 +266,26 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
         tree.update_splits()
     _LOG.debug("polytomies resolved.")
     
-def check_taxon_labels(taxon_set, dataset):
-    ts = set([i for tset in dataset.taxon_sets for i in tset.labels()])
-    ds = set(taxon_set.labels())
+def check_taxon_labels(taxon_namespace, dataset):
+    ts = set([i for tset in dataset.taxon_namespaces for i in tset.labels()])
+    ds = set(taxon_namespace.labels())
     extra = ds - ts
     missing = ts - ds
     return extra, missing
 
-from dendropy.dataio.nexustokenizer import RootingInterpreter, StrToTaxon
-from dendropy import dataobject
-from dendropy.utility import containers
+from dendropy.utility import container
 
 def stt_require_taxon(stt,label):
         t = stt.get_taxon(label)
         if t is not None:
             return t
         print "Adding taxon", label
-        t = dataobject.Taxon(label=label)
-        stt.taxon_set.append(t)
+        t = Taxon(label=label)
+        stt.taxon_namespace.append(t)
         stt.label_taxon[label] = t
         return stt._returning(t, label)
 
-def read_newick_with_translate(stream,translate_dict):
+def read_newick_with_translate(stream,taxon_namespace):
     """
     Instantiates and returns a `DataSet` object based on the
     NEWICK-formatted contents read from the file-like object source
@@ -136,7 +310,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     rooting_interpreter = kwargs.get("rooting_interpreter", RootingInterpreter(**kwargs))
     finish_node_func = kwargs.get("finish_node_func", None)
     edge_len_type = kwargs.get("edge_len_type", float)
-    taxon_set = kwargs.get("taxon_set", None)
+    taxon_namespace = kwargs.get("taxon_namespace", None)
     suppress_internal_node_taxa = kwargs.get("suppress_internal_node_taxa", False)
     store_tree_weights = kwargs.get("store_tree_weights", False)
     extract_comment_metadata = kwargs.get('extract_comment_metadata', False)
@@ -144,9 +318,9 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     allow_repeated_use = kwargs.get('allow_repeated_use', False)
     stream_tokenizer_extract_comment_metadata_setting = stream_tokenizer.extract_comment_metadata
     stream_tokenizer.extract_comment_metadata = extract_comment_metadata
-    if taxon_set is None:
-        taxon_set = dataobject.TaxonSet()
-    tree = dataobject.Tree(taxon_set=taxon_set)
+    if taxon_namespace is None:
+        taxon_namespace = TaxonSet()
+    tree = Tree(taxon_namespace=taxon_namespace)
 
     stream_tokenizer.tree_rooting_comment = None # clear previous comment
     stream_tokenizer.clear_comment_metadata()
@@ -170,27 +344,27 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
         stream_tokenizer.tree_weight_comment = None
 
     if encode_splits:
-        if len(taxon_set) == 0:
+        if len(taxon_namespace) == 0:
             raise Exception("When encoding splits on a tree as it is being parsed, a "
-                + "fully pre-populated TaxonSet object must be specified using the 'taxon_set' keyword " \
+                + "fully pre-populated TaxonSet object must be specified using the 'taxon_namespace' keyword " \
                 + "to avoid taxon/split bitmask values changing as new Taxon objects are created " \
                 + "and added to the TaxonSet.")
         if tree.is_rooted:
             tree.split_edges = {}
         else:
-            atb = taxon_set.all_taxa_bitmask()
+            atb = taxon_namespace.all_taxa_bitmask()
             d = containers.NormalizedBitmaskDict(mask=atb)
             tree.split_edges = d
         split_map = tree.split_edges
 
     stt = kwargs.get('str_to_taxon')
     if stt is None:
-        stt = StrToTaxon(taxon_set,
+        stt = StrToTaxon(taxon_namespace,
                 translate_dict,
                 allow_repeated_use=allow_repeated_use,
                 case_sensitive=case_sensitive_taxon_labels)
 
-    tree.seed_node = dataobject.Node()
+    tree.seed_node = Node()
     curr_node = tree.seed_node
     if encode_splits:
         curr_node.edge.split_bitmask = 0L
@@ -228,7 +402,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
             if not curr_node.parent_node:
                 if curr_node.child_nodes():
                     raise stream_tokenizer.data_format_error("Unexpected '(' after the tree description.  Expecting a label for the root or a ;")
-            tmp_node = dataobject.Node()
+            tmp_node = Node()
             if encode_splits:
                 tmp_node.edge.split_bitmask = 0L
             curr_node.add_child(tmp_node)
@@ -237,10 +411,10 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
             store_node_comments(curr_node)
             store_comment_metadata(curr_node)
         elif token == ',':
-            tmp_node = dataobject.Node()
+            tmp_node = Node()
             if curr_node.is_leaf() and not curr_node.taxon:
-#                 curr_node.taxon = taxon_set.Taxon(oid="UNAMED_" + str(id(curr_node)), label='')
-#                 taxon_set.add(curr_node.taxon)
+#                 curr_node.taxon = taxon_namespace.Taxon(oid="UNAMED_" + str(id(curr_node)), label='')
+#                 taxon_namespace.add(curr_node.taxon)
                 raise stream_tokenizer.data_format_error("Missing taxon specifier in a tree -- found either a '(,' or ',,' construct.")
             p = curr_node.parent_node
             if not p:
@@ -324,13 +498,11 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     stream_tokenizer.extract_comment_metadata = stream_tokenizer_extract_comment_metadata_setting
     return tree
 
-dendropy.dataio.nexustokenizer.tree_from_token_stream = tree_from_token_stream
- 
 def read_trees_into_dataset(dataset, tree_stream, starting_tree=False, preserve_underscores=True):
     if starting_tree:        
         try:
             dataset.read_from_stream(tree_stream,
-                schema='NEWICK', taxon_set=dataset.taxon_sets[0],preserve_underscores=preserve_underscores)
+                schema='NEWICK', taxon_namespace=dataset.taxon_namespaces[0],preserve_underscores=preserve_underscores)
         except KeyError as e:
             m = str(e)
             m = m[1:m.find("TaxonSet")] + "sequences but present in tree"            
@@ -339,15 +511,15 @@ def read_trees_into_dataset(dataset, tree_stream, starting_tree=False, preserve_
                  'and sequences...\n'
                  '%s\n' %m)
         st = dataset.tree_lists[-1][0]        
-        if len(st.leaf_nodes()) != len(dataset.taxon_sets[0]):
-            missing = [t.label for t in set(dataset.taxon_sets[0]) - set((n.taxon for n in st.leaf_nodes()))]
+        if len(st.leaf_nodes()) != len(dataset.taxon_namespaces[0]):
+            missing = [t.label for t in set(dataset.taxon_namespaces[0]) - set((n.taxon for n in st.leaf_nodes()))]
             raise TaxaLabelsMismatchError(                
                  'There are taxon label mismatches between the starting tree '
                  'and sequences...\n'
                  'In sequences, not tree: {0}\n'.format(','.join(missing)) )
         _LOG.debug("reading tree finished")
-    elif dataset.taxon_sets:
-        dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_set=dataset.taxon_sets[0])
+    elif dataset.taxon_namespaces:
+        dataset.read_from_stream(tree_stream, schema='NEWICK', taxon_namespace=dataset.taxon_namespaces[0])
     else:
         dataset.read_from_stream(tree_stream, schema='NEWICK')
     return  dataset.tree_lists[-1]
@@ -361,7 +533,9 @@ def read_and_encode_splits(dataset, tree_stream, starting_tree=False):
     tree_list = read_trees_into_dataset(dataset, tree_stream,
             starting_tree=starting_tree)
     assert len(tree_list) == 1
-    delete_outdegree_one(tree_list[0])
+    from dendropy.legacy.treesplit import delete_outdegree_one
+    #delete_outdegree_one(tree_list[0])
+    tree_list[0].suppress_unifurcations()
     return tree_list
 
 def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=False):

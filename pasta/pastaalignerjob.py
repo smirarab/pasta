@@ -24,7 +24,7 @@ import copy
 from threading import Lock
 from pasta import get_logger
 from pasta.tree import PhylogeneticTree
-from dendropy.dataobject.tree import Tree
+from dendropy.datamodel.treemodel import Tree
 from pasta.alignment import  CompactAlignment
 _LOG = get_logger(__name__)
 

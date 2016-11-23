@@ -187,16 +187,15 @@ def edge_formatter(e):
     return "%s %f " % (str(id(e)), e.length)
 
 def is_valid_tree(t):
-    assert t and t
+    assert t
     rc = t.seed_node.child_nodes()
     num_children = len(rc)
     if num_children == 0:
         return True
-    if num_children == 1:
-        return True # to bypass the following line -Niema
-        assert not rc[0].child_nodes() # this was failing for me, not sure what it's checking -Niema
+    elif num_children == 1:
+        assert len(rc[0].child_nodes()) != 0
         return True
-    if num_children == 2:
-        return True # to bypass the following line -Niema
-        assert((not rc[0].child_nodes()) and (not rc[0].child_nodes())) # this was failing for me, not sure what it's checking -Niema
-    return True
+    elif num_children == 2:
+        assert len(rc[0].child_nodes()) > 0 and len(rc[1].child_nodes()) > 0
+        return True
+    assert False

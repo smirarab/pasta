@@ -26,7 +26,8 @@ import sys
 import copy
 from threading import Lock
 from pasta import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
-from dendropy.dataobject.taxon import Taxon
+from dendropy.datamodel.taxonmodel import Taxon
+from dendropy import Tree
 from pasta.tree import PhylogeneticTree
 from StringIO import StringIO
 _LOG = get_logger(__name__)
@@ -316,14 +317,16 @@ class PastaJob (TreeHolder):
     def build_subsets_tree(self, curr_tmp_dir_par):
         translate={}
         t2 = {}
-        for node in self.tree._tree.leaf_iter():
+        for node in self.tree._tree.leaf_node_iter():
             nalsj = self.pasta_team.subsets[node.taxon.label]            
             newname = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]
             translate[node.taxon.label] = newname
             t2[newname] = set([nalsj])            
-        subsets_tree = PhylogeneticTree(read_newick_with_translate(StringIO(self.tree_str),translate_dict=translate))
-        for node in subsets_tree._tree.leaf_iter():            
-            node.alignment_subset_job = t2[node.taxon]
+        subsets_tree = PhylogeneticTree(Tree.get(data=self.tree_str,schema='newick'))
+        #subsets_tree = PhylogeneticTree(read_newick_with_translate(StringIO(self.tree_str),translate_dict=translate))
+        for node in subsets_tree._tree.leaf_node_iter():
+            node.alignment_subset_job = t2[translate[node.taxon.label]]
+            #node.alignment_subset_job = t2[node.taxon]
         del t2
         del translate
         _LOG.debug("nodes labeled")        

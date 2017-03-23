@@ -171,6 +171,9 @@ class PhylogeneticTree(object):
         leaves = self._tree.leaf_nodes()
         return [i.taxon.label for i in leaves]
 
+    def __str__(self):
+        return self.compose_newick()
+
     def compose_newick(self):
         return self._tree.as_string(schema="newick")
         #return self._tree.compose_newick()

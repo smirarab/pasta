@@ -256,7 +256,7 @@ def finish_pasta_execution(pasta_team,
         
         if (not options.two_phase) and tree_file:
             # getting the newick string here will allow us to get a string that is in terms of the correct taxon labels
-            starting_tree_str = starting_tree.compose_newick()
+            starting_tree_str = str(starting_tree)
         else:
             if not options.two_phase:
                 MESSENGER.send_info("Creating a starting tree for the PASTA algorithm...")
@@ -436,7 +436,7 @@ def finish_pasta_execution(pasta_team,
 
 
         MESSENGER.send_info("Writing resulting tree to %s" % pasta_products.tree_stream.name)
-        tree_str = job.tree.compose_newick()
+        tree_str = str(job.tree)
         pasta_products.tree_stream.write("%s;\n" % tree_str)
 
 
@@ -447,7 +447,7 @@ def finish_pasta_execution(pasta_team,
         #    else:
         #        outtree_fn = aln_filename + ".tre"
         #MESSENGER.send_info("Writing resulting tree to %s" % outtree_fn)
-        #tree_str = job.tree.compose_newick()
+        #tree_str = str(job.tree)
         #pasta_products.tree_stream.write("%s;\n" % tree_str)
 
 

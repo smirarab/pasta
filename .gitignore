@@ -7,3 +7,4 @@ sate/test/runSateTest*
 sate/test/data/*
 *.swp
 PASTA.egg-info/
+*.back

@@ -734,7 +734,7 @@ class FakeTreeEstimator(TreeEstimator):
         if isinstance(starting_tree, str):
             tree_str = starting_tree
         else:
-            tree_str = starting_tree.compose_newick()
+            tree_str = str(starting_tree)
         score = hash(tree_str)/10000.0
         blob = (score, tree_str)
         return FakeJob(blob, context_str=job_id)
@@ -805,7 +805,7 @@ class FastTree(TreeEstimator):
             if isinstance(starting_tree, str):
                 tree_str = starting_tree
             else:
-                tree_str = starting_tree.compose_newick()
+                tree_str = str(starting_tree)
             tree_fn = os.path.join(os.path.abspath(scratch_dir), "start.tre")
             tree_file_obj = open(tree_fn, "w")
             tree_file_obj.write("%s;\n" % tree_str)
@@ -910,7 +910,7 @@ class Raxml(TreeEstimator):
             if isinstance(starting_tree, str):
                 tree_str = starting_tree
             else:
-                tree_str = starting_tree.compose_newick()
+                tree_str = str(starting_tree)
             tree_fn = os.path.join(os.path.abspath(scratch_dir), "start.tre")
             tree_file_obj = open(tree_fn, "w")
             tree_file_obj.write("%s;\n" % tree_str)

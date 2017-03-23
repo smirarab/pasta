@@ -39,13 +39,12 @@ You have three options for installing PASTA.
 **Common Problems:**
   * In some cases, your python installation might be in a location different from
   where PASTA is hoping to find it. In these caes, you get the following error
-    message: 
-```
+  message: 
+    
     PASTA has encoutered a fatal error, and will now terminate.
     A Python runtime could not be located. 
     You may need to install a framework build of Python,
-    or edit the PyRuntimeLocations array in this application's info.plist file.
-    ```. 
+    or edit the PyRuntimeLocations array in this application's info.plist file. 
     
     
     If you get this message, make sure you have python 2.7 installed. Then, run

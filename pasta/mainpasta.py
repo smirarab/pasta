@@ -229,7 +229,7 @@ def finish_pasta_execution(pasta_team,
             name_filename = pasta_products.get_abs_path_for_tag('name_translation.txt')
             name_output = open(name_filename, 'w')
             safe2real = multilocus_dataset.safe_to_real_names
-            safe_list = safe2real.keys()
+            safe_list = list(safe2real.keys())
             safe_list.sort()
             for safe in safe_list:
                 orig = safe2real[safe][0]
@@ -269,14 +269,14 @@ def finish_pasta_execution(pasta_team,
                 query_fns = []
                 for unaligned_seqs in multilocus_dataset:
                     #backbone = sorted(unaligned_seqs.keys())[0:100]
-                    backbone = sample(unaligned_seqs.keys(), min(100,len(unaligned_seqs)))   
+                    backbone = sample(list(unaligned_seqs.keys()), min(100,len(unaligned_seqs)))   
                     backbone_seqs = unaligned_seqs.sub_alignment(backbone)
                     
                     query_seq=list(set(unaligned_seqs.keys()) - set(backbone))
                     qn = len(query_seq)
                     chunks = min(int(4*pasta_config.num_cpus),int(ceil(qn/50.0)))
                     _LOG.debug("Will align the remaining %d sequences in %d chunks" %(qn,chunks))
-                    for ch in xrange(0,chunks):
+                    for ch in range(0,chunks):
                         query_fn = os.path.join(init_aln_dir, "query-%d.fasta"%ch)
                         qa = unaligned_seqs.sub_alignment(query_seq[ch:qn:chunks])
                         _LOG.debug("Chunk with %d sequences built" %len(qa))

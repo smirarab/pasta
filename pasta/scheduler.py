@@ -21,8 +21,11 @@
 # Jiaye Yu and Mark Holder, University of Kansas
 
 import os, traceback
-from cStringIO import StringIO
-from Queue import Queue
+from io import StringIO
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 from threading import Thread, Event, Lock
 from multiprocessing import Process, Manager, Value
 from subprocess import Popen, PIPE
@@ -95,7 +98,7 @@ class LightJobForProcess():
             _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
         k['stderr'] = _stderr_fo
 
-        for key,v in self.environ.items():
+        for key,v in list(self.environ.items()):
             os.environ[key] = v
 
         process = Popen(self._invocation, stdin = PIPE, **k)
@@ -163,7 +166,7 @@ class worker():
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
-                    plj = LightJobForProcess(pa[0],pa[1],os.environ)
+                    plj = LightJobForProcess(pa[0],pa[1],dict(os.environ))
                     self.pqueue.put(plj)
                     
                     self.pqueue.join()   

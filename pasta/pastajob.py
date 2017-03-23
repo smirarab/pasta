@@ -29,7 +29,7 @@ from pasta import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
 from dendropy.datamodel.taxonmodel import Taxon
 from dendropy import Tree
 from pasta.tree import PhylogeneticTree
-from StringIO import StringIO
+from io import StringIO
 _LOG = get_logger(__name__)
 
 from pasta.treeholder import TreeHolder, resolve_polytomies,\
@@ -73,7 +73,7 @@ class PastaTeam (object):
     temp_fs = property(get_temp_fs)
 
 class AcceptMode:
-    BLIND_MODE, NONBLIND_MODE = range(2)
+    BLIND_MODE, NONBLIND_MODE = list(range(2))
 
 class PastaJob (TreeHolder):
     """The top-level PASTA algorithm class.  The run_pasta method iteratively
@@ -104,9 +104,9 @@ class PastaJob (TreeHolder):
                         }
     def configuration(self):
         d = {}
-        for k in PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys():
+        for k in list(PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys()):
             d[k] = getattr(self, k)
-        for k in PastaJob.BEHAVIOUR_DEFAULTS.keys():
+        for k in list(PastaJob.BEHAVIOUR_DEFAULTS.keys()):
             d[k] = getattr(self, k)
         return d
 
@@ -467,11 +467,11 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 if self.pastamerge:
                     _LOG.debug("Build PASTA merge jobs")
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
-                    if len(self.pasta_team.subsets.values()) == 1:
+                    if len(list(self.pasta_team.subsets.values())) == 1:
                         # can happen if there are no decompositions
                         for job in self.pasta_team.alignmentjobs:
                             jobq.put(job)
-                        new_multilocus_dataset = self.pasta_team.subsets.values()[0].get_results()
+                        new_multilocus_dataset = list(self.pasta_team.subsets.values())[0].get_results()
                     else:
                         pariwise_tmp_dir_par = os.path.join(curr_tmp_dir_par, "pw")
                         pariwise_tmp_dir_par = self.pasta_team.temp_fs.create_subdir(pariwise_tmp_dir_par)    

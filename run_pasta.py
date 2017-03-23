@@ -51,7 +51,7 @@ followed by a return at the prompt. If the argument to the open command is a
 directory, then it should open a Finder window in the directory (even if that
 directory is hidden by default).
 ''' % temp_dir)
-    except Exception, x:
+    except Exception as x:
         if _DEVELOPER:
             raise
         message = "PASTA is exiting because of an error:\n%s " % str(x)

@@ -140,8 +140,8 @@ def set_timing_log_filepath(fp):
 
 def log_exception(logger):
     '''Logs the exception trace to the logObj as an error'''
-    import traceback, cStringIO
-    s = cStringIO.StringIO()
+    import traceback, io
+    s = io.StringIO()
     traceback.print_exc(None, s)
     logger.debug(s.getvalue())
 

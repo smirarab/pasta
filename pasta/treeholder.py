@@ -19,7 +19,10 @@
 
 import dendropy
 
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO
+except:
+    from io import StringIO
 from pasta.tree import PhylogeneticTree
 from pasta.errors import TaxaLabelsMismatchError
 from pasta import get_logger
@@ -235,8 +238,8 @@ def resolve_polytomies(tree, update_splits=False, rng=None):
         children = node.child_nodes()
         nc = len(children)
         if nc > 2:
-            #if nc == 3 and node.parent_node is None:
-            #    continue
+            if nc == 3 and node.parent_node is None:
+                continue
             to_attach = children[2:]
             for child in to_attach:
                 node.remove_child(child)
@@ -279,7 +282,7 @@ def stt_require_taxon(stt,label):
         t = stt.get_taxon(label)
         if t is not None:
             return t
-        print "Adding taxon", label
+        print("Adding taxon", label)
         t = Taxon(label=label)
         stt.taxon_namespace.append(t)
         stt.label_taxon[label] = t
@@ -367,7 +370,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
     tree.seed_node = Node()
     curr_node = tree.seed_node
     if encode_splits:
-        curr_node.edge.split_bitmask = 0L
+        curr_node.edge.split_bitmask = 0
 
     ### NHX format support ###
     def store_node_comments(active_node):
@@ -404,7 +407,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
                     raise stream_tokenizer.data_format_error("Unexpected '(' after the tree description.  Expecting a label for the root or a ;")
             tmp_node = Node()
             if encode_splits:
-                tmp_node.edge.split_bitmask = 0L
+                tmp_node.edge.split_bitmask = 0
             curr_node.add_child(tmp_node)
             curr_node = tmp_node
             token = stream_tokenizer.read_next_token()
@@ -420,7 +423,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
             if not p:
                 raise stream_tokenizer.data_format_error("Comma found one the 'outside' of a newick tree description")
             if encode_splits:
-                tmp_node.edge.split_bitmask = 0L
+                tmp_node.edge.split_bitmask = 0
                 e = curr_node.edge
                 u = e.split_bitmask
                 split_map[u] = e
@@ -454,7 +457,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
                         raise stream_tokenizer.data_format_error("Multiple labels found for the same leaf (taxon '%s' and label '%s')" % (str(curr_node.taxon), token))
                     try:
                         t = stt_require_taxon(stt,label=token)
-                    except StrToTaxon.MultipleTaxonUseError, e:
+                    except StrToTaxon.MultipleTaxonUseError as e:
                         raise stream_tokenizer.data_format_error(e.msg)
                 else:
                     if curr_node.label:
@@ -464,7 +467,7 @@ def tree_from_token_stream(stream_tokenizer, **kwargs):
                     else:
                         try:
                             t = stt.get_taxon(label=token)
-                        except StrToTaxon.MultipleTaxonUseError, e:
+                        except StrToTaxon.MultipleTaxonUseError as e:
                             raise stream_tokenizer.data_format_error(e.msg)
                 if t is None:
                     curr_node.label = token
@@ -534,18 +537,20 @@ def read_and_encode_splits(dataset, tree_stream, starting_tree=False):
             starting_tree=starting_tree)
     assert len(tree_list) == 1
     from dendropy.legacy.treesplit import delete_outdegree_one
-    #delete_outdegree_one(tree_list[0])
-    tree_list[0].suppress_unifurcations()
+    delete_outdegree_one(tree_list[0])
+    #tree_list[0].suppress_unifurcations()
     return tree_list
 
 def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=False):
     '''Uses `tree_str` and `dataset` to create a PhylogeneticTree object
     and calls `calc_splits` on the object before returning it.
     '''
-    _LOG.debug("start generating tree from string")
+    _LOG.debug("start generating tree from string %s" %tree_str)
     tree_stream = StringIO(tree_str)
     tree_list = read_and_encode_splits(dataset, tree_stream)
     t = tree_list[0]
+    _LOG.debug("tree  generated from string %s" %str(t))
+    #_LOG.debug("tree rooting %s" %str(t.is_rooted))
     return generate_tree_with_splits_from_tree(t, force_fully_resolved)
     
 def generate_tree_with_splits_from_tree(t, force_fully_resolved=False):    

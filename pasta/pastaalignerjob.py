@@ -77,11 +77,12 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         TreeHolder.__init__(self, multilocus_dataset.dataset)
         behavior = copy.copy(PASTAAlignerJob.BEHAVIOUR_DEFAULTS)
         behavior.update(kwargs)
-        for k in PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys():
+        for k in list(PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys()):
             setattr(self, k, behavior[k])
         self.multilocus_dataset = multilocus_dataset
         self.pasta_team = pasta_team
         self.tree = tree
+        _LOG.debug("Number of children of the root at the start: %d" % len(tree._tree.seed_node.child_nodes()))
         self._subjob1 = None
         self._subjob2 = None
         self._align_job_list = None
@@ -100,7 +101,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
 
     def configuration(self):
         d = {}
-        for k in PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys():
+        for k in list(PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys()):
             d[k] = getattr(self, k)
         return d
 
@@ -360,7 +361,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             self.kill()
 
     def bipartition_by_tree(self, option):
-        _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
+        _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:20000]))
 
         tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
         assert tree1.n_leaves > 0
@@ -472,7 +473,7 @@ class PASTAMergerJob(PASTAAlignerJob):
             # Reroot near centroid edge
             ce = self.tree.get_centroid_edge(spanning=True)
             nr = ce.head_node if not ce.head_node.is_leaf() else ce.tail_node
-            self.tree._tree.reroot_at_node(nr,delete_outdegree_one=False)            
+            self.tree._tree.reroot_at_node(nr,suppress_unifurcations=False)            
             _LOG.debug("rerooted to: %s ..." % self.tree.compose_newick()[0:200])   
             # For each path from root to its children, create a new merge job         
             merge_job_list = []
@@ -482,7 +483,7 @@ class PASTAMergerJob(PASTAAlignerJob):
                 remchilds = []                
                 for remchild in children:
                     if remchild != keepchild:
-                        remchilds.append(nr.reversible_remove_child(remchild, suppress_deg_two=False))
+                        remchilds.append(nr.reversible_remove_child(remchild, suppress_unifurcations=False))
                 t1 = PhylogeneticTree(Tree(self.tree._tree))
                 remchilds.reverse()
                 for child in remchilds:

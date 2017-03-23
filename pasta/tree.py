@@ -135,7 +135,9 @@ class PhylogeneticTree(object):
 
         nr.edge.length = None # Length of bisected edge
         nr.parent_node = None
+        print(nr)
         convert_node_to_root_polytomy(nr)
+        print(nr)
         t1 = PhylogeneticTree(Tree(seed_node=nr))
         n1 = t1.n_leaves # temp we could speed this up, by telling the Phylogenetic tree how many leaves it has
 
@@ -187,7 +189,7 @@ def edge_formatter(e):
     return "%s %f " % (str(id(e)), e.length)
 
 def is_valid_tree(t):
-    assert t
+    assert t and t
     rc = t.seed_node.child_nodes()
     num_children = len(rc)
     if num_children == 0:
@@ -196,6 +198,5 @@ def is_valid_tree(t):
         assert len(rc[0].child_nodes()) != 0
         return True
     elif num_children == 2:
-        assert len(rc[0].child_nodes()) > 0 and len(rc[1].child_nodes()) > 0
-        return True
-    assert False
+        assert((not rc[0].child_nodes()) and (not rc[0].child_nodes()))
+    return True

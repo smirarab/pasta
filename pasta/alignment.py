@@ -3,6 +3,7 @@ from random import random
 import sys
 from dendropy.datamodel.taxonmodel import Taxon
 from copy import deepcopy
+from functools import reduce
 #############################################################################
 ##  this file is part of pasta.
 ##  see "license.txt" for terms and conditions of usage.
@@ -38,7 +39,7 @@ def read_fasta(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
+            print(("The file `%s` does not exist, exiting gracefully" % src))
     elif isinstance(src, file):
             file_obj = src
     else:
@@ -70,7 +71,7 @@ def read_compact(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
+            print(("The file `%s` does not exist, exiting gracefully" % src))
     elif isinstance(src, file):
             file_obj = src
     else:
@@ -118,7 +119,7 @@ def write_fasta(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         file_obj.write('>%s\n%s\n' % (name, seq) )
     if isinstance(dest, str):
         file_obj.close()
@@ -130,7 +131,7 @@ def write_compact_to_fasta(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name in alignment.keys():
+    for name in list(alignment.keys()):
         s = alignment.as_string_sequence(name)
         file_obj.write('>%s\n%s\n' % (name, s) )
     if isinstance(dest, str):
@@ -147,7 +148,7 @@ def write_compact_to_phylip(alignment, dest):
         file_obj = dest
 
     file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length) )
-    for name in alignment.keys():
+    for name in list(alignment.keys()):
         s = alignment.as_string_sequence(name)
         file_obj.write('%s %s\n' % (name, s) )
     if isinstance(dest, str):
@@ -160,7 +161,7 @@ def write_compact_to_compact(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         file_obj.write('>%s\n%s\n%s\n' % (name, seq.seq, " ".join((str(x) for x in seq.pos))) )
     if isinstance(dest, str):
         file_obj.close()
@@ -173,7 +174,7 @@ def write_compact_to_compact3(alignment, dest):
     else:
         file_obj = dest
     colcount = alignment.colcount
-    for name, seq in alignment.items():            
+    for name, seq in list(alignment.items()):            
         pos=[]
         strt = 0
         for p in seq.pos:
@@ -194,7 +195,7 @@ def write_compact(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         i = 0
         s=[]
         for gaps in re.finditer(pt,seq):
@@ -215,9 +216,9 @@ def write_compact2(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():        
+    for name, seq in list(alignment.items()):        
         s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
-        s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
+        s=[x for x in ((c,i) for i,c in enumerate(seq)) if x[0]!='-']
         file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))                        
     if isinstance(dest, str):
         file_obj.close()
@@ -230,7 +231,7 @@ def write_compact3(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         i = 0
         s=[]
         p=[]
@@ -255,7 +256,7 @@ def read_compact3(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
+            print(("The file `%s` does not exist, exiting gracefully" % src))
     elif isinstance(src, file):
             file_obj = src
     else:
@@ -353,7 +354,7 @@ class Alignment(dict, object):
 
     def get_sequence_names(self):
         "returns a list of sequence names"
-        return self.keys()
+        return list(self.keys())
 
     def get_num_taxa(self):
         "returns the number sequences"
@@ -419,7 +420,7 @@ class Alignment(dict, object):
         lines may bet "ragged".
         """
         file_obj = open_with_intermediates(filename, 'w')
-        for name, seq in self.items():
+        for name, seq in list(self.items()):
             new_seq = re.sub(_INDEL, '', seq)
             if new_seq != '':
                 file_obj.write('>%s\n%s\n' % (name, new_seq))
@@ -431,7 +432,7 @@ class Alignment(dict, object):
         """
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
-        for name, seq in self.iteritems():
+        for name, seq in self.items():
             new_seq = re.sub(_INDEL, '', str(seq))
             if new_seq != '':
                 new_alignment[name] = new_seq
@@ -442,7 +443,7 @@ class Alignment(dict, object):
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            if self.has_key(key):
+            if key in self:
                 new_alignment[key] = self[key]
         return new_alignment
 
@@ -453,7 +454,7 @@ class Alignment(dict, object):
         if self.is_empty():
             raise ValueError("The alignment is empty.\n")
         else:
-            v = self.values()
+            v = list(self.values())
             first_seq_len = len(v[0])
             return all([len(i) == first_seq_len for i in v])
 
@@ -462,22 +463,22 @@ class Alignment(dict, object):
 
     def sequence_length(self):
         if self.is_aligned():
-            return len(self.values()[0])
+            return len(list(self.values())[0])
 
     def max_sequence_length(self):
-        return max(len(re.sub(_INDEL, '', v)) for v in self.values())
+        return max(len(re.sub(_INDEL, '', v)) for v in list(self.values()))
 
     
     def from_bytearray_to_string(self):
-        for k,v in self.iteritems():
+        for k,v in self.items():
             self[k] = str(v)
 
     def from_string_to_bytearray(self):
-        for k,v in self.iteritems():
+        for k,v in self.items():
             self[k] = bytearray(v)   
 
     def mask_gapy_sites(self,minimum_seq_requirement):        
-        n = len(self.values()[0])
+        n = len(list(self.values())[0])
         _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
         #print "LLLLENNNNN",len(self['sci'])
         
@@ -498,9 +499,9 @@ class Alignment(dict, object):
 
         # The following implements column-based masking. Seems to be more efficient than row based
         masked = []
-        allseqs = self.values()
+        allseqs = list(self.values())
         allseqs.sort(key=lambda x: x.count("-"))
-        for c in xrange(0,n):
+        for c in range(0,n):
             r = minimum_seq_requirement
             for seq in allseqs:
                 if seq[c] != "-":
@@ -513,17 +514,17 @@ class Alignment(dict, object):
         _LOG.debug("%d Columns identified for masking" %len(masked))
         if not masked:
             return
-        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
+        included = [z for z in reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]) if z[0]!=z[1]]
         if not included:
             included.append((masked[-1]+1,n))
         if included[-1][1] < n and masked[-1]+1 != n:
             included.append((masked[-1]+1,n))
-        for k,seq in self.iteritems():
+        for k,seq in self.items():
             tmp = []
             for (i,j) in included:
                 tmp.append(seq[i:j])
             self[k] = "".join(tmp)
-        nn = len(self.values()[0])
+        nn = len(list(self.values())[0])
         assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
         _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
 
@@ -846,7 +847,7 @@ class MultiLocusDataset(list):
                         careful_parse=careful_parse)
                 fileobj.close()
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
-            except Exception, x:
+            except Exception as x:
                 raise Exception("Error reading file:\n%s\n" % str(x))
 
             try:
@@ -860,7 +861,7 @@ class MultiLocusDataset(list):
                     map_missing_to = (m == "AMBIGUOUS" and sd.alphabet.any_residue.symbol or None)
                     if not sd.sequences_are_valid(remap_missing=True, map_missing_to=map_missing_to):
                         raise Exception("Input sequences could not be prepared for PASTA.  Please report this error\n")
-            except Exception, x:
+            except Exception as x:
                 raise Exception('Error in processing file "%s":\n%s\n' % (seq_fn, str(x)))
             self.append(sd)
         self.create_dendropy_dataset()
@@ -952,10 +953,10 @@ class MultiLocusDataset(list):
                 continue
             if isinstance(element, SequenceDataset):
                 char_matrix = element.dataset.char_matrices[0]
-                for taxon, seq in char_matrix.iteritems():
+                for taxon, seq in char_matrix.items():
                     char_matrix[taxon] = seq.replace(match_char, replace_char)
             else:
-                for taxon, seq in element.iteritems():
+                for taxon, seq in element.items():
                     element[taxon] = seq.replace(match_char, replace_char)
             element.datatype = new_datatype
 
@@ -982,13 +983,13 @@ class MultiLocusDataset(list):
                 a = t
             this_el_len = a.sequence_length()
             partitions.append( a.partition_info(base) )
-            for k in a.keys():
-                if combined_alignment.has_key(k):
+            for k in list(a.keys()):
+                if k in combined_alignment:
                     combined_alignment[k] += a[k]
                 else:
                     combined_alignment[k] = '-'*base + a[k]
-            for i in combined_alignment.keys():
-                if not a.has_key(i):
+            for i in list(combined_alignment.keys()):
+                if i not in a:
                     combined_alignment[i] += '-'*this_el_len
             base += this_el_len
 
@@ -1006,14 +1007,14 @@ class MultiLocusDataset(list):
         """Changes the labels in the contained alignment back to their original name"""
         for alignment in self:
             new_aln = {}
-            for k, v in alignment.iteritems():
+            for k, v in alignment.items():
                 real_name = self.safe_to_real_names[k][0]
                 new_aln[real_name] = v
                 self.taxa_label_to_taxon[real_name].label = real_name
-            keys = alignment.keys()
+            keys = list(alignment.keys())
             for k in keys:
                 del alignment[k]
-            for k, v in new_aln.iteritems():
+            for k, v in new_aln.items():
                 alignment[k] = v
         self.safe_to_real_names = {}
     def sub_alignment(self, taxon_names):
@@ -1060,7 +1061,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
                 mat = element.get_character_matrix()
                 ntax = len(mat)
                 nchar = None
-                for row in mat.values():
+                for row in list(mat.values()):
                     ncr = len(row)
                     if nchar is None:
                         nchar = ncr
@@ -1072,7 +1073,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
                 taxa_char_tuple_list.append(t_c_pair)
             num_tax_total = len(md.dataset.taxon_namespaces[0])
             return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned, md)
-        except Exception, e:
+        except Exception as e:
             caught_exception = e
     raise e
 
@@ -1121,7 +1122,7 @@ class CompactAlignment(dict,object):
         new_alignment = CompactAlignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            if self.has_key(key):
+            if key in self:
                 new_alignment[key] = self[key]
         return new_alignment
    
@@ -1135,13 +1136,13 @@ class CompactAlignment(dict,object):
     def unaligned(self):
         n = Alignment()
         n.datatype = self.datatype
-        for k,seq in self.iteritems():
+        for k,seq in self.items():
             n[k] = seq.seq
         return n
     
     def iter_column_character_count(self, seqsubset = None):
         if seqsubset is None:
-            seqsubset = self.keys()
+            seqsubset = list(self.keys())
         
         counts = [0] * self.colcount
         for k in seqsubset:
@@ -1157,9 +1158,8 @@ class CompactAlignment(dict,object):
                 yield i
 
     def iter_columns_with_maximum_char_count(self, x, seqsubset = None):
-        print "non-gap chars: "
+        print("non-gap chars: ")
         for i,c in enumerate(self.iter_column_character_count(seqsubset)):
-            print c,
             if c <= x:
                 yield i
             
@@ -1214,7 +1214,7 @@ class CompactAlignment(dict,object):
             
         self.colcount = inew
         
-        for seq in self.itervalues():
+        for seq in self.values():
             seq.pos = [memap[p] for p in seq.pos]
             
         for k in onlyhers:
@@ -1239,7 +1239,7 @@ class CompactAlignment(dict,object):
                    %(self.colcount))
 
         masked = set()
-        for seq in self.itervalues():
+        for seq in self.values():
             for c,i in zip(seq.seq,seq.pos):
                 if c > 'a' and c < 'z':
                     masked.add(i)
@@ -1256,7 +1256,7 @@ class CompactAlignment(dict,object):
         
         off = 0
         colmap = []
-        for c in xrange(0,self.colcount):
+        for c in range(0,self.colcount):
             if c in masked:
                 off += 1
                 colmap.append(-1)
@@ -1264,12 +1264,11 @@ class CompactAlignment(dict,object):
                 colmap.append(c - off)
                 
         _LOG.debug("Column index mapping calculated.")
-        for seq in self.itervalues():
+        for seq in self.values():
             # Find ID of char positions that would be masked
             maskind = [i for i,c in enumerate(seq.pos) if c in masked]
             n = len(seq.pos)
-            included = filter(lambda z: z[0]!=z[1], 
-                              reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
+            included = [z for z in reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]) if z[0]!=z[1]]
             if not maskind:
                 included.append((0,n))
             elif (not included or included[-1][1] < n) and maskind[-1]+1 != n:
@@ -1323,7 +1322,7 @@ class CompactAlignment(dict,object):
         l = 0
         if isinstance(seq, str):            
             for m in re.finditer(nogappat, seq):
-                cseq.pos.extend(xrange(m.start(),m.end()))
+                cseq.pos.extend(range(m.start(),m.end()))
             cseq.seq = re.sub(gappat,"",seq)
             l = len(seq)
         else:
@@ -1333,12 +1332,12 @@ class CompactAlignment(dict,object):
         return (cseq,l)
 
     def update_dict_from(self, alignment):
-        for k in self.iterkeys():
+        for k in self.keys():
             alignment[k] = self.as_string_sequence(k)
         alignment.datatype = self.datatype
             
     def update_from_alignment(self, alignment):
-        for k,v in alignment.iteritems():
+        for k,v in alignment.items():
             self[k],l = self.get_alignment_seq_object(v)
         self.colcount = l
         self.datatype = alignment.datatype
@@ -1374,11 +1373,11 @@ def compact(alg):
     return comp
 
 def get_insertion_columns(shared,alg):
-    n = len(alg.values()[0])
-    insertions = range(0,n)
+    n = len(list(alg.values())[0])
+    insertions = list(range(0,n))
     for s in shared:
         seq = alg[s]
-        insertions = filter(lambda c: seq[c] == "-", insertions)
+        insertions = [c for c in insertions if seq[c] == "-"]
         if not insertions:
             break
     return set(insertions) 
@@ -1406,14 +1405,14 @@ def merge_in(me, she):
     _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
     
     newme = {}
-    for k in me.iterkeys():
+    for k in me.keys():
         newme[k] = bytearray()
     newshe = {}            
     for key in onlyhers: 
         newshe[key] = bytearray()
     
-    melen =  len(me.values()[0])
-    shelen =  len(she.values()[0])
+    melen =  len(list(me.values())[0])
+    shelen =  len(list(she.values())[0])
 
     ime = 0
     ishe = 0
@@ -1426,9 +1425,9 @@ def merge_in(me, she):
                 ime += 1                
             l = ime - s
             ins = bytearray("-" * l) # TODO: test caching these in advance
-            for seq in newshe.itervalues():
+            for seq in newshe.values():
                 seq.extend(ins)
-            for k,seq in newme.iteritems():
+            for k,seq in newme.items():
                 seq.extend(me[k][s:ime])
         elif ishe in she_ins:
             s = ishe
@@ -1437,9 +1436,9 @@ def merge_in(me, she):
                 ishe += 1
             l = ishe - s
             ins = bytearray("-" * l)
-            for seq in newme.itervalues():
+            for seq in newme.values():
                 seq.extend(ins)
-            for k,seq in newshe.iteritems():
+            for k,seq in newshe.items():
                 seq.extend(she[k][s:ishe])
         else:       
             sme = ime
@@ -1447,9 +1446,9 @@ def merge_in(me, she):
             while ime not in me_ins and ishe not in she_ins and ime < melen and ishe < shelen:     
                 ime += 1
                 ishe += 1
-            for k,seq in newme.iteritems():
+            for k,seq in newme.items():
                 seq.extend(me[k][sme:ime])
-            for k,seq in newshe.iteritems():
+            for k,seq in newshe.items():
                 seq.extend(she[k][sshe:ishe])
             
     #print "final",ime,ishe
@@ -1458,7 +1457,7 @@ def merge_in(me, she):
     
     me.clear()
        
-    for k,v in newme.iteritems():
+    for k,v in newme.items():
         me[k] = str(v)            
         
     TIMING_LOG.info("transitivitymerge (%d) finished" %ID )

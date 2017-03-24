@@ -575,11 +575,12 @@ class FastaCustomReader(FastaReader):
                 if self.simple_rows and curr_taxon and curr_vec:
                     tmp_matrix[curr_taxon] = "".join(curr_vec)
                 name = s[1:].strip()
-                curr_taxon = taxon_namespace.require_taxon(label=name)
                 if self.simple_rows:
+                    curr_taxon = label=name
                     if curr_taxon in tmp_matrix:
                         raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
                 else:
+                    curr_taxon = taxon_namespace.require_taxon(label=name)
                     if curr_taxon in char_matrix:
                         raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
                 if curr_vec is not None and len(curr_vec) == 0:
@@ -611,8 +612,8 @@ class FastaCustomReader(FastaReader):
         if self.simple_rows and curr_taxon and curr_vec:
             tmp_matrix[curr_taxon] = "".join(curr_vec)
         if self.simple_rows:
-            char_matrix.from_dict(tmp_matrix)
-        _LOG.debug("Custom reader finished reading string; building product")
+            char_matrix.from_dict(tmp_matrix,char_matrix)
+        _LOG.debug("Custom reader finished reading string; %d building product" % len(char_matrix))
         product = self.Product(
                 taxon_namespaces=None,
                 tree_lists=None,

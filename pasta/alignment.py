@@ -274,7 +274,6 @@ def read_compact3(src):
                 lastpos = 0
                 seq_list="".join(seq_list)
                 for x in pos_list:
-                    #print x
                     seq.append(seq_list[0:x[0]-lastpos])
                     seq.append("-"*(x[1]-x[0]))
                     seq_list = seq_list[x[0]-lastpos:]
@@ -300,7 +299,6 @@ def read_compact3(src):
     lastpos = 0
     seq_list="".join(seq_list)
     for x in pos_list:
-        #print x
         seq.append(seq_list[0:x[0]-lastpos])
         seq.append("-"*(x[1]-x[0]))
         seq_list = seq_list[x[0]-lastpos:]
@@ -483,7 +481,6 @@ class Alignment(dict, object):
     def mask_gapy_sites(self,minimum_seq_requirement):        
         n = len(list(self.values())[0])
         _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
-        #print "LLLLENNNNN",len(self['sci'])
         
 #        # The following implements row-based masking. Seems to be less efficient than column based
 #        masked = zip(range(0,n),[minimum_seq_requirement] * n)
@@ -1164,7 +1161,6 @@ class CompactAlignment(dict,object):
                 yield i
 
     def iter_columns_with_maximum_char_count(self, x, seqsubset = None):
-        print("non-gap chars: ")
         for i,c in enumerate(self.iter_column_character_count(seqsubset)):
             if c <= x:
                 yield i
@@ -1204,7 +1200,6 @@ class CompactAlignment(dict,object):
         ishe = 0
         inew = 0
         while ime < melen or ishe < shelen:
-            #print ime,ishe
             if ime in me_ins:              
                 memap.append(inew)
                 ime += 1
@@ -1314,10 +1309,7 @@ class CompactAlignment(dict,object):
         for name, seq in read_func(file_obj):
             cseq, l = self.get_alignment_seq_object(seq)
             self[name] = cseq
-            #print cseq.seq
-            #print cseq.pos
             self.colcount = max(l, self.colcount)
-        #print self.colcount
         
     def as_string_sequence(self,name):
         seq = self[name]
@@ -1423,7 +1415,6 @@ def merge_in(me, she):
     ime = 0
     ishe = 0
     while ime < melen or ishe < shelen:
-        #print ime,ishe
         if ime in me_ins:
             s = ime
             while ime in me_ins:
@@ -1457,7 +1448,6 @@ def merge_in(me, she):
             for k,seq in newshe.items():
                 seq.extend(she[k][sshe:ishe])
             
-    #print "final",ime,ishe
             
     newme.update(newshe)
     

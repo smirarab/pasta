@@ -20,7 +20,7 @@ def read_stderr(stderrdata,stderr):
         
 def log(job, name, stdoutdata, stderrdata, stderrfile):
     if job.returncode == 0:
-        print "Finished %s Job with return code: %s\n output: %s [continued]" %(name,job.returncode,stdoutdata[0:100])
+        print ("Finished %s Job with return code: %s\n output: %s ... continued ..." %(name,job.returncode,stdoutdata[0:200]))
     
     else:         
         print ("Finished %s Job with return code: %s\n output: %s\n error:%s" 

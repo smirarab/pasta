@@ -135,9 +135,7 @@ class PhylogeneticTree(object):
 
         nr.edge.length = None # Length of bisected edge
         nr.parent_node = None
-        print(nr)
         convert_node_to_root_polytomy(nr)
-        print(nr)
         t1 = PhylogeneticTree(Tree(seed_node=nr))
         n1 = t1.n_leaves # temp we could speed this up, by telling the Phylogenetic tree how many leaves it has
 

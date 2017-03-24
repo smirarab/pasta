@@ -544,8 +544,6 @@ class FastaCustomReader(FastaReader):
     
     def __init__(self, **kwargs):
         FastaReader.__init__(self,**kwargs)        
-        self.exclude_chars = None
-        self.dataset = None
         self.simple_rows = True
         
     def _read(self, stream,taxon_namespace_factory=None,
@@ -725,18 +723,12 @@ class SequenceDataset(object):
                 raise ValueError('Expecting the datatype to be  DNA, RNA or PROTEIN')
             file_format = dup + file_format
         try:            
-            self.dataset = dendropy.datamodel.datasetmodel.DataSet()
+            self.dataset = dendropy.DataSet()
             if careful_parse:
                 self.dataset.read(file=file_obj, schema=file_format)
             else:
                 #self.dataset.read(file_obj, schema=file_format, row_type='str')
-                register_reader("fasta", FastaCustomReader)
-                register_reader("dnafasta", DNACustomFastaReader)
-                register_reader("rnafasta", RNACustomFastaReader)
-                register_reader("proteinfasta", ProteinCustomFastaReader)
 
-                from dendropy.dataio import _IO_SERVICE_REGISTRY
-                _LOG.debug("Registry: ... %s" %str(_IO_SERVICE_REGISTRY))
                 self.dataset.read(file=file_obj, schema=file_format)
                 # do some cursory checks of the datatype
                 _LOG.debug("File read. checking input ... ")
@@ -850,7 +842,7 @@ class MultiLocusDataset(list):
             else:
                 MESSENGER.send_info("Reading input sequences from '%s'..." % seq_fn)
             sd = SequenceDataset()
-            if True:
+            try:
                 if os.path.isdir(seq_fn):
                     raise Exception('"%s" is a directory. A path to file was expected.\nMake sure that you are using the multilocus mode when the input source is a directory.\nUse the path to a FASTA file if you are running in single-locus mode.' % seq_fn)
                 fileobj = open(seq_fn, 'rU')
@@ -861,9 +853,8 @@ class MultiLocusDataset(list):
                         careful_parse=careful_parse)
                 fileobj.close()
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
-            #except Exception as x:
-                #raise x
-                #raise Exception("Error reading file:\n%s\n" % str(x))
+            except Exception as x:
+                raise Exception(x,"Error reading file:\n%s\n" % str(x))
 
             try:
                 if not sd.sequences_are_valid(remap_missing=False):

@@ -580,6 +580,7 @@ class FastaCustomReader(FastaReader):
                 if curr_vec is not None and len(curr_vec) == 0:
                     raise DataParseError(message="FASTA error: Expected sequence, but found another sequence name ('{}')".format(name), line_num=line_index + 1, stream=stream)
                 if self.simple_rows:
+                    _LOG.debug(".")
                     curr_vec = []
                 else:
                     curr_vec = char_matrix[curr_taxon]
@@ -600,7 +601,7 @@ class FastaCustomReader(FastaReader):
             else:
                 m = re_ilegal.search(s)
                 if m:
-                    raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), row=line_index + 1, column=m.start(), stream=stream)
+                    raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), line_num=line_index + 1, col_num=m.start(), stream=stream)
                 curr_vec.append(s)
         if self.simple_rows and curr_taxon and curr_vec:
             char_matrix[curr_taxon] = "".join(curr_vec)
@@ -851,7 +852,7 @@ class MultiLocusDataset(list):
                 fileobj.close()
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
             except Exception as x:
-                raise Exception(x,"Error reading file:\n%s\n" % str(x))
+                raise #Exception(x,"Error reading file:\n%s\n" % str(x))
 
             try:
                 if not sd.sequences_are_valid(remap_missing=False):

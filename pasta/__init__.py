@@ -53,6 +53,7 @@ import logging
 _LOGGING_LEVEL_ENVAR = "PASTA_LOGGING_LEVEL"
 _LOGGING_FORMAT_ENVAR = "PASTA_LOGGING_FORMAT"
 
+
 # global debugging flag
 if "PASTA_DEBUG" in os.environ:
     if os.environ["PASTA_DEBUG"]:

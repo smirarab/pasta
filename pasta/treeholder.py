@@ -148,9 +148,9 @@ def read_and_encode_splits(dataset, tree_stream, starting_tree=False):
     tree_list = read_trees_into_dataset(dataset, tree_stream,
             starting_tree=starting_tree)
     assert len(tree_list) == 1
-    from dendropy.legacy.treesplit import delete_outdegree_one
-    delete_outdegree_one(tree_list[0])
-    #tree_list[0].suppress_unifurcations()
+    #from dendropy.legacy.treesplit import delete_outdegree_one
+    #delete_outdegree_one(tree_list[0])
+    tree_list[0].suppress_unifurcations()
     return tree_list
 
 def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=False):

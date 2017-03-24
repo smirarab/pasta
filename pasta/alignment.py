@@ -563,6 +563,7 @@ class FastaCustomReader(FastaReader):
 								char_matrix.default_state_alphabet.fundamental_symbol_iter())))
             _LOG.debug("Legal characters are: %s" %legal_chars)
             re_ilegal = re.compile(r"[^%s]" %legal_chars);
+            tmp_matrix = dict()
             
         curr_vec = None
         curr_taxon = None
@@ -572,11 +573,15 @@ class FastaCustomReader(FastaReader):
                 continue
             if s.startswith('>'):
                 if self.simple_rows and curr_taxon and curr_vec:
-                    char_matrix[curr_taxon] = "".join(curr_vec)
+                    tmp_matrix[curr_taxon] = "".join(curr_vec)
                 name = s[1:].strip()
                 curr_taxon = taxon_namespace.require_taxon(label=name)
-                if curr_taxon in char_matrix:
-                    raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
+                if self.simple_rows:
+                    if curr_taxon in tmp_matrix:
+                        raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
+                else:
+                    if curr_taxon in char_matrix:
+                        raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
                 if curr_vec is not None and len(curr_vec) == 0:
                     raise DataParseError(message="FASTA error: Expected sequence, but found another sequence name ('{}')".format(name), line_num=line_index + 1, stream=stream)
                 if self.simple_rows:
@@ -604,7 +609,9 @@ class FastaCustomReader(FastaReader):
                     raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), line_num=line_index + 1, col_num=m.start(), stream=stream)
                 curr_vec.append(s)
         if self.simple_rows and curr_taxon and curr_vec:
-            char_matrix[curr_taxon] = "".join(curr_vec)
+            tmp_matrix[curr_taxon] = "".join(curr_vec)
+        if self.simple_rows:
+            char_matrix.from_dict(tmp_matrix)
         _LOG.debug("Custom reader finished reading string; building product")
         product = self.Product(
                 taxon_namespaces=None,

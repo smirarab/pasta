@@ -619,7 +619,7 @@ class FastaCustomReader(FastaReader):
                 tree_lists=None,
                 char_matrices=[char_matrix])
         _LOG.debug("Custom reader finished reading")
-        return product
+        return tmp_matrix
         
 
 class DNACustomFastaReader(FastaCustomReader):
@@ -716,7 +716,7 @@ class SequenceDataset(object):
         specify the type of data, then the datatype arg should be DNA, RNA
         or 'PROTEIN'
         """
-        _LOG.debug("using read function from SequenceDataset class with carefule_parse = %s" %careful_parse)
+        _LOG.debug("using read function from SequenceDataset class with careful_parse = %s" %careful_parse)
         self.filename = filename
         fup = file_format.upper()
         amibig_formats = ['FASTA']
@@ -942,7 +942,7 @@ class MultiLocusDataset(list):
                 trees_taxon.label = safe_name
                 #_LOG.debug("%s (%d) -> %s" % (taxon.label, id(taxon), safe_name))
                 taxon.label = safe_name
-                a[safe_name] = char_vec
+                a[safe_name] = str(char_vec)
             alignment_list.append(a)
         # replace the contents of the MultiLocusDataset with the newly
         #   created alignment dictionaries.
@@ -963,6 +963,7 @@ class MultiLocusDataset(list):
         for n, element in enumerate(self):
             if element.datatype.upper() != current_datatype:
                 continue
+            _LOG.debug(type(element))
             if isinstance(element, SequenceDataset):
                 char_matrix = element.dataset.char_matrices[0]
                 for taxon, seq in char_matrix.items():

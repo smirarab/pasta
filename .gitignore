@@ -8,3 +8,5 @@ sate/test/data/*
 *.swp
 PASTA.egg-info/
 *.back
+*.bak
+*.dmg

@@ -368,7 +368,7 @@ class PastaJob (TreeHolder):
                 candidate_edges.add( (e.length,e) )
         #   Then sort the edges, and start removing them one by one
         #   only if an edge is still having intersecting labels at the two ends                                                    
-        candidate_edges = sorted(candidate_edges)        
+        candidate_edges = sorted(candidate_edges, key=lambda x:  x[0] if x[0] else -1)       
         for (el, edge) in candidate_edges:
             I = edge.tail_node.alignment_subset_job.intersection(edge.head_node.alignment_subset_job)
             if I:

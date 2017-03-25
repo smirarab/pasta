@@ -5,6 +5,19 @@ from dendropy.datamodel.taxonmodel import Taxon
 from copy import deepcopy
 from functools import reduce
 import itertools
+
+import io
+try:
+    filetypes = (io.IOBase, file)
+except NameError:
+    filetypes = io.IOBase
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+    from io import BytesIO
+
 #############################################################################
 ##  this file is part of pasta.
 ##  see "license.txt" for terms and conditions of usage.
@@ -33,6 +46,7 @@ def is_sequence_legal(seq):
     """Check for illegal characters -- TODO, currently returns True"""
     return re.search(ILLEGAL_CHARS, seq) is None
 
+
 def read_fasta(src):
     """generator that returns (name, sequence) tuples from either a FASTA
     formatted file or file object.
@@ -43,10 +57,10 @@ def read_fasta(src):
             file_obj = open(src, "rU")
         except IOError:
             print(("The file `%s` does not exist, exiting gracefully" % src))
-    elif isinstance(src, file):
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
-        raise TypeError('FASTA reader cannot recognize the source of %s' % src)
+        raise TypeError('FASTA reader cannot recognize the source of %s, %s, %s' % (src,type(src),isinstance(src, filetypes)))
     name = None
     seq_list = list()
     for line_number, i in enumerate(file_obj):
@@ -75,7 +89,7 @@ def read_compact(src):
             file_obj = open(src, "rU")
         except IOError:
             print(("The file `%s` does not exist, exiting gracefully" % src))
-    elif isinstance(src, file):
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
         raise TypeError('FASTA reader cannot recognize the source of %s' % src)
@@ -186,7 +200,7 @@ def write_compact_to_compact3(alignment, dest):
             strt = p+1
         if colcount != strt:
             pos.append("%d-%d" % (strt,colcount-1))
-        file_obj.write('>%s\n%s\n@ %s\n'%(name, seq.seq,' '.join(pos)))
+        file_obj.write(">%s\n%s\n@ %s\n"%(name, seq.seq,' '.join(pos)))
     if isinstance(dest, str):
         file_obj.close()
         
@@ -222,7 +236,7 @@ def write_compact2(alignment, dest):
     for name, seq in list(alignment.items()):        
         s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
         s=[x for x in ((c,i) for i,c in enumerate(seq)) if x[0]!='-']
-        file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))                        
+        file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))
     if isinstance(dest, str):
         file_obj.close()
 
@@ -260,7 +274,7 @@ def read_compact3(src):
             file_obj = open(src, "rU")
         except IOError:
             print(("The file `%s` does not exist, exiting gracefully" % src))
-    elif isinstance(src, file):
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
         raise TypeError('FASTA reader cannot recognize the source of %s' % src)
@@ -1355,10 +1369,14 @@ class CompactAlignment(dict,object):
         
         file_obj = open_with_intermediates(filename,'w')
         if zipout:
-            import gzip
-            file_obj.close()            
-            file_obj = gzip.open(filename, "wb", 6)
+            file_obj.close()
+            file_obj = StringIO()
         self.write(file_obj, file_format=file_format)
+        if zipout:
+            import gzip
+            file_obj_gz = gzip.open(filename, "wb", 6)
+            file_obj_gz.write(str.encode(file_obj.getvalue()))
+            file_obj_gz.close()
         file_obj.close()
 
     def write(self, file_obj, file_format):

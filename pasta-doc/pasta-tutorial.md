@@ -124,11 +124,24 @@ PASTA can be run using command-line or GUI.
 ### From GUI:
 1. If you have installed PASTA from the .dmg file, to run the PASTA GUI you just click on the application you copied on your machine. 
 2. If you have installed PASTA from the code, you need to open a terminal (sorry!) and run: 
-3. On the VM, on the left hand side, there is a PASTA icon. Click that to open PASTA. 
 
 ```
 run_pasta_gui.py
 ``` 
+on some machines, this may not work, saying
+
+```
+This program needs access to the screen. Please run with a Framework build of python, and only when you are logged in on the main display of your Mac.
+```
+
+you may be able to fix this by running:
+
+```
+pythonw {PATH to pasta}/run_pasta_gui.py
+```
+note the use of `pythonw` instead of `python`
+
+3. On the VM, on the left hand side, there is a PASTA icon. Click that to open PASTA. 
 
 This will open up the PASTA GUI. To provide then input file, click on ``Sequence File`` button and select the input fasta file. 
 

@@ -1,3 +1,6 @@
+- Version 1.7.0:
+        - ** Change **: Moved to Dendropy 4 and now support python 3
+
 - Version 1.6.4:
 	- ** Change:** Fix the copyright year to 2013-2016 
 

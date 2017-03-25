@@ -1,15 +1,18 @@
 This is an implementation of the PASTA (Practical Alignment using Sate and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#):
 
-Mirarab, S., Nguyen, N., & Warnow, T. (2014). PASTA: Ultra-Large Multiple Sequence Alignment. In R. Sharan (Ed.), Research in Computational Molecular Biology (RECOMB) (pp. 177–191).
+* 1. Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
 
 and also at [JCB](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156):
 
-Mirarab, S., Nguyen, N. Guo, S., Wang, L., Kim, J. and Warnow, T.. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. Journal of Computational Biology (2014)
+* Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. doi:10.1089/cmb.2014.0156.
 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
 
-**Acknowledgment**: The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc.  
+**Acknowledgment**: 
+
+* The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
+* [Niema Moshiri](github.com/niemasd) has contributed to the import to dendropy 4 and python 3
 
 **Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
 
@@ -18,7 +21,7 @@ INSTALLATION
 
 **Dependencies**: 
 
-1. You need to have python 2.7 or later.
+1. You need to have python 2.7 or later (including python 3).
 2. You need to have java installed (required for Opal, which is by the default used in PASTA for merging small alignments).
 
 You have three options for installing PASTA. 
@@ -65,7 +68,7 @@ Windows won't work currently (future versions may or may not support Windows).
 
 You need to have:
 
-- Python (version 2.7 or later)
+- Python (version 2.7 or later, including python 3)
 - [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
 - Java (only required for using OPAL)
 - [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
@@ -102,13 +105,16 @@ Finally, those with 32-bit Linux machines need to be aware that the master branc
 If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternativley, you can `--prefix` to install in a different location, but that different location needs to be part of your `PYTHONPATH` environmental variable. 
 
 **Common Problems:**
- * If you get an error that `Could not find SATe tools bundle directory:`, it means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
- * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get and error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run: `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` (but note there are other ways of installing setuptools as well).
+
+ * `Could not find SATe tools bundle directory:`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
+ * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get and error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run: 
+     * `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
+(but note there are other ways of installing setuptools as well).
 
 
 ### 3. From Virtual Machine (VM)
 
-VM Image (mostly for Windows users) is available for [download](https://www.dropbox.com/s/vt0juhd77f8r1ax/WARNOW_LAB.ova?dl=0) (~2 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
+VM Image (mostly for Windows users) is available for [download](https://www.dropbox.com/s/vt0juhd77f8r1ax/WARNOW_LAB.ova?dl=0) (~2 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version. 
 
 Email `pasta-users@googlegroups.com` for installation issues. 
 
@@ -126,7 +132,9 @@ The starting tree is optional. If not provided, PASTA estimates a starting tree.
 
 Run
 
-```python run_pasta.py --help``` 
+```
+python run_pasta.py --help
+``` 
 
 to see PASTA's various options and description of how they work. 
 
@@ -135,8 +143,8 @@ To run the GUI version,
 * if you have installed from the source code, cd into your installation directory and run 
 
 ```
-python run_pasta_gui.py
-```
+    python run_pasta_gui.py
+```    
 
 Options
 ------

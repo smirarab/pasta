@@ -4,7 +4,7 @@ Introduction
 ===
 PASTA estimates alignments and ML trees from unaligned sequences using an iterative approach. In each iteration, 
 it first estimates a multiple sequence alignment using the current tree as a guide and then estimates a ML tree on (a masked version of) the alignment. 
-By default, PASTA performs 3 iterations, but a host of options enable changing that behavior.  In each iteration, a divide-and-conquer strategy is used for estimating the alignment. The set of sequences is divided into smaller subsets, each of which is aligned using an external
+By default, PASTA performs *3 iterations*, but a host of options enable changing that behavior.  In each iteration, a divide-and-conquer strategy is used for estimating the alignment. The set of sequences is divided into smaller subsets, each of which is aligned using an external
 alignment tool (default is MAFFT). These subset alignments are then pairwise merged (by default using Opal)
 and finally the pairwise merged alignments are merged into a final alignment using a transitivity merge technique. The division
 of the dataset into smaller subsets and selecting which alignments should be pairwise merged is guided by the tree
@@ -20,7 +20,7 @@ Installation
 
 **Dependencies**: 
 
-1. You need to have python 2.7 or later.
+1. You need to have python 2.7 or later, including python 3.
 2. You need to have java installed (required for Opal).
 
 You have three options for installing PASTA. 
@@ -37,17 +37,17 @@ You have three options for installing PASTA.
 3. Simply run the PASTA app from where you copied it.
 
 **Common Problems:**
+  
   * In some cases, your python installation might be in a location different from
   where PASTA is hoping to find it. In these caes, you get the following error
   message: 
-    
+    ```
     PASTA has encoutered a fatal error, and will now terminate.
     A Python runtime could not be located. 
     You may need to install a framework build of Python,
     or edit the PyRuntimeLocations array in this application's info.plist file. 
-    
-    
-    If you get this message, make sure you have python 2.7 installed. Then, run
+    ```
+If you get this message, make sure you have python 2.7 installed. Then, run
     `python -c 'import sys; print sys.prefix'`. This will tell you where your python
     is located. Now click on the PASTA app and select `Show Package Content`. 
     Navigate to `Contents` and open `Info.plist` with the text editor. 
@@ -65,7 +65,7 @@ Windows won't work currently (future versions may or may not support Windows).
 
 You need to have:
 
-- Python (version 2.7 or later)
+- Python (version 2.7 or later, including python 3)
 - [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
 - Java (only required for using OPAL)
 - [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
@@ -134,7 +134,7 @@ This will open up the PASTA GUI. To provide then input file, click on ``Sequence
 
 We have provided some test data files under the `data` directory. A good first start is ``small.fasta``, which is a small simulated alignment and runs really fast. You can also use `16S.E.ALL.unaligned.fasta`, which is much larger (1,900 sequences) and will take longer (depending on your machine, between 15 minutes and few hours). The 16S input file is downloaded from the Gutell Lab [CRW](http://www.rna.ccbb.utexas.edu/DAT/3C/Alignment/) website, but is trimmed to the first 990 sites so that a test run can finish in 15-20 minutes given a relatively new desktop machine. 
 
-Once you select the input file, PASTA will ask you if you would like it to 'Red input data now?'. Answer OK. At this point PASTA automatically picks up its algorithmic parameters. Now click on the `Start` button and PASTA will start running. If you used ``small.fasta`` as input, PASTA will finish after a short while. Once PASTA finishes, the location of the output files are given in the prompt box just below the start button.
+Once you select the input file, PASTA will ask you if you would like it to "Red input data now?". Answer OK. At this point PASTA automatically picks up its algorithmic parameters. Now click on the `Start` button and PASTA will start running. If you used ``small.fasta`` as input, PASTA will finish after a short while. Once PASTA finishes, the location of the output files are given in the prompt box just below the start button.
 
 
 ### From Command-line:

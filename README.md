@@ -252,8 +252,12 @@ PASTA outputs an alignment and a tree, in addition to a host of other files. The
 Debug
 -------
 To show debug information, set the following environmental variables: 
-`PASTA_DEBUG=TRUE`, `PASTA_LOGGING_LEVEL=DEBUG`, and optionally `PASTA_LOGGING_FORMAT=RICH`.
-
+```
+PASTA_DEBUG=TRUE
+PASTA_LOGGING_LEVEL=DEBUG
+PASTA_LOGGING_FORMAT=RICH
+```
+(last line is optional)
 
 LICENSE
 ===

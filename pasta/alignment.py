@@ -164,7 +164,7 @@ def write_compact_to_phylip(alignment, dest):
     else:
         file_obj = dest
 
-    file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length) )
+    file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length()) )
     for name in list(alignment.keys()):
         s = alignment.as_string_sequence(name)
         file_obj.write('%s %s\n' % (name, s) )

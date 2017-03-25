@@ -39,7 +39,7 @@ You have three options for installing PASTA.
   where PASTA is hoping to find it. In these caes, you get the following error
     message:
     
-`
+```
     PASTA has encoutered a fatal error, and will now terminate.
     A Python runtime could not be located. 
     You may need to install a framework build of Python,
@@ -57,6 +57,7 @@ You have three options for installing PASTA.
     installing PASTA from the source code (see below) and then run 
     `./make-app.sh` from the pasta directory. This will create an app under
     `dist` directory, which you should be able to run and copy to any other location. 
+```
 
 ### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 

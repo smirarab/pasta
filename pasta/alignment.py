@@ -406,10 +406,14 @@ class Alignment(dict, object):
         
         file_obj = open_with_intermediates(filename,'w')
         if zipout:
-            import gzip
-            file_obj.close()            
-            file_obj = gzip.open(filename, "wb", 6)
+            file_obj.close()
+            file_obj = StringIO()
         self.write(file_obj, file_format=file_format)
+        if zipout:
+            import gzip
+            file_obj_gz = gzip.open(filename, "wb", 6)
+            file_obj_gz.write(str.encode(file_obj.getvalue()))
+            file_obj_gz.close()
         file_obj.close()
 
     def write(self, file_obj, file_format):

@@ -119,7 +119,7 @@ class PastaFrame(wx.Frame):
             import base64
             import io
             icon = wx.EmptyIcon()
-            icon.CopyFromBitmap(wx.BitmapFromImage(wx.ImageFromStream(io.StringIO(base64.b64decode(ICO_STR)))))
+            icon.CopyFromBitmap(wx.BitmapFromImage(wx.ImageFromStream(io.BytesIO(base64.b64decode(ICO_STR)))))
             self.SetIcon(icon)
 
         self.ctrls = []
@@ -893,6 +893,7 @@ class PastaFrame(wx.Frame):
                 self._remove_config_file()
                 return
 
+            print(type(input_filename))
             command.extend(["-i", filemgr.quoted_file_path(input_filename)])
             if treefilename and os.path.isfile(treefilename):
                 command.extend(["-t", filemgr.quoted_file_path(treefilename)])
@@ -936,8 +937,8 @@ class PastaFrame(wx.Frame):
             self.log.AppendText("No active PASTA jobs to terminate!\n")
 
     def _encode_arg(self, arg, encoding='utf-8'):
-        if isinstance(arg, str):
-            return arg.encode(encoding)
+        #if isinstance(arg, str):
+        #    return arg.encode(encoding)
         return arg
 
     def _create_config_file(self):

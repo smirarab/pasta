@@ -38,17 +38,14 @@ You have three options for installing PASTA.
 3. Simply run the PASTA app from where you copied it.
 
 **Common Problems:**
-  * In some cases, your python installation might be in a location different from
-  where PASTA is hoping to find it. In these caes, you get the following error
-    message:
-    
+  
+  * In some cases, your python installation might be in a location different from where PASTA is hoping to find it. In these cases, you get the following error message:        
 ```
     PASTA has encoutered a fatal error, and will now terminate.
     A Python runtime could not be located. 
     You may need to install a framework build of Python,
-    or edit the PyRuntimeLocations array in this application's info.plist file.``` 
-    
-    
+    or edit the PyRuntimeLocations array in this application's info.plist file.
+``` 
     If you get this message, make sure you have python 2.7 installed. Then, run
     `python -c 'import sys; print sys.prefix'`. This will tell you where your python
     is located. Now click on the PASTA app and select `Show Package Content`. 
@@ -56,11 +53,11 @@ You have three options for installing PASTA.
     Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
     with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
     Try running the App again and see if it works. 
-  * If the agove solution does not work, or if you get other errors, try first
+  * If the above solution does not work, or if you get other errors, try first
     installing PASTA from the source code (see below) and then run 
     `./make-app.sh` from the pasta directory. This will create an app under
     `dist` directory, which you should be able to run and copy to any other location. 
-```
+
 
 ### 2. From Source Code
 Current version of PASTA has been developed and tested entirely on Linux and MAC. 
@@ -163,6 +160,7 @@ The command line also allows you to alter the behavior of the algorithm,
 and provides a larger sets of options that can be adjusted.
 
 Options can also be passed in as configuration files with the format:
+
 ```
 [commandline]
 option-name = value
@@ -231,11 +229,11 @@ Note that by default PASTA picks these parameters for you, and thus you might no
       You can control the behavior of temporary files using `--temporaries` (to set the tempdirectory),
     `-k` (to keep temporaries) and `--keepalignmenttemps` (to keep even more temporaries) options. 
     Note that PASTA also creates a bunch of temporary files in the output directory and never deletes them, 
-    because these temporary files are potentially useful for the useres. These files are all of the form
+    because these temporary files are potentially useful for the users. These files are all of the form
     `[jobname]_temp_*`. Some of the important files created are alignments and tree produced in individual 
     steps (alignments are saved both in masked and unmasked versions). These intermediate files all have 
     internal PASTA sequence names, which are slightly different from your actual sequence names.
-    The mapping between PASTA and real names are given als as a temporary file: `[jobname]_temp_name_translation.txt`.
+    The mapping between PASTA and real names are given also as a temporary file: `[jobname]_temp_name_translation.txt`.
 
    * Dry run: The `--exportconfig` option can be used to crate a config file that can be checked for 
      correctness before running the actual job. 

@@ -567,13 +567,13 @@ class FastaCustomReader(FastaReader):
             state_alphabet_factory=None,
             global_annotations_target=None):
         _LOG.debug("Will be using custom Fasta reader")
-        taxon_namespace = taxon_namespace_factory(label=None)
+        taxon_set = taxon_namespace_factory(label=None)
         if self.data_type is None:
             raise TypeError("Data type must be specified for this schema")
         char_matrix = char_matrix_factory(
                     self.data_type,
                     label=None,
-                    taxon_namespace=taxon_namespace)
+                    taxon_namespace=taxon_set)
         symbol_state_map = char_matrix.default_state_alphabet.full_symbol_state_map
 
         if self.simple_rows:
@@ -591,10 +591,11 @@ class FastaCustomReader(FastaReader):
                 continue
             if s.startswith('>'):
                 if self.simple_rows and curr_taxon and curr_vec:
-                    tmp_matrix[curr_taxon] = "".join(curr_vec)
+                    char_matrix[curr_taxon] = "".join(curr_vec)
                 name = s[1:].strip()
                 if self.simple_rows:
-                    curr_taxon = label=name
+                    curr_taxon = Taxon(label=name)
+                    taxon_set.append(curr_taxon)
                     if curr_taxon in tmp_matrix:
                         raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
                 else:
@@ -629,13 +630,13 @@ class FastaCustomReader(FastaReader):
                 curr_vec.append(s)
         if self.simple_rows and curr_taxon and curr_vec:
             tmp_matrix[curr_taxon] = "".join(curr_vec)
-        if self.simple_rows:
-            char_matrix.from_dict(tmp_matrix,char_matrix)
-        _LOG.debug("Custom reader finished reading string; %d building product" % len(char_matrix))
-        product = self.Product(
-                taxon_namespaces=None,
-                tree_lists=None,
-                char_matrices=[char_matrix])
+        #if self.simple_rows:
+        #    char_matrix.from_dict(tmp_matrix,char_matrix)
+        #_LOG.debug("Custom reader finished reading string; %d building product" % len(char_matrix))
+        # product = self.Product(
+        #        taxon_namespaces=None,
+        #        tree_lists=None,
+        #        char_matrices=[char_matrix])
         _LOG.debug("Custom reader finished reading")
         return tmp_matrix
         

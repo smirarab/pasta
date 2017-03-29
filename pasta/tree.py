@@ -199,5 +199,5 @@ def is_valid_tree(t):
         assert len(rc[0].child_nodes()) != 0
         return True
     elif num_children == 2:
-        assert((not rc[0].child_nodes()) and (not rc[0].child_nodes()))
+        assert((not rc[0].child_nodes()) and (not rc[1].child_nodes()))
     return True

@@ -104,9 +104,9 @@ class PastaJob (TreeHolder):
                         }
     def configuration(self):
         d = {}
-        for k in list(PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys()):
+        for k in PASTAAlignerJob.BEHAVIOUR_DEFAULTS.keys():
             d[k] = getattr(self, k)
-        for k in list(PastaJob.BEHAVIOUR_DEFAULTS.keys()):
+        for k in PastaJob.BEHAVIOUR_DEFAULTS.keys():
             d[k] = getattr(self, k)
         return d
 
@@ -323,7 +323,6 @@ class PastaJob (TreeHolder):
             translate[node.taxon.label] = newname
             t2[newname] = set([nalsj])            
         subsets_tree = PhylogeneticTree(Tree.get(data=self.tree_str,schema='newick'))
-        #subsets_tree = PhylogeneticTree(read_newick_with_translate(StringIO(self.tree_str),translate_dict=translate))
         for node in subsets_tree._tree.leaf_node_iter():
             node.alignment_subset_job = t2[translate[node.taxon.label]]
             #node.alignment_subset_job = t2[node.taxon]
@@ -467,7 +466,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 if self.pastamerge:
                     _LOG.debug("Build PASTA merge jobs")
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
-                    if len(list(self.pasta_team.subsets.values())) == 1:
+                    if len(self.pasta_team.subsets) == 1:
                         # can happen if there are no decompositions
                         for job in self.pasta_team.alignmentjobs:
                             jobq.put(job)

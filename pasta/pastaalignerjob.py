@@ -361,7 +361,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             self.kill()
 
     def bipartition_by_tree(self, option):
-        _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:20000]))
+        _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
 
         tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
         assert tree1.n_leaves > 0

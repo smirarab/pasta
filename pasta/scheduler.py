@@ -39,7 +39,7 @@ _LOG = get_logger(__name__)
 class LoggingQueue(Queue):
     def put(self, job):
         TIMING_LOG.info("%s queued" % str(job.context_str))
-        _LOG.debug("%s starting to be queued" % str(job.context_str))
+        _LOG.debug("%s queued" % str(job.context_str))
         Queue.put(self, job)
 
 jobq = LoggingQueue()
@@ -100,7 +100,7 @@ class LightJobForProcess():
             _stderr_fo = open_with_intermediates(os.path.join(proc_cwd, '.Job.stderr.txt'), 'w')
         k['stderr'] = _stderr_fo
 
-        for key,v in list(self.environ.items()):
+        for key,v in self.environ.items():
             os.environ[key] = v
 
         process = Popen(self._invocation, stdin = PIPE, universal_newlines=True, **k)
@@ -132,7 +132,6 @@ class pworker():
         self.err_shared_obj = err_shared_obj
         
     def __call__(self):
-        #import time;time.sleep(5) 
         while True:                                
             try:
                 _LOG.debug("Process Worker %d ticking on queue %s of size %d" %(self.i,str(self.q),self.q.qsize()))

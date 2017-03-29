@@ -1,3 +1,5 @@
+- Versions 1.7.1 -- 1.7.3:
+        - ** Bug Fix: ** several bug fixes related to the import to python 3
 - Version 1.7.0:
         - ** Change **: Moved to Dendropy 4 and now support python 3
 

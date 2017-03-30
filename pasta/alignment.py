@@ -604,7 +604,7 @@ class FastaCustomReader(FastaReader):
                 if curr_vec is not None and len(curr_vec) == 0:
                     raise DataParseError(message="FASTA error: Expected sequence, but found another sequence name ('{}')".format(name), line_num=line_index + 1, stream=stream)
                 if self.simple_rows:
-                    _LOG.debug(".")
+                    #_LOG.debug(".")
                     curr_vec = []
                 else:
                     curr_vec = char_matrix[curr_taxon]

@@ -359,12 +359,6 @@ class PastaProducts(object):
             self.alignment_streams.append(stream)
             self.input_fpath_alignment_stream_map[self._alignment_suffix_input_fpath_map[sf]] = stream
 
-    def close_streams(self):
-        for stream in self.other_streams:
-            stream.close()
-        for stream in self.alignment_streams:
-            stream.close()
-
     def create_output_prefix(self):
         output_prefix_stem = os.path.join(self._output_directory, self._job_file_name)
         idx = 0

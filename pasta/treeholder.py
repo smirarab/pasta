@@ -159,11 +159,11 @@ def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=F
     '''Uses `tree_str` and `dataset` to create a PhylogeneticTree object
     and calls `calc_splits` on the object before returning it.
     '''
-    _LOG.debug("start generating tree from string %s" %tree_str)
+    _LOG.debug("start generating tree from string %s" %tree_str[0:200])
     tree_stream = StringIO(tree_str)
     tree_list = read_and_encode_splits(dataset, tree_stream)
     t = tree_list[0]
-    _LOG.debug("tree  generated from string %s" %str(t))
+    _LOG.debug("tree  generated from string %s" %str(t)[0:200])
     #_LOG.debug("tree rooting %s" %str(t.is_rooted))
     return generate_tree_with_splits_from_tree(t, force_fully_resolved)
     

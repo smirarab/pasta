@@ -334,7 +334,7 @@ class PastaJob (TreeHolder):
         #Then make sure the tree is rooted at a branch (not at a node). 
         if len(subsets_tree._tree.seed_node.child_nodes()) > 2:
             subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
-        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick()))
+        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick())[0:200])
         # Then label internal branches based on their children, and collapse redundant edges. 
         for node in subsets_tree._tree.postorder_internal_node_iter():
             # my label is the intersection of my children, 

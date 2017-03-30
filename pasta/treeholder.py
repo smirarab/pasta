@@ -28,6 +28,7 @@ from pasta.errors import TaxaLabelsMismatchError
 from pasta import get_logger
 from dendropy import Tree, TreeList
 _LOG = get_logger(__name__)
+from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy as convert_node_to_root_polytomy
 
 # Provide a random number generator
 import random
@@ -151,6 +152,7 @@ def read_and_encode_splits(dataset, tree_stream, starting_tree=False):
     #from dendropy.legacy.treesplit import delete_outdegree_one
     #delete_outdegree_one(tree_list[0])
     tree_list[0].suppress_unifurcations()
+    convert_node_to_root_polytomy(tree_list[0].seed_node)
     return tree_list
 
 def generate_tree_with_splits_from_str(tree_str, dataset, force_fully_resolved=False):

@@ -52,12 +52,9 @@ class PhylogeneticTree(object):
 
     def get_centroid_edge(self,spanning=False):
         """Get centroid edge"""
-        _LOG.debug("Centroid for: %s " % str(self._tree))
         root = self._tree.seed_node
         root_children = root.child_nodes()
-        _LOG.debug("root: %s \n %s " %(root, str(root_children)))
         if root_children and (spanning or not hasattr(root_children[0].edge, "num_leaves_below")):
-            _LOG.debug("recalc")
             self.calc_splits()
             n_leaves = self.count_leaves()
             if spanning and len(root_children) == 1:

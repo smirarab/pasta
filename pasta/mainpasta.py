@@ -437,7 +437,6 @@ def finish_pasta_execution(pasta_team,
 
         MESSENGER.send_info("Writing resulting tree to %s" % pasta_products.tree_stream.name)
         tree_str = job.tree.compose_newick()
-        print("Tree is: %s" %tree_str)
         pasta_products.tree_stream.write("%s;\n" % tree_str)
         pasta_products.tree_stream.close()
 

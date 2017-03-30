@@ -581,7 +581,6 @@ class FastaCustomReader(FastaReader):
 								char_matrix.default_state_alphabet.fundamental_symbol_iter())))
             _LOG.debug("Legal characters are: %s" %legal_chars)
             re_ilegal = re.compile(r"[^%s]" %legal_chars);
-            tmp_matrix = dict()
             
         curr_vec = None
         curr_taxon = None
@@ -596,7 +595,7 @@ class FastaCustomReader(FastaReader):
                 if self.simple_rows:
                     curr_taxon = Taxon(label=name)
                     taxon_set.append(curr_taxon)
-                    if curr_taxon in tmp_matrix:
+                    if curr_taxon in char_matrix:
                         raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
                 else:
                     curr_taxon = taxon_namespace.require_taxon(label=name)
@@ -629,16 +628,14 @@ class FastaCustomReader(FastaReader):
                     raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), line_num=line_index + 1, col_num=m.start(), stream=stream)
                 curr_vec.append(s)
         if self.simple_rows and curr_taxon and curr_vec:
-            tmp_matrix[curr_taxon] = "".join(curr_vec)
-        #if self.simple_rows:
-        #    char_matrix.from_dict(tmp_matrix,char_matrix)
+            char_matrix[curr_taxon] = "".join(curr_vec)
         #_LOG.debug("Custom reader finished reading string; %d building product" % len(char_matrix))
         # product = self.Product(
         #        taxon_namespaces=None,
         #        tree_lists=None,
         #        char_matrices=[char_matrix])
-        _LOG.debug("Custom reader finished reading")
-        return tmp_matrix
+        _LOG.debug("Custom reader finished reading alignment with %d sequences ." %len(char_matrix))
+        return char_matrix
         
 
 class DNACustomFastaReader(FastaCustomReader):

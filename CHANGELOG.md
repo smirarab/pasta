@@ -1,3 +1,6 @@
+- Version 1.7.4:
+        - ** Bug Fix **: fixed a bug that eliminated one sequence 
+
 - Versions 1.7.1 -- 1.7.3:
         - ** Bug Fix: ** several bug fixes related to the import to python 3
 - Version 1.7.0:

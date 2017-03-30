@@ -173,7 +173,7 @@ class PhylogeneticTree(object):
         return self.compose_newick()
 
     def compose_newick(self):
-        return self._tree.as_string(schema="newick")
+        return self._tree.as_string(schema="newick",suppress_rooting = True)
         #return self._tree.compose_newick()
 
     def read_tree_from_file(self, treefile, file_format):

@@ -436,13 +436,13 @@ def finish_pasta_execution(pasta_team,
 
 
         MESSENGER.send_info("Writing resulting tree to %s" % pasta_products.tree_stream.name)
-        tree_str = str(job.tree)
+        tree_str = job.tree.compose_newick()
+        print("Tree is: %s" %tree_str)
         pasta_products.tree_stream.write("%s;\n" % tree_str)
 
 
         #outtree_fn = options.result
         #if outtree_fn is None:
-        #    if options.multilocus:
         #        outtree_fn = os.path.join(seqdir, "combined_%s.tre" % options.job)
         #    else:
         #        outtree_fn = aln_filename + ".tre"
@@ -458,6 +458,8 @@ def finish_pasta_execution(pasta_team,
             MESSENGER.send_info('The resulting alignment (with the names in a "safe" form) was first written as the file "%s"' % alignment_as_tmp_filename_to_report)
         if tree_as_tmp_filename_to_report is not None:
             MESSENGER.send_info('The resulting tree (with the names in a "safe" form) was first written as the file "%s"' % tree_as_tmp_filename_to_report)
+        
+        pasta_products.close_streams()
 
     finally:      
         stop_worker()  

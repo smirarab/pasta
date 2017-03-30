@@ -312,6 +312,7 @@ class PastaProducts(object):
         for stream_name in self.meta_product_types:
             self._set_stream(stream_name, None)
         self.alignment_streams = []
+        self.other_streams = []
         self.input_fpath_alignment_stream_map = {}
 
         # dummy output prefix
@@ -351,11 +352,18 @@ class PastaProducts(object):
             output_path = self.output_prefix + product_extension
             stream = open_with_intermediates(output_path, "w")
             self._set_stream(stream_name, stream)
+            self.other_streams.append(stream)
         for asi, sf in enumerate(self._output_alignment_suffixes):
             output_path = self.output_prefix + sf
             stream = open_with_intermediates(output_path, "w")
             self.alignment_streams.append(stream)
             self.input_fpath_alignment_stream_map[self._alignment_suffix_input_fpath_map[sf]] = stream
+
+    def close_streams(self):
+        for stream in self.other_streams:
+            stream.close()
+        for stream in self.alignment_streams:
+            stream.close()
 
     def create_output_prefix(self):
         output_prefix_stem = os.path.join(self._output_directory, self._job_file_name)

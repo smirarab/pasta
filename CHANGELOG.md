@@ -1,3 +1,6 @@
+- Version 1.7.6: 
+        - ** Bug Fix **: PASTA used to sometimes fail due to troubles with new dendropy rooting
+
 - Version 1.7.4:
         - ** Bug Fix **: fixed a bug that eliminated one sequence 
 

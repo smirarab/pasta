@@ -252,9 +252,9 @@ Debug
 -------
 To show debug information, set the following environmental variables: 
 ```
-PASTA_DEBUG=TRUE
-PASTA_LOGGING_LEVEL=DEBUG
-PASTA_LOGGING_FORMAT=RICH
+export PASTA_DEBUG=TRUE
+export PASTA_LOGGING_LEVEL=DEBUG
+export PASTA_LOGGING_FORMAT=RICH
 ```
 (last line is optional)
 

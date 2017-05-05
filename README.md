@@ -1,10 +1,7 @@
-This is an implementation of the PASTA (Practical Alignment using Sate and TrAnsitivity) algorithm published at [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#):
+This is an implementation of the PASTA (Practical Alignment using Sate and TrAnsitivity) algorithm published in [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#) and JCB:
 
-* 1. Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
-
-and also at [JCB](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156):
-
-* Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. doi:10.1089/cmb.2014.0156.
+* Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
+* Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. [doi:10.1089/cmb.2014.0156](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156).
 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 

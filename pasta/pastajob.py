@@ -26,9 +26,10 @@ import sys
 import copy
 from threading import Lock
 from pasta import get_logger, TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
-from dendropy.dataobject.taxon import Taxon
+from dendropy.datamodel.taxonmodel import Taxon
+from dendropy import Tree
 from pasta.tree import PhylogeneticTree
-from StringIO import StringIO
+from io import StringIO
 _LOG = get_logger(__name__)
 
 from pasta.treeholder import TreeHolder, resolve_polytomies,\
@@ -72,7 +73,7 @@ class PastaTeam (object):
     temp_fs = property(get_temp_fs)
 
 class AcceptMode:
-    BLIND_MODE, NONBLIND_MODE = range(2)
+    BLIND_MODE, NONBLIND_MODE = list(range(2))
 
 class PastaJob (TreeHolder):
     """The top-level PASTA algorithm class.  The run_pasta method iteratively
@@ -316,14 +317,15 @@ class PastaJob (TreeHolder):
     def build_subsets_tree(self, curr_tmp_dir_par):
         translate={}
         t2 = {}
-        for node in self.tree._tree.leaf_iter():
+        for node in self.tree._tree.leaf_node_iter():
             nalsj = self.pasta_team.subsets[node.taxon.label]            
             newname = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]
             translate[node.taxon.label] = newname
             t2[newname] = set([nalsj])            
-        subsets_tree = PhylogeneticTree(read_newick_with_translate(StringIO(self.tree_str),translate_dict=translate))
-        for node in subsets_tree._tree.leaf_iter():            
-            node.alignment_subset_job = t2[node.taxon]
+        subsets_tree = PhylogeneticTree(Tree.get(data=self.tree_str,schema='newick'))
+        for node in subsets_tree._tree.leaf_node_iter():
+            node.alignment_subset_job = t2[translate[node.taxon.label]]
+            #node.alignment_subset_job = t2[node.taxon]
         del t2
         del translate
         _LOG.debug("nodes labeled")        
@@ -331,8 +333,10 @@ class PastaJob (TreeHolder):
         #_LOG.debug("fake taxa inferred")                   
         #Then make sure the tree is rooted at a branch (not at a node). 
         if len(subsets_tree._tree.seed_node.child_nodes()) > 2:
-            subsets_tree._tree.reroot_at_edge(subsets_tree._tree.seed_node.child_nodes()[0].edge)                        
-        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick()))
+            c = subsets_tree._tree.seed_node.child_nodes()[0]
+            subsets_tree._tree.reroot_at_edge(c.edge,length1=c.edge.length/2., length2=c.edge.length/2.)                        
+        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick(suppress_rooting=False))[0:200])
+        #_LOG.debug("Subset Labeling (start):\n%s" %str(len(subsets_tree._tree.seed_node.child_nodes())))
         # Then label internal branches based on their children, and collapse redundant edges. 
         for node in subsets_tree._tree.postorder_internal_node_iter():
             # my label is the intersection of my children, 
@@ -365,7 +369,7 @@ class PastaJob (TreeHolder):
                 candidate_edges.add( (e.length,e) )
         #   Then sort the edges, and start removing them one by one
         #   only if an edge is still having intersecting labels at the two ends                                                    
-        candidate_edges = sorted(candidate_edges)        
+        candidate_edges = sorted(candidate_edges, key=lambda x:  x[0] if x[0] else -1)       
         for (el, edge) in candidate_edges:
             I = edge.tail_node.alignment_subset_job.intersection(edge.head_node.alignment_subset_job)
             if I:
@@ -464,11 +468,11 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 if self.pastamerge:
                     _LOG.debug("Build PASTA merge jobs")
                     subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
-                    if len(self.pasta_team.subsets.values()) == 1:
+                    if len(self.pasta_team.subsets) == 1:
                         # can happen if there are no decompositions
                         for job in self.pasta_team.alignmentjobs:
                             jobq.put(job)
-                        new_multilocus_dataset = self.pasta_team.subsets.values()[0].get_results()
+                        new_multilocus_dataset = list(self.pasta_team.subsets.values())[0].get_results()
                     else:
                         pariwise_tmp_dir_par = os.path.join(curr_tmp_dir_par, "pw")
                         pariwise_tmp_dir_par = self.pasta_team.temp_fs.create_subdir(pariwise_tmp_dir_par)    

@@ -1,8 +1,23 @@
 #!/usr/bin/env python
 from random import random
 import sys
-from dendropy.dataobject.taxon import Taxon
+from dendropy.datamodel.taxonmodel import Taxon
 from copy import deepcopy
+from functools import reduce
+import itertools
+
+import io
+try:
+    filetypes = (io.IOBase, file)
+except NameError:
+    filetypes = io.IOBase
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+    from io import BytesIO
+
 #############################################################################
 ##  this file is part of pasta.
 ##  see "license.txt" for terms and conditions of usage.
@@ -16,18 +31,21 @@ import re, os
 from pasta import get_logger, log_exception, MESSENGER, TIMING_LOG
 from pasta.filemgr import open_with_intermediates
 
+from dendropy.dataio import register_reader       
+
 _LOG = get_logger(__name__)
 _INDEL = re.compile(r"[-]")
 _DANGEROUS_NAME_CHARS = re.compile(r"[^a-zA-Z0-9]")
 ILLEGAL_CHARS = re.compile(r"[^a-zA-Z?-]")
 
 
-DATASET_TAXA_ATTR = "taxon_sets"
+DATASET_TAXA_ATTR = "taxon_namespaces"
 DATASET_CHAR_ATTR = "char_matrices"
 
 def is_sequence_legal(seq):
     """Check for illegal characters -- TODO, currently returns True"""
     return re.search(ILLEGAL_CHARS, seq) is None
+
 
 def read_fasta(src):
     """generator that returns (name, sequence) tuples from either a FASTA
@@ -38,11 +56,11 @@ def read_fasta(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
-    elif isinstance(src, file):
+            print(("The file `%s` does not exist, exiting gracefully" % src))
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
-        raise TypeError('FASTA reader cannot recognize the source of %s' % src)
+        raise TypeError('FASTA reader cannot recognize the source of %s, %s, %s' % (src,type(src),isinstance(src, filetypes)))
     name = None
     seq_list = list()
     for line_number, i in enumerate(file_obj):
@@ -70,8 +88,8 @@ def read_compact(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
-    elif isinstance(src, file):
+            print(("The file `%s` does not exist, exiting gracefully" % src))
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
         raise TypeError('FASTA reader cannot recognize the source of %s' % src)
@@ -118,7 +136,7 @@ def write_fasta(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         file_obj.write('>%s\n%s\n' % (name, seq) )
     if isinstance(dest, str):
         file_obj.close()
@@ -130,7 +148,7 @@ def write_compact_to_fasta(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name in alignment.keys():
+    for name in list(alignment.keys()):
         s = alignment.as_string_sequence(name)
         file_obj.write('>%s\n%s\n' % (name, s) )
     if isinstance(dest, str):
@@ -146,8 +164,8 @@ def write_compact_to_phylip(alignment, dest):
     else:
         file_obj = dest
 
-    file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length) )
-    for name in alignment.keys():
+    file_obj.write('%s\t%s\n' % (alignment.get_num_taxa(), alignment.sequence_length()) )
+    for name in list(alignment.keys()):
         s = alignment.as_string_sequence(name)
         file_obj.write('%s %s\n' % (name, s) )
     if isinstance(dest, str):
@@ -160,7 +178,7 @@ def write_compact_to_compact(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         file_obj.write('>%s\n%s\n%s\n' % (name, seq.seq, " ".join((str(x) for x in seq.pos))) )
     if isinstance(dest, str):
         file_obj.close()
@@ -173,7 +191,7 @@ def write_compact_to_compact3(alignment, dest):
     else:
         file_obj = dest
     colcount = alignment.colcount
-    for name, seq in alignment.items():            
+    for name, seq in list(alignment.items()):            
         pos=[]
         strt = 0
         for p in seq.pos:
@@ -182,7 +200,7 @@ def write_compact_to_compact3(alignment, dest):
             strt = p+1
         if colcount != strt:
             pos.append("%d-%d" % (strt,colcount-1))
-        file_obj.write('>%s\n%s\n@ %s\n'%(name, seq.seq,' '.join(pos)))
+        file_obj.write(">%s\n%s\n@ %s\n"%(name, seq.seq,' '.join(pos)))
     if isinstance(dest, str):
         file_obj.close()
         
@@ -194,7 +212,7 @@ def write_compact(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         i = 0
         s=[]
         for gaps in re.finditer(pt,seq):
@@ -215,10 +233,10 @@ def write_compact2(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():        
+    for name, seq in list(alignment.items()):        
         s = reduce(lambda x,y: x[:-1]+[(x[-1][0],x[-1][1]+1)] if y==x[-1][0] else x+[(y,1)],seq,[('',0)])
-        s=filter(lambda x: x[0]!='-', ((c,i) for i,c in enumerate(seq)))
-        file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))                        
+        s=[x for x in ((c,i) for i,c in enumerate(seq)) if x[0]!='-']
+        file_obj.write(">%s\n+%s\n@%s\n" %(name,"".join((x[0] for x in s)), " ".join((str(x[1]) for x in s))))
     if isinstance(dest, str):
         file_obj.close()
 
@@ -230,7 +248,7 @@ def write_compact3(alignment, dest):
         file_obj = open(dest, "w")
     else:
         file_obj = dest        
-    for name, seq in alignment.items():
+    for name, seq in list(alignment.items()):
         i = 0
         s=[]
         p=[]
@@ -255,8 +273,8 @@ def read_compact3(src):
         try:
             file_obj = open(src, "rU")
         except IOError:
-            print("The file `%s` does not exist, exiting gracefully" % src)
-    elif isinstance(src, file):
+            print(("The file `%s` does not exist, exiting gracefully" % src))
+    elif isinstance(src, filetypes):
             file_obj = src
     else:
         raise TypeError('FASTA reader cannot recognize the source of %s' % src)
@@ -270,7 +288,6 @@ def read_compact3(src):
                 lastpos = 0
                 seq_list="".join(seq_list)
                 for x in pos_list:
-                    #print x
                     seq.append(seq_list[0:x[0]-lastpos])
                     seq.append("-"*(x[1]-x[0]))
                     seq_list = seq_list[x[0]-lastpos:]
@@ -296,7 +313,6 @@ def read_compact3(src):
     lastpos = 0
     seq_list="".join(seq_list)
     for x in pos_list:
-        #print x
         seq.append(seq_list[0:x[0]-lastpos])
         seq.append("-"*(x[1]-x[0]))
         seq_list = seq_list[x[0]-lastpos:]
@@ -353,7 +369,7 @@ class Alignment(dict, object):
 
     def get_sequence_names(self):
         "returns a list of sequence names"
-        return self.keys()
+        return list(self.keys())
 
     def get_num_taxa(self):
         "returns the number sequences"
@@ -390,10 +406,14 @@ class Alignment(dict, object):
         
         file_obj = open_with_intermediates(filename,'w')
         if zipout:
-            import gzip
-            file_obj.close()            
-            file_obj = gzip.open(filename, "wb", 6)
+            file_obj.close()
+            file_obj = StringIO()
         self.write(file_obj, file_format=file_format)
+        if zipout:
+            import gzip
+            file_obj_gz = gzip.open(filename, "wb", 6)
+            file_obj_gz.write(str.encode(file_obj.getvalue()))
+            file_obj_gz.close()
         file_obj.close()
 
     def write(self, file_obj, file_format):
@@ -419,7 +439,7 @@ class Alignment(dict, object):
         lines may bet "ragged".
         """
         file_obj = open_with_intermediates(filename, 'w')
-        for name, seq in self.items():
+        for name, seq in list(self.items()):
             new_seq = re.sub(_INDEL, '', seq)
             if new_seq != '':
                 file_obj.write('>%s\n%s\n' % (name, new_seq))
@@ -431,8 +451,8 @@ class Alignment(dict, object):
         """
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
-        for name, seq in self.iteritems():
-            new_seq = re.sub(_INDEL, '', seq)
+        for name, seq in self.items():
+            new_seq = re.sub(_INDEL, '', str(seq))
             if new_seq != '':
                 new_alignment[name] = new_seq
         return new_alignment
@@ -442,7 +462,7 @@ class Alignment(dict, object):
         new_alignment = Alignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            if self.has_key(key):
+            if key in self:
                 new_alignment[key] = self[key]
         return new_alignment
 
@@ -453,7 +473,7 @@ class Alignment(dict, object):
         if self.is_empty():
             raise ValueError("The alignment is empty.\n")
         else:
-            v = self.values()
+            v = list(self.values())
             first_seq_len = len(v[0])
             return all([len(i) == first_seq_len for i in v])
 
@@ -462,24 +482,23 @@ class Alignment(dict, object):
 
     def sequence_length(self):
         if self.is_aligned():
-            return len(self.values()[0])
+            return len(list(self.values())[0])
 
     def max_sequence_length(self):
-        return max(len(re.sub(_INDEL, '', v)) for v in self.values())
+        return max(len(re.sub(_INDEL, '', v)) for v in list(self.values()))
 
     
     def from_bytearray_to_string(self):
-        for k,v in self.iteritems():
+        for k,v in self.items():
             self[k] = str(v)
 
     def from_string_to_bytearray(self):
-        for k,v in self.iteritems():
+        for k,v in self.items():
             self[k] = bytearray(v)   
 
     def mask_gapy_sites(self,minimum_seq_requirement):        
-        n = len(self.values()[0])
+        n = len(list(self.values())[0])
         _LOG.debug("Masking alignment sites with fewer than %d characters from alignment with %d columns" %(minimum_seq_requirement,n))
-        #print "LLLLENNNNN",len(self['sci'])
         
 #        # The following implements row-based masking. Seems to be less efficient than column based
 #        masked = zip(range(0,n),[minimum_seq_requirement] * n)
@@ -498,9 +517,9 @@ class Alignment(dict, object):
 
         # The following implements column-based masking. Seems to be more efficient than row based
         masked = []
-        allseqs = self.values()
+        allseqs = list(self.values())
         allseqs.sort(key=lambda x: x.count("-"))
-        for c in xrange(0,n):
+        for c in range(0,n):
             r = minimum_seq_requirement
             for seq in allseqs:
                 if seq[c] != "-":
@@ -513,123 +532,131 @@ class Alignment(dict, object):
         _LOG.debug("%d Columns identified for masking" %len(masked))
         if not masked:
             return
-        included = filter(lambda z: z[0]!=z[1], reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]))
+        included = [z for z in reduce(lambda x,y: x+[(x[-1][1]+1,y)],masked,[(-1,-1)]) if z[0]!=z[1]]
         if not included:
             included.append((masked[-1]+1,n))
         if included[-1][1] < n and masked[-1]+1 != n:
             included.append((masked[-1]+1,n))
-        for k,seq in self.iteritems():
+        for k,seq in self.items():
             tmp = []
             for (i,j) in included:
                 tmp.append(seq[i:j])
             self[k] = "".join(tmp)
-        nn = len(self.values()[0])
+        nn = len(list(self.values())[0])
         assert (len(masked) == n - nn), "Masking results is not making sense: %d %d %d" %(len(masked), n , nn)
         _LOG.debug("Masking done. Before masking: %d; After masking: %d; minimum requirement: %d;" %(n,nn,minimum_seq_requirement))
 
     def merge_in(self, she):
         merge_in(self,she)
 
-from dendropy.dataio.fasta import FastaReader
-from dendropy import dataobject
+from dendropy.dataio.fastareader import FastaReader
+from dendropy import datamodel
+from dendropy.datamodel import datasetmodel as dataobject
 from dendropy.utility.error import DataParseError
-from dendropy.dataio import fasta
+#from dendropy.dataio import fasta
 
 class FastaCustomReader(FastaReader):
     
     def __init__(self, **kwargs):
         FastaReader.__init__(self,**kwargs)        
+        self.simple_rows = True
         
-    def read(self, stream):
-        """
-        Main file parsing driver.
-        """
+    def _read(self, stream,taxon_namespace_factory=None,
+            tree_list_factory=None,
+            char_matrix_factory=None,
+            state_alphabet_factory=None,
+            global_annotations_target=None):
         _LOG.debug("Will be using custom Fasta reader")
-        if self.exclude_chars:
-            return self.dataset
-        if self.dataset is None:
-            self.dataset = dataobject.DataSet()
-        taxon_set = self.get_default_taxon_set()
-        self.char_matrix = self.dataset.new_char_matrix(char_matrix_type=self.char_matrix_type,
-                taxon_set=taxon_set)
-        if isinstance(self.char_matrix, dataobject.StandardCharacterMatrix) \
-            and len(self.char_matrix.state_alphabets) == 0:
-                self.char_matrix.state_alphabets.append(dataobject.get_state_alphabet_from_symbols("0123456789"))
-                self.char_matrix.default_state_alphabet = self.char_matrix.state_alphabets[0]
-        if self.char_matrix.default_state_alphabet is not None:
-            self.symbol_state_map = self.char_matrix.default_state_alphabet.symbol_state_map()
-        elif len(self.char_matrix.state_alphabets) == 0:
-            raise ValueError("No state alphabets defined")
-        elif len(self.char_matrix.state_alphabets) > 1:
-            raise NotImplementedError("Mixed state-alphabet matrices not supported")
-        else:
-            self.symbol_state_map = self.char_matrix.state_alphabets[0]
+        taxon_set = taxon_namespace_factory(label=None)
+        if self.data_type is None:
+            raise TypeError("Data type must be specified for this schema")
+        char_matrix = char_matrix_factory(
+                    self.data_type,
+                    label=None,
+                    taxon_namespace=taxon_set)
+        symbol_state_map = char_matrix.default_state_alphabet.full_symbol_state_map
 
         if self.simple_rows:
-            legal_chars = self.char_matrix.default_state_alphabet.get_legal_symbols_as_str()
+            legal_chars = "".join(sorted(str(x) for x in itertools.chain(char_matrix.default_state_alphabet.multistate_symbol_iter(),
+								char_matrix.default_state_alphabet.fundamental_symbol_iter())))
+            _LOG.debug("Legal characters are: %s" %legal_chars)
             re_ilegal = re.compile(r"[^%s]" %legal_chars);
             
         curr_vec = None
         curr_taxon = None
-
         for line_index, line in enumerate(stream):
             s = line.strip()
             if not s:
                 continue
             if s.startswith('>'):
                 if self.simple_rows and curr_taxon and curr_vec:
-                    self.char_matrix[curr_taxon] = "".join(curr_vec)
+                    char_matrix[curr_taxon] = "".join(curr_vec)
                 name = s[1:].strip()
-                #curr_taxon = taxon_set.require_taxon(label=name)
-                curr_taxon = Taxon(label=name)
-                taxon_set.append(curr_taxon)
-                if curr_taxon in self.char_matrix:
-                    raise DataParseError(message="Fasta error: Repeated sequence name (%s) found" % name, row=line_index + 1, stream=stream)
-                if curr_vec is not None and len(curr_vec) == 0:
-                    raise DataParseError(message="Fasta error: Expected sequence, but found another sequence name (%s)" % name, row=line_index + 1, stream=stream)
                 if self.simple_rows:
+                    curr_taxon = Taxon(label=name)
+                    taxon_set.append(curr_taxon)
+                    if curr_taxon in char_matrix:
+                        raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
+                else:
+                    curr_taxon = taxon_namespace.require_taxon(label=name)
+                    if curr_taxon in char_matrix:
+                        raise DataParseError(message="FASTA error: Repeated sequence name ('{}') found".format(name), line_num=line_index + 1, stream=stream)
+                if curr_vec is not None and len(curr_vec) == 0:
+                    raise DataParseError(message="FASTA error: Expected sequence, but found another sequence name ('{}')".format(name), line_num=line_index + 1, stream=stream)
+                if self.simple_rows:
+                    #_LOG.debug(".")
                     curr_vec = []
                 else:
-                    curr_vec = dataobject.CharacterDataVector(taxon=curr_taxon)
-                    self.char_matrix[curr_taxon] = curr_vec
+                    curr_vec = char_matrix[curr_taxon]
             elif curr_vec is None:
-                raise DataParseError(message="Fasta error: Expecting a lines starting with > before sequences", row=line_index + 1, stream=stream)
+                raise DataParseError(message="FASTA error: Expecting a lines starting with > before sequences", line_num=line_index + 1, stream=stream)
+            elif not self.simple_rows:
+                states = []
+                for col_ind, c in enumerate(s):
+                    c = c.strip()
+                    if not c:
+                        continue
+                    try:
+                        state = symbol_state_map[c]
+                    except KeyError:
+                        raise DataParseError(message="Unrecognized sequence symbol '{}'".format(c), line_num=line_index + 1, col_num=col_ind + 1, stream=stream)
+                    states.append(state)
+                curr_vec.extend(states)
             else:
-                if self.simple_rows:
-                    m = re_ilegal.search(s)
-                    if m:
-                        raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), row=line_index + 1, column=m.start(), stream=stream)
-                    curr_vec.append(s)
-                else:
-                    for col_ind, c in enumerate(s):
-                        c = c.strip()
-                        if not c:
-                            continue
-                        try:
-                            state = self.symbol_state_map[c]
-                            curr_vec.append(dataobject.CharacterDataCell(value=state))
-                        except:
-                            raise DataParseError(message='Unrecognized sequence symbol "%s"' % c, row=line_index + 1, column=col_ind + 1, stream=stream)
+                m = re_ilegal.search(s)
+                if m:
+                    raise DataParseError(message='Unrecognized sequence symbol "%s" (check to make sure the --datatype is set properly)' % m.group(0), line_num=line_index + 1, col_num=m.start(), stream=stream)
+                curr_vec.append(s)
         if self.simple_rows and curr_taxon and curr_vec:
-            self.char_matrix[curr_taxon] = "".join(curr_vec)
-        _LOG.debug("Custom reader finished reading")
-        return self.dataset
+            char_matrix[curr_taxon] = "".join(curr_vec)
+        #_LOG.debug("Custom reader finished reading string; %d building product" % len(char_matrix))
+        # product = self.Product(
+        #        taxon_namespaces=None,
+        #        tree_lists=None,
+        #        char_matrices=[char_matrix])
+        _LOG.debug("Custom reader finished reading alignment with %d sequences ." %len(char_matrix))
+        return char_matrix
         
 
 class DNACustomFastaReader(FastaCustomReader):
     def __init__(self, **kwargs):
-        FastaCustomReader.__init__(self, char_matrix_type=dataobject.DnaCharacterMatrix, **kwargs)
+        FastaCustomReader.__init__(self, data_type="dna", **kwargs)
 
 class RNACustomFastaReader(FastaCustomReader):
     def __init__(self, **kwargs):
-        FastaCustomReader.__init__(self, char_matrix_type=dataobject.RnaCharacterMatrix, **kwargs)
+        FastaCustomReader.__init__(self, data_type="rna", **kwargs)
 
 class ProteinCustomFastaReader(FastaCustomReader):
     def __init__(self, **kwargs):
-        FastaCustomReader.__init__(self, char_matrix_type=dataobject.ProteinCharacterMatrix, **kwargs)        
+        FastaCustomReader.__init__(self, data_type="protein", **kwargs)        
 
 import dendropy
-from dendropy.dataio import ioclient        
+from dendropy.dataio import register_reader       
+register_reader("fasta", FastaCustomReader)
+register_reader("dnafasta", DNACustomFastaReader)
+register_reader("rnafasta", RNACustomFastaReader)
+register_reader("proteinfasta", ProteinCustomFastaReader)
+
 class SequenceDataset(object):
     """Class for creating a dendropy reader, validating the input, and
     keeping mapping of real taxa names to "safe" versions that will not
@@ -688,10 +715,6 @@ class SequenceDataset(object):
         self.safe_to_real_names = {}
         self.datatype = None
         self.filename = '<unknown>'
-        ioclient.register("fasta", FastaCustomReader, fasta.FastaWriter, None)
-        ioclient.register("dnafasta", DNACustomFastaReader, fasta.FastaWriter, None)
-        ioclient.register("rnafasta", RNACustomFastaReader, fasta.FastaWriter, None)
-        ioclient.register("proteinfasta", ProteinCustomFastaReader, fasta.FastaWriter, None)
 
     def get_character_matrix(self):
         """Returns the first character matrix or raises IndexError if no
@@ -709,6 +732,7 @@ class SequenceDataset(object):
         specify the type of data, then the datatype arg should be DNA, RNA
         or 'PROTEIN'
         """
+        _LOG.debug("using read function from SequenceDataset class with careful_parse = %s" %careful_parse)
         self.filename = filename
         fup = file_format.upper()
         amibig_formats = ['FASTA']
@@ -723,10 +747,11 @@ class SequenceDataset(object):
         try:            
             self.dataset = dendropy.DataSet()
             if careful_parse:
-                self.dataset.read(file_obj, schema=file_format)
+                self.dataset.read(file=file_obj, schema=file_format)
             else:
+                #self.dataset.read(file_obj, schema=file_format, row_type='str')
 
-                self.dataset.read(file_obj, schema=file_format, row_type='str')
+                self.dataset.read(file=file_obj, schema=file_format)
                 # do some cursory checks of the datatype
                 _LOG.debug("File read. checking input ... ")
                 import re
@@ -736,17 +761,17 @@ class SequenceDataset(object):
                     pattern = re.compile(r"([^-ACUGN?RYMKSWHBVD])", re.I)
                 elif dup == "PROTEIN":
                     pattern = re.compile(r"([^-ABCDEFGHIKLMNPQRSTVWY?XZ])", re.I)
-                taxa_block = self.dataset.taxon_sets[0]
+                taxa_block = self.dataset.taxon_namespaces[0]
                 char_block = self.dataset.char_matrices[0]
                 for taxon in taxa_block:
-                    char_vec = char_block[taxon]
+                    char_vec = str(char_block[taxon])
                     m = pattern.search(char_vec)
                     if m:
                         sym = m.groups(1)
                         raise ValueError("Unexpected symbol %s in file of datatype %s" % (sym, datatype))
 
-            n1 = len(self.dataset.taxon_sets[0].labels())
-            n2 = len(set(self.dataset.taxon_sets[0].labels()))
+            n1 = len(self.dataset.taxon_namespaces[0].labels())
+            n2 = len(set(self.dataset.taxon_namespaces[0].labels()))
             if n1 != n2:
                 raise ValueError("There are redundant sequence names in your data set!")
         except:
@@ -757,7 +782,7 @@ class SequenceDataset(object):
             self.datatype = dup
         except:
             raise ValueError("No data was read from the file.")
-        tb.lock()
+        #tb.lock()
 
     def sequences_are_valid(self, remap_missing=False, map_missing_to=None):
         """Check for ? in sequences"""
@@ -770,11 +795,11 @@ class SequenceDataset(object):
         try:
             sa_list = char_block.state_alphabets
             self.alphabet = sa_list[0]
-            missing = self.alphabet.missing
+            #missing = self.alphabet.missing
         except:
             raise ValueError("Expecting a simple datatype with one state alphabet")
-        if missing is None:
-            raise ValueError("Expecting a DNA, RNA, or amino acid sequences")
+        #if missing is None:
+        #    raise ValueError("Expecting a DNA, RNA, or amino acid sequences")
 
         for taxon in taxa_block:
             char_vec = char_block[taxon]
@@ -850,8 +875,8 @@ class MultiLocusDataset(list):
                         careful_parse=careful_parse)
                 fileobj.close()
                 _LOG.debug("sd.datatype = %s" % sd.datatype)
-            except Exception, x:
-                raise Exception("Error reading file:\n%s\n" % str(x))
+            except Exception as x:
+                raise #Exception(x,"Error reading file:\n%s\n" % str(x))
 
             try:
                 if not sd.sequences_are_valid(remap_missing=False):
@@ -864,7 +889,7 @@ class MultiLocusDataset(list):
                     map_missing_to = (m == "AMBIGUOUS" and sd.alphabet.any_residue.symbol or None)
                     if not sd.sequences_are_valid(remap_missing=True, map_missing_to=map_missing_to):
                         raise Exception("Input sequences could not be prepared for PASTA.  Please report this error\n")
-            except Exception, x:
+            except Exception as x:
                 raise Exception('Error in processing file "%s":\n%s\n' % (seq_fn, str(x)))
             self.append(sd)
         self.create_dendropy_dataset()
@@ -891,8 +916,8 @@ class MultiLocusDataset(list):
 
     def create_dendropy_dataset(self):
         _LOG.debug("creating dendropy dataset")
-        from dendropy import DataSet, TaxonSet
-        taxon_set = TaxonSet()
+        from dendropy import DataSet, TaxonNamespace
+        taxon_set = TaxonNamespace()
         self.taxa_label_to_taxon = {}
         for n, element in enumerate(self):
             if not isinstance(element, SequenceDataset):
@@ -904,8 +929,8 @@ class MultiLocusDataset(list):
                     self.taxa_label_to_taxon[taxon.label] = nt
                     taxon_set.append(nt)
         self.dataset = DataSet()
-        self.dataset.attach_taxon_set(taxon_set)
-        taxon_set.lock()
+        self.dataset.attach_taxon_namespace(taxon_set)
+        #taxon_set.lock()
         _LOG.debug("dendropy dataset created and locked")
 
     def relabel_for_pasta(self):
@@ -933,7 +958,7 @@ class MultiLocusDataset(list):
                 trees_taxon.label = safe_name
                 #_LOG.debug("%s (%d) -> %s" % (taxon.label, id(taxon), safe_name))
                 taxon.label = safe_name
-                a[safe_name] = char_vec
+                a[safe_name] = str(char_vec)
             alignment_list.append(a)
         # replace the contents of the MultiLocusDataset with the newly
         #   created alignment dictionaries.
@@ -954,12 +979,13 @@ class MultiLocusDataset(list):
         for n, element in enumerate(self):
             if element.datatype.upper() != current_datatype:
                 continue
+            _LOG.debug(type(element))
             if isinstance(element, SequenceDataset):
                 char_matrix = element.dataset.char_matrices[0]
-                for taxon, seq in char_matrix.iteritems():
+                for taxon, seq in char_matrix.items():
                     char_matrix[taxon] = seq.replace(match_char, replace_char)
             else:
-                for taxon, seq in element.iteritems():
+                for taxon, seq in element.items():
                     element[taxon] = seq.replace(match_char, replace_char)
             element.datatype = new_datatype
 
@@ -986,13 +1012,13 @@ class MultiLocusDataset(list):
                 a = t
             this_el_len = a.sequence_length()
             partitions.append( a.partition_info(base) )
-            for k in a.keys():
-                if combined_alignment.has_key(k):
+            for k in list(a.keys()):
+                if k in combined_alignment:
                     combined_alignment[k] += a[k]
                 else:
                     combined_alignment[k] = '-'*base + a[k]
-            for i in combined_alignment.keys():
-                if not a.has_key(i):
+            for i in list(combined_alignment.keys()):
+                if i not in a:
                     combined_alignment[i] += '-'*this_el_len
             base += this_el_len
 
@@ -1010,14 +1036,14 @@ class MultiLocusDataset(list):
         """Changes the labels in the contained alignment back to their original name"""
         for alignment in self:
             new_aln = {}
-            for k, v in alignment.iteritems():
+            for k, v in alignment.items():
                 real_name = self.safe_to_real_names[k][0]
                 new_aln[real_name] = v
                 self.taxa_label_to_taxon[real_name].label = real_name
-            keys = alignment.keys()
+            keys = list(alignment.keys())
             for k in keys:
                 del alignment[k]
-            for k, v in new_aln.iteritems():
+            for k, v in new_aln.items():
                 alignment[k] = v
         self.safe_to_real_names = {}
     def sub_alignment(self, taxon_names):
@@ -1064,7 +1090,7 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
                 mat = element.get_character_matrix()
                 ntax = len(mat)
                 nchar = None
-                for row in mat.values():
+                for row in list(mat.values()):
                     ncr = len(row)
                     if nchar is None:
                         nchar = ncr
@@ -1074,9 +1100,9 @@ def summary_stats_from_parse(filepath_list, datatype_list, md, careful_parse):
                         nchar = max(ncr, nchar)
                 t_c_pair = (ntax, nchar)
                 taxa_char_tuple_list.append(t_c_pair)
-            num_tax_total = len(md.dataset.taxon_sets[0])
+            num_tax_total = len(md.dataset.taxon_namespaces[0])
             return (datatype, taxa_char_tuple_list, num_tax_total, appears_aligned, md)
-        except Exception, e:
+        except Exception as e:
             caught_exception = e
     raise e
 
@@ -1125,7 +1151,7 @@ class CompactAlignment(dict,object):
         new_alignment = CompactAlignment()
         new_alignment.datatype = self.datatype
         for key in sub_keys:
-            if self.has_key(key):
+            if key in self:
                 new_alignment[key] = self[key]
         return new_alignment
    
@@ -1139,13 +1165,13 @@ class CompactAlignment(dict,object):
     def unaligned(self):
         n = Alignment()
         n.datatype = self.datatype
-        for k,seq in self.iteritems():
+        for k,seq in self.items():
             n[k] = seq.seq
         return n
     
     def iter_column_character_count(self, seqsubset = None):
         if seqsubset is None:
-            seqsubset = self.keys()
+            seqsubset = list(self.keys())
         
         counts = [0] * self.colcount
         for k in seqsubset:
@@ -1164,6 +1190,7 @@ class CompactAlignment(dict,object):
         for i,c in enumerate(self.iter_column_character_count(seqsubset)):
             if c <= x:
                 yield i
+            
                 
     def get_insertion_columns(self,shared):
         return set(i for i in self.iter_columns_with_maximum_char_count(0,shared)) 
@@ -1199,7 +1226,6 @@ class CompactAlignment(dict,object):
         ishe = 0
         inew = 0
         while ime < melen or ishe < shelen:
-            #print ime,ishe
             if ime in me_ins:              
                 memap.append(inew)
                 ime += 1
@@ -1215,7 +1241,7 @@ class CompactAlignment(dict,object):
             
         self.colcount = inew
         
-        for seq in self.itervalues():
+        for seq in self.values():
             seq.pos = [memap[p] for p in seq.pos]
             
         for k in onlyhers:
@@ -1240,7 +1266,7 @@ class CompactAlignment(dict,object):
                    %(self.colcount))
 
         masked = set()
-        for seq in self.itervalues():
+        for seq in self.values():
             for c,i in zip(seq.seq,seq.pos):
                 if c > 'a' and c < 'z':
                     masked.add(i)
@@ -1257,7 +1283,7 @@ class CompactAlignment(dict,object):
         
         off = 0
         colmap = []
-        for c in xrange(0,self.colcount):
+        for c in range(0,self.colcount):
             if c in masked:
                 off += 1
                 colmap.append(-1)
@@ -1265,12 +1291,11 @@ class CompactAlignment(dict,object):
                 colmap.append(c - off)
                 
         _LOG.debug("Column index mapping calculated.")
-        for seq in self.itervalues():
+        for seq in self.values():
             # Find ID of char positions that would be masked
             maskind = [i for i,c in enumerate(seq.pos) if c in masked]
             n = len(seq.pos)
-            included = filter(lambda z: z[0]!=z[1], 
-                              reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]))
+            included = [z for z in reduce(lambda x,y: x+[(x[-1][1]+1,y)],maskind,[(-1,-1)]) if z[0]!=z[1]]
             if not maskind:
                 included.append((0,n))
             elif (not included or included[-1][1] < n) and maskind[-1]+1 != n:
@@ -1310,10 +1335,7 @@ class CompactAlignment(dict,object):
         for name, seq in read_func(file_obj):
             cseq, l = self.get_alignment_seq_object(seq)
             self[name] = cseq
-            #print cseq.seq
-            #print cseq.pos
             self.colcount = max(l, self.colcount)
-        #print self.colcount
         
     def as_string_sequence(self,name):
         seq = self[name]
@@ -1324,7 +1346,7 @@ class CompactAlignment(dict,object):
         l = 0
         if isinstance(seq, str):            
             for m in re.finditer(nogappat, seq):
-                cseq.pos.extend(xrange(m.start(),m.end()))
+                cseq.pos.extend(range(m.start(),m.end()))
             cseq.seq = re.sub(gappat,"",seq)
             l = len(seq)
         else:
@@ -1334,12 +1356,12 @@ class CompactAlignment(dict,object):
         return (cseq,l)
 
     def update_dict_from(self, alignment):
-        for k in self.iterkeys():
+        for k in self.keys():
             alignment[k] = self.as_string_sequence(k)
         alignment.datatype = self.datatype
             
     def update_from_alignment(self, alignment):
-        for k,v in alignment.iteritems():
+        for k,v in alignment.items():
             self[k],l = self.get_alignment_seq_object(v)
         self.colcount = l
         self.datatype = alignment.datatype
@@ -1349,10 +1371,14 @@ class CompactAlignment(dict,object):
         
         file_obj = open_with_intermediates(filename,'w')
         if zipout:
-            import gzip
-            file_obj.close()            
-            file_obj = gzip.open(filename, "wb", 6)
+            file_obj.close()
+            file_obj = StringIO()
         self.write(file_obj, file_format=file_format)
+        if zipout:
+            import gzip
+            file_obj_gz = gzip.open(filename, "wb", 6)
+            file_obj_gz.write(str.encode(file_obj.getvalue()))
+            file_obj_gz.close()
         file_obj.close()
 
     def write(self, file_obj, file_format):
@@ -1375,11 +1401,11 @@ def compact(alg):
     return comp
 
 def get_insertion_columns(shared,alg):
-    n = len(alg.values()[0])
-    insertions = range(0,n)
+    n = len(list(alg.values())[0])
+    insertions = list(range(0,n))
     for s in shared:
         seq = alg[s]
-        insertions = filter(lambda c: seq[c] == "-", insertions)
+        insertions = [c for c in insertions if seq[c] == "-"]
         if not insertions:
             break
     return set(insertions) 
@@ -1407,19 +1433,18 @@ def merge_in(me, she):
     _LOG.debug("Insertion Columns: %d,%d" %(len(me_ins),len(she_ins)))
     
     newme = {}
-    for k in me.iterkeys():
+    for k in me.keys():
         newme[k] = bytearray()
     newshe = {}            
     for key in onlyhers: 
         newshe[key] = bytearray()
     
-    melen =  len(me.values()[0])
-    shelen =  len(she.values()[0])
+    melen =  len(list(me.values())[0])
+    shelen =  len(list(she.values())[0])
 
     ime = 0
     ishe = 0
     while ime < melen or ishe < shelen:
-        #print ime,ishe
         if ime in me_ins:
             s = ime
             while ime in me_ins:
@@ -1427,9 +1452,9 @@ def merge_in(me, she):
                 ime += 1                
             l = ime - s
             ins = bytearray("-" * l) # TODO: test caching these in advance
-            for seq in newshe.itervalues():
+            for seq in newshe.values():
                 seq.extend(ins)
-            for k,seq in newme.iteritems():
+            for k,seq in newme.items():
                 seq.extend(me[k][s:ime])
         elif ishe in she_ins:
             s = ishe
@@ -1438,9 +1463,9 @@ def merge_in(me, she):
                 ishe += 1
             l = ishe - s
             ins = bytearray("-" * l)
-            for seq in newme.itervalues():
+            for seq in newme.values():
                 seq.extend(ins)
-            for k,seq in newshe.iteritems():
+            for k,seq in newshe.items():
                 seq.extend(she[k][s:ishe])
         else:       
             sme = ime
@@ -1448,18 +1473,17 @@ def merge_in(me, she):
             while ime not in me_ins and ishe not in she_ins and ime < melen and ishe < shelen:     
                 ime += 1
                 ishe += 1
-            for k,seq in newme.iteritems():
+            for k,seq in newme.items():
                 seq.extend(me[k][sme:ime])
-            for k,seq in newshe.iteritems():
+            for k,seq in newshe.items():
                 seq.extend(she[k][sshe:ishe])
             
-    #print "final",ime,ishe
             
     newme.update(newshe)
     
     me.clear()
        
-    for k,v in newme.iteritems():
+    for k,v in newme.items():
         me[k] = str(v)            
         
     TIMING_LOG.info("transitivitymerge (%d) finished" %ID )

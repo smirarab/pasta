@@ -1,3 +1,14 @@
+- Version 1.7.6: 
+        - ** Bug Fix **: PASTA used to sometimes fail due to troubles with new dendropy rooting
+
+- Version 1.7.4:
+        - ** Bug Fix **: fixed a bug that eliminated one sequence 
+
+- Versions 1.7.1 -- 1.7.3:
+        - ** Bug Fix: ** several bug fixes related to the import to python 3
+- Version 1.7.0:
+        - ** Change **: Moved to Dendropy 4 and now support python 3
+
 - Version 1.6.4:
 	- ** Change:** Fix the copyright year to 2013-2016 
 

@@ -36,7 +36,7 @@ from pasta import PROGRAM_WEBSITE
 from pasta import PROGRAM_YEAR
 from pasta import GLOBAL_DEBUG
 from pasta import DEFAULT_MAX_MB
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from pasta import pasta_is_frozen
 from pasta import pasta_home_dir
 from pasta.configure import get_invoke_run_pasta_command
@@ -117,9 +117,9 @@ class PastaFrame(wx.Frame):
         self.statusbar.SetStatusText("PASTA Ready!")
         if wx.Platform == "__WXMSW__" or wx.Platform == "__WXMAC__":
             import base64
-            import cStringIO
+            import io
             icon = wx.EmptyIcon()
-            icon.CopyFromBitmap(wx.BitmapFromImage(wx.ImageFromStream(cStringIO.StringIO(base64.b64decode(ICO_STR)))))
+            icon.CopyFromBitmap(wx.BitmapFromImage(wx.ImageFromStream(io.BytesIO(base64.b64decode(ICO_STR)))))
             self.SetIcon(icon)
 
         self.ctrls = []
@@ -181,7 +181,7 @@ class PastaFrame(wx.Frame):
         sizer.Add(self.txt_outputdir, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "CPU(s) Available"), (cr,0), flag=wx.ALIGN_LEFT )
-        self.cb_ncpu = wx.ComboBox(self, -1, "1", choices=map(str, range(1, MAX_NUM_CPU + 1)), style=wx.CB_READONLY)
+        self.cb_ncpu = wx.ComboBox(self, -1, "1", choices=list(map(str, list(range(1, MAX_NUM_CPU + 1)))), style=wx.CB_READONLY)
         sizer.Add(self.cb_ncpu, (cr,1), flag=wx.EXPAND)
         cr += 1
         sizer.Add(wx.StaticText(self, -1, "Max. Memory (MB)"), (cr,0), flag=wx.ALIGN_LEFT )
@@ -355,12 +355,12 @@ class PastaFrame(wx.Frame):
                 choices=tree_and_alignment_choices,
                 style=wx.CB_READONLY)
 
-        timelimit_list = map(str, [i/100.0 for i in range(1,10)] + [i/10.0 for i in range(1,10)] + range(1,73))
-        iterlimit_list = map(str, [1, 5, 10, 20, 50, 100, 200, 500, 1000])
+        timelimit_list = list(map(str, [i/100.0 for i in range(1,10)] + [i/10.0 for i in range(1,10)] + list(range(1,73))))
+        iterlimit_list = list(map(str, [1, 5, 10, 20, 50, 100, 200, 500, 1000]))
         self.rb_maxsub1 = wx.RadioButton(self, -1, "Percentage", name="frac", style=wx.RB_GROUP)
         self.rb_maxsub2 = wx.RadioButton(self, -1, "Size", name="size")
-        self.cb_maxsub1 = wx.ComboBox(self, -1, "50", choices=map(str, range(1,51)), style=wx.CB_READONLY)
-        self.cb_maxsub2 = wx.ComboBox(self, -1, "200", choices=map(str, range(1,201)), style=wx.CB_READONLY)
+        self.cb_maxsub1 = wx.ComboBox(self, -1, "50", choices=list(map(str, list(range(1,51)))), style=wx.CB_READONLY)
+        self.cb_maxsub2 = wx.ComboBox(self, -1, "200", choices=list(map(str, list(range(1,201)))), style=wx.CB_READONLY)
 
         self.ctrls.extend([self.rb_maxsub1,
                            self.cb_maxsub1,
@@ -684,7 +684,7 @@ class PastaFrame(wx.Frame):
                                                              None,
                                                              careful_parse=careful_parse)
                     progress_dialog.Update(100, "Done")
-                except Exception, x:
+                except Exception as x:
                     try:
                         error_msg = "Problem reading the data:\n" + str(x.message)
                     except:
@@ -893,6 +893,7 @@ class PastaFrame(wx.Frame):
                 self._remove_config_file()
                 return
 
+            print(type(input_filename))
             command.extend(["-i", filemgr.quoted_file_path(input_filename)])
             if treefilename and os.path.isfile(treefilename):
                 command.extend(["-t", filemgr.quoted_file_path(treefilename)])
@@ -936,8 +937,8 @@ class PastaFrame(wx.Frame):
             self.log.AppendText("No active PASTA jobs to terminate!\n")
 
     def _encode_arg(self, arg, encoding='utf-8'):
-        if isinstance(arg, unicode):
-            return arg.encode(encoding)
+        #if isinstance(arg, str):
+        #    return arg.encode(encoding)
         return arg
 
     def _create_config_file(self):
@@ -1070,7 +1071,7 @@ ICO_STR = """AAABAAMAEBAAAAAAIABoBAAANgAAACAgAAAAACAAqBAAAJ6EAAAwMAAAAAAgAKglAAB
 if __name__ == "__main__":
     try:
         main_gui()
-    except Exception, x:
+    except Exception as x:
         sys.exit("PASTA GUI is exiting because of an error:\n%s " % str(x))
 
 

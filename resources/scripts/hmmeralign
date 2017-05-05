@@ -20,11 +20,11 @@ def read_stderr(stderrdata,stderr):
         
 def log(job, name, stdoutdata, stderrdata, stderrfile):
     if job.returncode == 0:
-        print "Finished %s Job with return code: %s\n output: %s [continued]" %(name,job.returncode,stdoutdata[0:100])
+        print(("Finished %s Job with return code: %s\n output: %s ... continued ..." %(name,job.returncode,stdoutdata[0:100])))
     
     else:         
-        print ("Finished %s Job with return code: %s\n output: %s\n error:%s" 
-                      %(name, job.returncode, stdoutdata, read_stderr(stderrdata, stderrfile)))              
+        print(("Finished %s Job with return code: %s\n output: %s\n error:%s" 
+                      %(name, job.returncode, stdoutdata, read_stderr(stderrdata, stderrfile))))              
         raise RuntimeError("\n".join(["The following execution failed:",name,
                                     read_stderr(stderrdata, stderrfile) if read_stderr(stderrdata, stderrfile)
                                      else 'No error messages available']))
@@ -73,8 +73,8 @@ def remove_insertion_columns(alg,cols):
         if b > a:
             s.append((a,b)); 
         a=b+1;
-    s.append((a,len(alg.values()[0])))
-    for name, seq in alg.items():
+    s.append((a,len(list(alg.values())[0])))
+    for name, seq in list(alg.items()):
         news = []
         for c in s:
             news.append(seq[c[0]:c[1]])
@@ -95,8 +95,8 @@ if __name__ == "__main__":
         model_file = "%s.hmm" % backbone_fn
         invoc = [os.path.join(loc,'hmmbuild'), "--symfrac" ,"0.0" ,"--%s" % dt,
                  '--informat', 'afa', model_file , backbone_fn]       
-        print " ".join(invoc)
-        buildjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+        print(" ".join(invoc))
+        buildjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines=True)
         (stdoutdata, stderrdata) = buildjob.communicate()
         log(buildjob,"hmmbuild", stdoutdata, stderrdata, "")
         
@@ -105,15 +105,15 @@ if __name__ == "__main__":
                  #"--cpu", cpus, 
                  "--mapali", backbone_fn,
                  model_file, query_fn] 
-        print " ".join(invoc)      
-        alignjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+        print(" ".join(invoc))      
+        alignjob = Popen(invoc, stderr = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines=True)
         (stdoutdata, stderrdata) = alignjob.communicate()
         log(buildjob,"hmmalign", stdoutdata, stderrdata, "")
         
         alg = dict()
         insertion = read_sto(stdoutdata, alg)
         out=open("%s" % out_fn,'w')
-        for k,v in alg.iteritems():
+        for k,v in alg.items():
             out.write(">%s\n%s\n" %(k,v))
         out.close()
         

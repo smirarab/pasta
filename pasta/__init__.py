@@ -12,8 +12,8 @@ Functions for configuring a runtime logger for the pasta module.
 PROGRAM_NAME = "PASTA"
 PROGRAM_AUTHOR = ["Siavash Mirarab","Nam Nguyen","Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Jamie Oaks"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "1.6.4"
-PROGRAM_YEAR = "2013-2016"
+PROGRAM_VERSION = "1.7.6"
+PROGRAM_YEAR = "2013-2017"
 PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://www.cs.utexas.edu/~phylo/software/pasta/"
 PROGRAM_INSTITUTE = "Department of Computer Science, University of Texas at Austin"
@@ -52,6 +52,7 @@ import logging
 
 _LOGGING_LEVEL_ENVAR = "PASTA_LOGGING_LEVEL"
 _LOGGING_FORMAT_ENVAR = "PASTA_LOGGING_FORMAT"
+
 
 # global debugging flag
 if "PASTA_DEBUG" in os.environ:
@@ -140,8 +141,8 @@ def set_timing_log_filepath(fp):
 
 def log_exception(logger):
     '''Logs the exception trace to the logObj as an error'''
-    import traceback, cStringIO
-    s = cStringIO.StringIO()
+    import traceback, io
+    s = io.StringIO()
     traceback.print_exc(None, s)
     logger.debug(s.getvalue())
 

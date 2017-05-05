@@ -33,7 +33,7 @@ from pasta.filemgr import open_with_intermediates
 from pasta.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
     TickingDispatchableJob
 
-from alignment import Alignment
+from .alignment import Alignment
 import copy
 
 _LOG = get_logger(__name__)
@@ -94,7 +94,7 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs, pasta_products=None, step_n
             id = f.split('.')[1]
             break
     raxml_log = os.path.join(dir, 'RAxML_log.%s' % id)
-    logsc = filter(lambda x : x.find("Final GAMMA-based Score of best tree")!=-1 , open(raxml_log, 'rU').readlines())
+    logsc = [x for x in open(raxml_log, 'rU').readlines() if x.find("Final GAMMA-based Score of best tree")!=-1]
     if logsc:
         score = float(logsc[0].split(" ")[-1])
     else:
@@ -734,7 +734,7 @@ class FakeTreeEstimator(TreeEstimator):
         if isinstance(starting_tree, str):
             tree_str = starting_tree
         else:
-            tree_str = starting_tree.compose_newick()
+            tree_str = str(starting_tree)
         score = hash(tree_str)/10000.0
         blob = (score, tree_str)
         return FakeJob(blob, context_str=job_id)
@@ -759,7 +759,7 @@ class FastTree(TreeEstimator):
         else:
             alignment = multilocus_dataset[0]
                 
-        if kwargs.has_key("mask_gappy_sites"):
+        if "mask_gappy_sites" in kwargs:
             self.store_unmasked_input(alignment, **kwargs)
             alignment = copy.deepcopy(alignment)
             alignment.mask_gapy_sites(kwargs.get("mask_gappy_sites"))
@@ -805,7 +805,7 @@ class FastTree(TreeEstimator):
             if isinstance(starting_tree, str):
                 tree_str = starting_tree
             else:
-                tree_str = starting_tree.compose_newick()
+                tree_str = str(starting_tree)
             tree_fn = os.path.join(os.path.abspath(scratch_dir), "start.tre")
             tree_file_obj = open(tree_fn, "w")
             tree_file_obj.write("%s;\n" % tree_str)
@@ -865,7 +865,7 @@ class Raxml(TreeEstimator):
         seqfn = os.path.join(scratch_dir, "input.phy")
         model = self.model
         
-        if kwargs.has_key("mask_gappy_sites"):
+        if "mask_gappy_sites" in kwargs:
             self.store_unmasked_input(multilocus_dataset[0], **kwargs)
                     
         alignment, partitions = multilocus_dataset.concatenate_alignments(mask=kwargs.get("mask_gappy_sites"))
@@ -910,7 +910,7 @@ class Raxml(TreeEstimator):
             if isinstance(starting_tree, str):
                 tree_str = starting_tree
             else:
-                tree_str = starting_tree.compose_newick()
+                tree_str = str(starting_tree)
             tree_fn = os.path.join(os.path.abspath(scratch_dir), "start.tre")
             tree_file_obj = open(tree_fn, "w")
             tree_file_obj.write("%s;\n" % tree_str)

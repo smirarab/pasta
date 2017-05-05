@@ -22,7 +22,7 @@ from dendropy import Tree
 from dendropy import Edge
 from dendropy import Node
 from dendropy import DataSet as Dataset
-from dendropy import convert_node_to_root_polytomy
+from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy as convert_node_to_root_polytomy
 from pasta import get_logger
 
 _LOG = get_logger(__name__)
@@ -54,7 +54,7 @@ class PhylogeneticTree(object):
         """Get centroid edge"""
         root = self._tree.seed_node
         root_children = root.child_nodes()
-        if root_children and (not hasattr(root_children[0].edge, "num_leaves_below")):
+        if root_children and (spanning or not hasattr(root_children[0].edge, "num_leaves_below")):
             self.calc_splits()
             n_leaves = self.count_leaves()
             if spanning and len(root_children) == 1:
@@ -131,7 +131,7 @@ class PhylogeneticTree(object):
         n = self.n_leaves
         potentially_deleted_nd = e.tail_node
         grandparent_nd = potentially_deleted_nd.parent_node
-        e.tail_node.remove_child(nr, suppress_deg_two=True)
+        e.tail_node.remove_child(nr, suppress_unifurcations=True)
 
         nr.edge.length = None # Length of bisected edge
         nr.parent_node = None
@@ -169,8 +169,12 @@ class PhylogeneticTree(object):
         leaves = self._tree.leaf_nodes()
         return [i.taxon.label for i in leaves]
 
-    def compose_newick(self):
-        return self._tree.compose_newick()
+    def __str__(self):
+        return self.compose_newick()
+
+    def compose_newick(self,suppress_rooting = True):
+        return self._tree.as_string(schema="newick",suppress_rooting = suppress_rooting)
+        #return self._tree.compose_newick()
 
     def read_tree_from_file(self, treefile, file_format):
         dataset = Dataset()
@@ -191,9 +195,9 @@ def is_valid_tree(t):
     num_children = len(rc)
     if num_children == 0:
         return True
-    if num_children == 1:
-        assert not rc[0].child_nodes()
+    elif num_children == 1:
+        assert len(rc[0].child_nodes()) != 0
         return True
-    if num_children == 2:
-        assert((not rc[0].child_nodes()) and (not rc[0].child_nodes()))
+    elif num_children == 2:
+        assert((not list(rc[0].child_nodes())) and (not list(rc[1].child_nodes())))
     return True

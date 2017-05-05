@@ -45,17 +45,17 @@ if __name__ == '__main__':
         
     if args.filterfragments:
         rem = []
-        for k, v in alg.iteritems():
+        for k, v in alg.items():
             if len(v.seq) < args.filterfragments:
                 rem.append(k)
         for k in rem:
             alg.pop(k, None)
         
     if args.rename:
-        lines=filter(lambda x: x!="\n", args.rename.readlines())
-        namemap=dict(zip((x.strip() for i,x in enumerate(lines) if i%2 == 0),
-                         (x.strip() for i,x in enumerate(lines) if i%2 == 1)))
-        names = copy(alg.keys())
+        lines=[x for x in args.rename.readlines() if x!="\n"]
+        namemap=dict(list(zip((x.strip() for i,x in enumerate(lines) if i%2 == 0),
+                         (x.strip() for i,x in enumerate(lines) if i%2 == 1))))
+        names = copy(list(alg.keys()))
         for k in names:
             alg[namemap[k]] = alg.pop(k)
             

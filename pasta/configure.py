@@ -22,7 +22,10 @@ In general one should be able to simply call get_configuration()
 
 # Jiaye Yu and Mark Holder, University of Kansas
 
-import ConfigParser
+try:
+    import configparser
+except:
+    import ConfigParser as configparser
 import os
 import platform
 import sys
@@ -74,7 +77,7 @@ def set_configuration_from_defaults(cfg):
     global _DEFAULT_TOOLS_PATH
     if _DEFAULT_TOOLS_PATH is None:
         init_pasta()
-    for name, path in _DEFAULT_TOOLS_PATH.items():        
+    for name, path in list(_DEFAULT_TOOLS_PATH.items()):        
         x = getattr(cfg, name)
         x.path = path
 
@@ -89,7 +92,7 @@ def get_configuration(configfile=None):
     set_configuration_from_defaults(cfg)
 
     if os.path.exists(PASTA_SYSTEM_PATHS_CFGFILE):
-        paths_parser = ConfigParser.RawConfigParser()
+        paths_parser = configparser.RawConfigParser()
         try:
             paths_parser.read(PASTA_SYSTEM_PATHS_CFGFILE)
         except:

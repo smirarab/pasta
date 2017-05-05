@@ -312,6 +312,7 @@ class PastaProducts(object):
         for stream_name in self.meta_product_types:
             self._set_stream(stream_name, None)
         self.alignment_streams = []
+        self.other_streams = []
         self.input_fpath_alignment_stream_map = {}
 
         # dummy output prefix
@@ -347,10 +348,11 @@ class PastaProducts(object):
             via PastaProducts.setup() (and nowhere else as of Apr 2012)
         """
         assert self.output_prefix
-        for stream_name, product_extension in self.meta_product_types.items():
+        for stream_name, product_extension in list(self.meta_product_types.items()):
             output_path = self.output_prefix + product_extension
             stream = open_with_intermediates(output_path, "w")
             self._set_stream(stream_name, stream)
+            self.other_streams.append(stream)
         for asi, sf in enumerate(self._output_alignment_suffixes):
             output_path = self.output_prefix + sf
             stream = open_with_intermediates(output_path, "w")
@@ -370,7 +372,7 @@ class PastaProducts(object):
         self.output_prefix = output_prefix
 
     def check_for_existing_files(self, output_prefix):
-        for ext in self.meta_product_types.values():
+        for ext in list(self.meta_product_types.values()):
             if os.path.exists(output_prefix + ext):
                 return True
         for fn in self._output_alignment_suffixes:

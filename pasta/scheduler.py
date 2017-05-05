@@ -21,8 +21,12 @@
 # Jiaye Yu and Mark Holder, University of Kansas
 
 import os, traceback
-from cStringIO import StringIO
-from Queue import Queue
+from io import StringIO
+from io import BytesIO
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 from threading import Thread, Event, Lock
 from multiprocessing import Process, Manager, Value
 from subprocess import Popen, PIPE
@@ -35,6 +39,7 @@ _LOG = get_logger(__name__)
 class LoggingQueue(Queue):
     def put(self, job):
         TIMING_LOG.info("%s queued" % str(job.context_str))
+        _LOG.debug("%s queued" % str(job.context_str))
         Queue.put(self, job)
 
 jobq = LoggingQueue()
@@ -98,7 +103,7 @@ class LightJobForProcess():
         for key,v in self.environ.items():
             os.environ[key] = v
 
-        process = Popen(self._invocation, stdin = PIPE, **k)
+        process = Popen(self._invocation, stdin = PIPE, universal_newlines=True, **k)
 
         err_msg = []                
         err_msg.append("PASTA failed because one of the programs it tried to run failed.")
@@ -121,19 +126,24 @@ class LightJobForProcess():
             _LOG.error(self.error)   
             
 class pworker():
-    def __init__(self, q, err_shared_obj):
+    def __init__(self, i, q, err_shared_obj):
         self.q = q
+        self.i = i
         self.err_shared_obj = err_shared_obj
         
     def __call__(self):
         while True:                                
             try:
+                _LOG.debug("Process Worker %d ticking on queue %s of size %d" %(self.i,str(self.q),self.q.qsize()))
                 job = self.q.get()
-                job.run()
-                self.err_shared_obj.value = job.return_code
+                _LOG.debug("Process Worker %d found a job to run" %self.i)
+                plj = LightJobForProcess(job[0],job[1],job[2])
+                plj.run()
+                self.err_shared_obj.value = plj.return_code
+                job[3] = plj.error
                 self.q.task_done()
             except:
-                err = StringIO()
+                err = BytesIO()
                 traceback.print_exc(file=err)
                 _LOG.error("Process Worker dying.  Error in job.start = %s" % err.getvalue())
                 raise
@@ -143,11 +153,12 @@ _manager = Manager()
 
 class worker():
     
-    def __init__(self):
+    def __init__(self, i):
         global _manager
+        self.i = i
         self.pqueue = _manager.Queue()
         self.err_shared_obj = Value('i', 0)
-        pw = pworker(self.pqueue, self.err_shared_obj)
+        pw = pworker(self.i, self.pqueue, self.err_shared_obj)
         self.p = Process(target=pw)
         self.p.daemon = True
         self.p.start()
@@ -163,11 +174,16 @@ class worker():
             try:
                 if isinstance(job, DispatchableJob):
                     pa = job.start()
-                    plj = LightJobForProcess(pa[0],pa[1],os.environ)
-                    self.pqueue.put(plj)
+                    shared_job_obj = [pa[0],pa[1],dict(os.environ),None]
+                    self.pqueue.put(shared_job_obj)
+                    _LOG.debug("Worker %d put a job tuple on queue %s" %(self.i,str(self.pqueue)))
                     
                     self.pqueue.join()   
+
+                    _LOG.debug("Worker %d joined on queue %s" %(self.i,str(self.pqueue)))
                     
+                    plj = LightJobForProcess(shared_job_obj[0],shared_job_obj[1],shared_job_obj[2])
+                    plj.error = shared_job_obj[3]
                     plj.return_code = self.err_shared_obj.value
                                              
                     if plj.error is not None:
@@ -189,7 +205,7 @@ class worker():
                     job.postprocess()
 
             except Exception as e:
-                err = StringIO()
+                err = BytesIO()
                 traceback.print_exc(file=err)
                 _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
                 job.error=e
@@ -218,7 +234,7 @@ def start_worker(num_workers):
     num_currently_running = len(_WORKER_THREADS)
     for i in range(num_currently_running, num_workers):
         _LOG.debug("Launching Worker thread #%d" % i)
-        w = worker()
+        w = worker(i)
         t = Thread(target=w)
         _WORKER_THREADS.append(t)
         _WORKER_OBJECTS.append(w)

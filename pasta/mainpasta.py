@@ -229,7 +229,7 @@ def finish_pasta_execution(pasta_team,
             name_filename = pasta_products.get_abs_path_for_tag('name_translation.txt')
             name_output = open(name_filename, 'w')
             safe2real = multilocus_dataset.safe_to_real_names
-            safe_list = safe2real.keys()
+            safe_list = list(safe2real.keys())
             safe_list.sort()
             for safe in safe_list:
                 orig = safe2real[safe][0]
@@ -256,7 +256,7 @@ def finish_pasta_execution(pasta_team,
         
         if (not options.two_phase) and tree_file:
             # getting the newick string here will allow us to get a string that is in terms of the correct taxon labels
-            starting_tree_str = starting_tree.compose_newick()
+            starting_tree_str = str(starting_tree)
         else:
             if not options.two_phase:
                 MESSENGER.send_info("Creating a starting tree for the PASTA algorithm...")
@@ -269,14 +269,14 @@ def finish_pasta_execution(pasta_team,
                 query_fns = []
                 for unaligned_seqs in multilocus_dataset:
                     #backbone = sorted(unaligned_seqs.keys())[0:100]
-                    backbone = sample(unaligned_seqs.keys(), min(100,len(unaligned_seqs)))   
+                    backbone = sample(list(unaligned_seqs.keys()), min(100,len(unaligned_seqs)))   
                     backbone_seqs = unaligned_seqs.sub_alignment(backbone)
                     
                     query_seq=list(set(unaligned_seqs.keys()) - set(backbone))
                     qn = len(query_seq)
                     chunks = min(int(4*pasta_config.num_cpus),int(ceil(qn/50.0)))
                     _LOG.debug("Will align the remaining %d sequences in %d chunks" %(qn,chunks))
-                    for ch in xrange(0,chunks):
+                    for ch in range(0,chunks):
                         query_fn = os.path.join(init_aln_dir, "query-%d.fasta"%ch)
                         qa = unaligned_seqs.sub_alignment(query_seq[ch:qn:chunks])
                         _LOG.debug("Chunk with %d sequences built" %len(qa))
@@ -438,21 +438,22 @@ def finish_pasta_execution(pasta_team,
         MESSENGER.send_info("Writing resulting tree to %s" % pasta_products.tree_stream.name)
         tree_str = job.tree.compose_newick()
         pasta_products.tree_stream.write("%s;\n" % tree_str)
+        pasta_products.tree_stream.close()
 
 
         #outtree_fn = options.result
         #if outtree_fn is None:
-        #    if options.multilocus:
         #        outtree_fn = os.path.join(seqdir, "combined_%s.tre" % options.job)
         #    else:
         #        outtree_fn = aln_filename + ".tre"
         #MESSENGER.send_info("Writing resulting tree to %s" % outtree_fn)
-        #tree_str = job.tree.compose_newick()
+        #tree_str = str(job.tree)
         #pasta_products.tree_stream.write("%s;\n" % tree_str)
 
 
         MESSENGER.send_info("Writing resulting likelihood score to %s" % pasta_products.score_stream.name)
         pasta_products.score_stream.write("%s\n" % job.score)
+        pasta_products.score_stream.close()
         
         if alignment_as_tmp_filename_to_report is not None:
             MESSENGER.send_info('The resulting alignment (with the names in a "safe" form) was first written as the file "%s"' % alignment_as_tmp_filename_to_report)

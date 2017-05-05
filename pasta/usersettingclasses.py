@@ -17,7 +17,10 @@
 
 # Jiaye Yu and Mark Holder, University of Kansas
 
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import os
 import glob
 from pasta import get_logger
@@ -196,12 +199,12 @@ class UserSettingGroup(object):
 
     def dict(self):
         d = {}
-        for k, v in self.options.iteritems():
+        for k, v in self.options.items():
             d[k] = v.value
         return d
 
     def keys(self):
-        return self.dict().keys()
+        return list(self.dict().keys())
 
     def __getattr__(self, att_name):
         try:
@@ -227,7 +230,7 @@ class UserSettingGroup(object):
     def read_config_parser_fields(self, parsed):
         try:
             items = parsed.items(self.name)
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
             return
         for p in items:
             k, v = p
@@ -238,7 +241,7 @@ class UserSettingGroup(object):
                 _LOG.warn('Unknown option "%s" in section "%s" skipped!' % (k, self.name))
 
     def all_options(self):
-        key_opt_list =[i for i in self.options.iteritems()]
+        key_opt_list =[i for i in self.options.items()]
         key_opt_list.sort()
         return [i[1] for i in key_opt_list]
 
@@ -298,7 +301,7 @@ class UserSettingsContainer(object):
 
     def __init__(self):
         self._categories = []
-        self._config_parser = ConfigParser.RawConfigParser()
+        self._config_parser = configparser.RawConfigParser()
         self.input_seq_filepaths = []
 
     def read_seq_filepaths_from_dir(self, dir_path):
@@ -343,7 +346,7 @@ class UserSettingsContainer(object):
     def save_to_filepath(self, filepath):
         if filepath is None:
             filepath = os.path.expanduser(os.path.join( '~', '.pasta', 'pasta.cfg'))
-        f = open_with_intermediates(filepath, 'wb')
+        f = open_with_intermediates(filepath, 'w')
         for g in self.get_categories():
             g.set_config_parser_fields(self._config_parser)
         self._config_parser.write(f)
@@ -437,7 +440,7 @@ class UserSettingsContainer(object):
         return None
 
     def get_categories(self):
-        c = [i for i in self.__dict__.iteritems() if isinstance(i[1], UserSettingGroup)]
+        c = [i for i in self.__dict__.items() if isinstance(i[1], UserSettingGroup)]
         c.sort()
         return [i[1] for i in c]
 

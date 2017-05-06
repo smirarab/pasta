@@ -328,14 +328,18 @@ class PastaJob (TreeHolder):
             #node.alignment_subset_job = t2[node.taxon]
         del t2
         del translate
-        _LOG.debug("nodes labeled")        
+        _LOG.debug("leafs labeled")        
         #subsets_tree._tree.infer_taxa()
         #_LOG.debug("fake taxa inferred")                   
         #Then make sure the tree is rooted at a branch (not at a node). 
         if len(subsets_tree._tree.seed_node.child_nodes()) > 2:
-            c = subsets_tree._tree.seed_node.child_nodes()[0]
-            subsets_tree._tree.reroot_at_edge(c.edge,length1=c.edge.length/2., length2=c.edge.length/2.)                        
-        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick(suppress_rooting=False))[0:200])
+            for c in subsets_tree._tree.seed_node.child_nodes():
+                if c.edge.is_internal():
+                    break
+            subsets_tree._tree.is_rooted = True
+            subsets_tree._tree.reroot_at_edge(c.edge,length1=c.edge.length/2., 
+                                              length2=c.edge.length/2., suppress_unifurcations=False)                        
+        _LOG.debug("Subset Labeling (start):\n%s" %str(subsets_tree.compose_newick(suppress_rooting=False))[0:5000])
         #_LOG.debug("Subset Labeling (start):\n%s" %str(len(subsets_tree._tree.seed_node.child_nodes())))
         # Then label internal branches based on their children, and collapse redundant edges. 
         for node in subsets_tree._tree.postorder_internal_node_iter():
@@ -360,6 +364,11 @@ class PastaJob (TreeHolder):
                 else:
                     i += 1
             
+            node.label = "+".join(nj.tmp_dir_par[len(curr_tmp_dir_par)+1:] for nj in node.alignment_subset_job)
+            if node.is_leaf():
+                node.taxon = subsets_tree._tree.taxon_namespace.new_taxon(label=node.label)
+            
+        _LOG.debug("Before final round, the tree is:\n %s" %str(subsets_tree.compose_newick(suppress_rooting=False))[0:5000])
         # Now, the remaining edges have multiple labels. These need to
         # be further resolved. Do it by minimum length
         #   First find all candidate edges that we might want to contract
@@ -375,6 +384,7 @@ class PastaJob (TreeHolder):
             if I:
                 edge.tail_node.alignment_subset_job = I 
                 if edge.head_node.child_nodes():
+                    #edge.collapse(adjust_collapsed_head_children_edge_lengths=True)
                     edge.collapse()
                 else:
                     edge.tail_node.remove_child(edge.head_node)
@@ -386,12 +396,20 @@ class PastaJob (TreeHolder):
             assert len(node.alignment_subset_job) == 1
             nalsj = node.alignment_subset_job.pop()
             node.alignment_subset_job = None 
-            node.label = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]
+            node.label = nalsj.tmp_dir_par[len(curr_tmp_dir_par)+1:]#only find last part of the name
             self.pasta_team.subsets[node.label] = nalsj
             if node.is_leaf():
                 # Add a dummy taxon, or else dendropy can get confused
-                node.taxon = Taxon(label=node.label)
+                node.taxon = subsets_tree._tree.taxon_namespace.new_taxon(label=node.label)
         #subsets_tree._tree.infer_taxa()
+        _LOG.debug("Spanning tree is:\n %s" %subsets_tree)
+        labels = [nd.label for nd in subsets_tree._tree.postorder_node_iter()]
+        if len(set(labels)) != len(labels):
+            import collections
+            raise Exception("Duplicate names found %s" %"\n".join
+                   (item for item, count in 
+                    collections.Counter(labels).items() if count > 1))
+           
         return subsets_tree
         
     def run(self, tmp_dir_par, pasta_products=None):

@@ -1,3 +1,6 @@
+- Version 1.7.8:
+        - ** Bug Fix **: run_pasta_gui.py should work with python2 now
+
 - Version 1.7.7:
         - ** Bug Fix **: a second attempt at fixing troubles with new dendropy rooting
 

@@ -36,7 +36,10 @@ from pasta import PROGRAM_WEBSITE
 from pasta import PROGRAM_YEAR
 from pasta import GLOBAL_DEBUG
 from pasta import DEFAULT_MAX_MB
-from configparser import RawConfigParser
+try:
+    from configparser import RawConfigParser
+except:
+    from ConfigParser import RawConfigParser
 from pasta import pasta_is_frozen
 from pasta import pasta_home_dir
 from pasta.configure import get_invoke_run_pasta_command

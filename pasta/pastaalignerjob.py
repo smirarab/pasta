@@ -36,12 +36,18 @@ from pasta.scheduler import TickableJob
 from new_decomposition import midpoint_bisect
 ###########
 
-def bisect_tree(tree, breaking_edge_style='centroid'):
+#def bisect_tree(tree, breaking_edge_style='centroid'):
+# uym2 modified: add min_size option
+def bisect_tree(tree, breaking_edge_style='centroid',min_size=0):
     """Partition 'tree' into two parts
     """
-    # will/must do #
+    # uym2: added for new decomposition --> in progress #
     if breaking_edge_style == 'midpoint':
-	return midpoint_bisect(tree)	
+        t1,t2 = midpoint_bisect(tree._tree,min_size=min_size)	
+        tree1 = PhylogeneticTree(t1)
+        tree2 = PhylogeneticTree(t2)
+
+    return tree1,tree2
     ###############
     e = tree.get_breaking_edge(breaking_edge_style)
     _LOG.debug("breaking_edge length = %s, %s" % (e.length, breaking_edge_style) )
@@ -371,7 +377,9 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     def bipartition_by_tree(self, option):
         _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
 
-        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
+#        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
+# uym2 modified: add min_size option
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=0)
         assert tree1.n_leaves > 0
         assert tree2.n_leaves > 0
         assert tree1.n_leaves + tree2.n_leaves == self.tree.n_leaves

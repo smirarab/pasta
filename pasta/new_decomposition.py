@@ -13,7 +13,7 @@ from sepp import get_logger
 
 _LOG = get_logger(__name__)
 
-def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=None):
+def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
     def __ini_record__():
         for node in a_tree.postorder_node_iter():
                __updateNode__(node)
@@ -74,6 +74,8 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
             __updateNode__(u)
             u = u.parent_node
 
+        t.annotated = True
+        t1.annotated = True
         return t,t1
 
     def __clean_up__(t):
@@ -92,34 +94,21 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
 #            node.maxheight = 0
             node.maxdepth = 0
             node.diameter = 0
-#            node.topo_diam = 0
             node.bestLCA = node
             node.nleaf = 1
             return
 
-#        n1 = -1
-#        n2 = -1
         d1 = -1
         d2 = -1
         anchor1 = None
         anchor2 = None
         node.diameter = 0
-#        node.topo_diam = 0
         node.bestLCA = None
         node.nleaf = 0
 
         for ch in node.child_node_iter():
                node.nleaf += ch.nleaf
-#               n = ch.maxheight + 1
                d = ch.maxdepth + ch.edge_length
-#               if n > n1:
-#                   n2 = n1
-#                   n1 = n
-#                   anchor2 = anchor1
-#                   anchor1 = ch.anchor
-#               elif n > n2:
-#                   n2 = n
-#                   anchor2 = ch.anchor
                if d > d1:
                    d2 = d1
                    d1 = d
@@ -131,19 +120,15 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
                if ch.diameter > node.diameter:
                    node.diameter = ch.diameter
                    node.bestLCA = ch.bestLCA
-#               node.diameter = max(ch.diameter,node.diameter)
-
-#        node.diameter = max(d1+d2, node.diameter)
         node.maxdepth = d1
-#        node.maxheight = n1
         node.anchor = anchor1
         if d1+d2 > node.diameter:
             node.diameter = d1+d2
             node.bestLCA = node
 
     def __get_breaking_edge__(t,edge_type):
-        if t.seed_node.nleaf <= max_size and t.seed_node.diameter <= max_diam:
-            return None
+#        if t.seed_node.nleaf <= max_size and t.seed_node.diameter <= max_diam:
+#            return None
         if edge_type == 'midpoint':
             e = __find_midpoint_edge__(t)
         elif edge_type == 'centroid':
@@ -157,17 +142,14 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
             return None
         return e
 
-    def __check_stop__(t):
-        return ( (t.seed_node.nleaf <= max_size and t.seed_node.diameter <= max_diam) or
-                 (t.seed_node.nleaf//2 < min_size) )     
+#    def __check_stop__(t):
+#        return ( (t.seed_node.nleaf <= max_size and t.seed_node.diameter <= max_diam) or
+#                 (t.seed_node.nleaf//2 < min_size) )     
 
     def __break_by_MP_centroid__(t):
         e = __get_breaking_edge__(t,'midpoint')
         if e is None:
-#            print("Midpoint failed. Trying centroid decomposition...")
             e = __get_breaking_edge__(t,'centroid')
-#        else:
-#            print("Successfully splitted by midpoint")
         return e
 
     def __break(t):
@@ -178,39 +160,11 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
         else:
             raise Exception("strategy not valid: %s" %strategy)
 
-    _LOG.debug("Starting brlen decomposition ...")
-    tqueue = Queue()
-    __ini_record__()
-    min_size = min_size if min_size else 0
-    max_size = max_size if max_size else a_tree.seed_node.nleaf
-    max_diam = max_diam if max_diam else a_tree.seed_node.diameter
-
-    # try using midpoint
+    _LOG.debug("Starting midpoint bisect ...")
+    if not a_tree.annotated: 
+        __ini_record__()
+        a_tree.annotated = True
+#    max_size = min(max_size,a_tree.seed_node.nleaf)
+#    max_diam = max_diam if max_diam else a_tree.seed_node.diameter
     e = __break(a_tree)
-
-    if e is None:
-        __clean_up__(a_tree)
-        return [a_tree]
-        
-    treeMap = [] 
-    tqueue.put((a_tree,e))
-    while not tqueue.empty():
-        t,e = tqueue.get()
-        t1,t2 = __bisect__(t,e)
-        e1 = __break(t1)
-        if e1 is None:
-             __clean_up__(t1)            
-             treeMap.append(t1)
-        else:
-            tqueue.put((t1,e1))
-        e2 = __break(t2)
-        if e2 is None:
-             __clean_up__(t2)
-             treeMap.append(t2)
-        else:
-            tqueue.put((t2,e2))
-
-    return treeMap
-
-def midpoint_bisect(tree):
-######## working ##########
+    return __bisect__(t,e)

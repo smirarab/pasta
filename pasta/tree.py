@@ -34,6 +34,8 @@ class PhylogeneticTree(object):
         self.n_leaves = self.count_leaves()
         self._tree.seed_node.edge.tail_node = None
         self._tree.seed_node.edge.length = None
+# uym2 added: for midpoint decomposition
+        self._tree.annotated = False
 
     def count_leaves(self):
         return len(self._tree.leaf_nodes())

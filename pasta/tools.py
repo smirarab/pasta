@@ -225,15 +225,6 @@ class MafftAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_mafft'
-        scratch_dir, seqfn, alignedfn = self._prepare_input(alignment, **kwargs)
-        print (scratch_dir)
-#        print (seqfn)
-        print (alignedfn)
-        our_aln_mafft_fn = ..........     
-        new_alig = read_internal_alignment( our_aln_mafft_fn,
-                            file_format='FASTA',
-                            datatype=alignment.datatype)
-        return FakeJob(new_alig, context_str=job_id)
         
         if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)

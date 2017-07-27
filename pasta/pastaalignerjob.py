@@ -42,13 +42,16 @@ def bisect_tree(tree, breaking_edge_style='centroid',min_size=0):
     """Partition 'tree' into two parts
     """
     # uym2: added for new decomposition --> in progress #
+    print("bisecting tree...")
     if breaking_edge_style == 'midpoint':
+        print("breaking by midpoint")
         t1,t2 = midpoint_bisect(tree._tree,min_size=min_size)	
         tree1 = PhylogeneticTree(t1)
-        tree2 = PhylogeneticTree(t2)
-
-    return tree1,tree2
+        tree2 = PhylogeneticTree(t2)   
+        return tree1,tree2
     ###############
+
+    print("breaking by centroid")
     e = tree.get_breaking_edge(breaking_edge_style)
     _LOG.debug("breaking_edge length = %s, %s" % (e.length, breaking_edge_style) )
     snl = tree.n_leaves
@@ -244,7 +247,6 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             _LOG.debug("%s...Calling Aligner" % prefix)
             aj_list = []
             for index, single_locus_sd in enumerate(self.multilocus_dataset):
-                print(self.pasta_team.aligner.name)
                 aj = self.pasta_team.aligner.create_job(single_locus_sd,
                                                        tmp_dir_par=self.tmp_dir_par,
                                                        delete_temps=self.delete_temps,

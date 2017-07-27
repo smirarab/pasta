@@ -167,4 +167,4 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
 #    max_size = min(max_size,a_tree.seed_node.nleaf)
 #    max_diam = max_diam if max_diam else a_tree.seed_node.diameter
     e = __break(a_tree)
-    return __bisect__(t,e)
+    return __bisect__(a_tree,e)

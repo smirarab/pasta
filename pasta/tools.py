@@ -225,12 +225,12 @@ class MafftAligner(Aligner):
 
     def create_job(self, alignment, guide_tree=None, **kwargs):
         job_id = kwargs.get('context_str', '') + '_mafft'
-        
         if alignment.get_num_taxa() == 0:
             return FakeJob(alignment, context_str=job_id)
         new_alignment = alignment.unaligned()
         if new_alignment.get_num_taxa() < 2:
             return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
 
         invoc = []
         if platform.system() == "Windows":

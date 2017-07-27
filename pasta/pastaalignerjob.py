@@ -231,7 +231,6 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             _LOG.debug("%s...Calling Aligner" % prefix)
             aj_list = []
             for index, single_locus_sd in enumerate(self.multilocus_dataset):
-                print(self.pasta_team.aligner.name)
                 aj = self.pasta_team.aligner.create_job(single_locus_sd,
                                                        tmp_dir_par=self.tmp_dir_par,
                                                        delete_temps=self.delete_temps,

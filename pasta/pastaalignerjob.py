@@ -32,10 +32,17 @@ from pasta.treeholder import TreeHolder
 from pasta.scheduler import jobq, new_merge_event
 from pasta.scheduler import TickableJob
 
+# will do #
+from new_decomposition import midpoint_bisect
+###########
 
 def bisect_tree(tree, breaking_edge_style='centroid'):
     """Partition 'tree' into two parts
     """
+    # will/must do #
+    if breaking_edge_style == 'midpoint':
+	return midpoint_bisect(tree)	
+    ###############
     e = tree.get_breaking_edge(breaking_edge_style)
     _LOG.debug("breaking_edge length = %s, %s" % (e.length, breaking_edge_style) )
     snl = tree.n_leaves

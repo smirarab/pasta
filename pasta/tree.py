@@ -104,6 +104,10 @@ class PhylogeneticTree(object):
         assert longest_edge is not None
         return longest_edge
 
+
+    #def get_midpoint_edge(self):
+	#find_midpoint_edge	
+
     def get_adjacent_edges(self, e):
         he = [i for i in e.head_node.get_incident_edges() if i is not e]
         te = [i for i in e.tail_node.get_incident_edges() if i is not e]
@@ -115,6 +119,10 @@ class PhylogeneticTree(object):
             return self.get_centroid_edge()
         elif option.lower() == 'longest':
             return self.get_longest_edge()
+	##### Ziyang & uym2 ################
+	#elif option.lower() == 'midpoint': # will have it later
+        #    return self.get_midpoint_edge()
+	###################################tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)		
         else:
             raise ValueError('Unknown break strategy "%s"' % option)
 

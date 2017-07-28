@@ -76,6 +76,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     """
     BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['centroid']) ,
                             'max_subproblem_size' : 50,
+			    'max_subtree_diameter': 1.0,
                             'delete_temps' : True}
     RECURSION_INDEX = 0
     def __init__(self, 
@@ -203,7 +204,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     def _get_subjob_dir(self, num):
         '''Creates a numbered directory d1, d2, etc within tmp_dir_par.
         
-        Called in bipartition_by_tree, and the directories are cleaned up
+        ize=0alled in bipartition_by_tree, and the directories are cleaned up
         at the end of _start_merger.
         '''
         assert(self.tmp_base_dir)
@@ -243,8 +244,9 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         if self.context_str is None:
             self.context_str = ''
         _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
-        if self.expected_number_of_taxa <= self.max_subproblem_size:
+        if (self.expected_number_of_taxa <= self.max_subproblem_size) and (self.tree._tree.seed_node.diameter <= self.max_subtree_diameter):
             _LOG.debug("%s...Calling Aligner" % prefix)
+	    print(self.tree._tree.seed_node.diameter)
             aj_list = []
             for index, single_locus_sd in enumerate(self.multilocus_dataset):
                 aj = self.pasta_team.aligner.create_job(single_locus_sd,

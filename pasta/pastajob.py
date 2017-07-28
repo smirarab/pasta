@@ -95,6 +95,7 @@ class PastaJob (TreeHolder):
                             'move_to_blind_on_worse_score' : False,
                             'blind_mode_is_final' : True,
                             'max_subproblem_size' : 200,
+			    'max_subtree_diameter': 1.3,	
                             'max_subproblem_frac' : 0.2,
                             'start_tree_search_from_current' : False,
                             'keep_realignment_temporaries' : False,

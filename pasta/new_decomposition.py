@@ -9,9 +9,9 @@ try:
 except:
     from Queue import Queue # python 2
 #from tree import PhylogeneticTree
-from sepp import get_logger
+#from sepp import get_logger
 
-_LOG = get_logger(__name__)
+#_LOG = get_logger(__name__)
 
 def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
     def __ini_record__():
@@ -133,9 +133,9 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
             e = __find_midpoint_edge__(t)
         elif edge_type == 'centroid':
             e = __find_centroid_edge__(t)
-        else:
-            _LOG.warning("Invalid decomposition type! Please use either 'midpoint' or 'centroid'")
-            return None
+        #else:
+        #    _LOG.warning("Invalid decomposition type! Please use either 'midpoint' or 'centroid'")
+        #    return None
 
         n = e.head_node.nleaf
         if (n < min_size) or (t.seed_node.nleaf - n) < min_size:
@@ -160,7 +160,7 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
         else:
             raise Exception("strategy not valid: %s" %strategy)
 
-    _LOG.debug("Starting midpoint bisect ...")
+    print("Starting midpoint bisect ...")
     if not a_tree.annotated: 
         __ini_record__()
         a_tree.annotated = True

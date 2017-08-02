@@ -46,6 +46,8 @@ def bisect_tree(tree, breaking_edge_style='centroid',min_size=0):
     if breaking_edge_style == 'midpoint':
         print("breaking by midpoint")
         t1,t2 = midpoint_bisect(tree._tree,min_size=min_size)	
+        if t1 is None or t2 is None:
+            return None,None
         tree1 = PhylogeneticTree(t1)
         tree2 = PhylogeneticTree(t2)   
         return tree1,tree2
@@ -76,7 +78,8 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     """
     BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['centroid']) ,
                             'max_subproblem_size' : 50,
-			    'max_subtree_diameter': 1.0,
+            			    'max_subtree_diameter': 1.0,
+                            'min_subproblem_size': 0,
                             'delete_temps' : True}
     RECURSION_INDEX = 0
     def __init__(self, 
@@ -244,51 +247,59 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         if self.context_str is None:
             self.context_str = ''
         _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
-        if (self.expected_number_of_taxa <= self.max_subproblem_size) and (self.tree._tree.seed_node.diameter <= self.max_subtree_diameter):
-            _LOG.debug("%s...Calling Aligner" % prefix)
-	    print(self.tree._tree.seed_node.diameter)
-            aj_list = []
-            for index, single_locus_sd in enumerate(self.multilocus_dataset):
-                aj = self.pasta_team.aligner.create_job(single_locus_sd,
-                                                       tmp_dir_par=self.tmp_dir_par,
-                                                       delete_temps=self.delete_temps,
-                                                       context_str=self.context_str + " align" + str(index))
-                aj.add_parent_tickable_job(self)
-                self.add_child(aj)
-                
-                aj_list.append(aj)
+        # added by uym2 on August 1st 2017
+        #subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
+        if ( (self.expected_number_of_taxa > self.max_subproblem_size) or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) ):
+            subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
+            if subjob1 is not None and subjob2 is not None:
+                _LOG.debug("%s...Recursing" % prefix)
+                # create the subjobs
+                # the next line was modified by uym2 (August 1st 2017)
+                #self.subjob1, self.subjob2 = self.bipartition_by_tree(break_strategy)
+                self.subjob1 = subjob1
+                self.subjob2 = subjob2
+                # store this dir so we can use it in the merger
                 if self.killed:
                     raise RuntimeError("PastaAligner Job killed")
-                
-                self.pasta_team.alignmentjobs.append(aj)
+
+                self.subjob1.add_parent(self)
+                self.subjob2.add_parent(self)
+                self.add_child(self.subjob1)
+                self.add_child(self.subjob2)
+
+                self.subjob1.launch_alignment(break_strategy=break_strategy)
+                if self.killed:
+                    raise RuntimeError("PastaAligner Job killed")
+                self.subjob2.launch_alignment(break_strategy=break_strategy)
+                if self.killed:
+                    raise RuntimeError("PastaAligner Job killed")
+                return
+
+        _LOG.debug("%s...Calling Aligner" % prefix)
+    #print(self.tree._tree.seed_node.diameter)
+        aj_list = []
+        for index, single_locus_sd in enumerate(self.multilocus_dataset):
+            aj = self.pasta_team.aligner.create_job(single_locus_sd,
+                                                   tmp_dir_par=self.tmp_dir_par,
+                                                   delete_temps=self.delete_temps,
+                                                   context_str=self.context_str + " align" + str(index))
+            aj.add_parent_tickable_job(self)
+            self.add_child(aj)
             
-            self.align_job_list = aj_list
+            aj_list.append(aj)
+            if self.killed:
+                raise RuntimeError("PastaAligner Job killed")
             
-            if self.skip_merge:
-                for taxa in self.tree.leaf_node_names():
-                    self.pasta_team.subsets[taxa]=self
-            else:
-                for aj in aj_list:
-                    jobq.put(aj)
+            self.pasta_team.alignmentjobs.append(aj)
+        
+        self.align_job_list = aj_list
+        
+        if self.skip_merge:
+            for taxa in self.tree.leaf_node_names():
+                self.pasta_team.subsets[taxa]=self
         else:
-            _LOG.debug("%s...Recursing" % prefix)
-            # create the subjobs
-            self.subjob1, self.subjob2 = self.bipartition_by_tree(break_strategy)
-            # store this dir so we can use it in the merger
-            if self.killed:
-                raise RuntimeError("PastaAligner Job killed")
-
-            self.subjob1.add_parent(self)
-            self.subjob2.add_parent(self)
-            self.add_child(self.subjob1)
-            self.add_child(self.subjob2)
-
-            self.subjob1.launch_alignment(break_strategy=break_strategy)
-            if self.killed:
-                raise RuntimeError("PastaAligner Job killed")
-            self.subjob2.launch_alignment(break_strategy=break_strategy)
-            if self.killed:
-                raise RuntimeError("PastaAligner Job killed")
+            for aj in aj_list:
+                jobq.put(aj)
         return
 
     # We lock the job objects because kill might be called from another thread
@@ -383,7 +394,9 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
 
 #        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
 # uym2 modified: add min_size option
-        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=0)
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size)
+        if tree1 is None or tree2 is None:
+            return [None,None]
         assert tree1.n_leaves > 0
         assert tree2.n_leaves > 0
         assert tree1.n_leaves + tree2.n_leaves == self.tree.n_leaves

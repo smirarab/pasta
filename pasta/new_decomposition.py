@@ -8,12 +8,14 @@ try:
     from queue import Queue # python 3
 except:
     from Queue import Queue # python 2
+from sys import argv
+
 #from tree import PhylogeneticTree
 #from sepp import get_logger
 
 #_LOG = get_logger(__name__)
 
-def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
+def midpoint_bisect(a_tree,min_size=0,strategy='centroid'):
     def __ini_record__():
         for node in a_tree.postorder_node_iter():
                __updateNode__(node)
@@ -49,6 +51,7 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
 
     def __bisect__(t,e):
 #        e = __find_centroid_edge__(t)
+#        print(t.seed_node.diameter)
         
         u = e.tail_node
         v = e.head_node
@@ -63,6 +66,8 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
             u.remove_child(v)
             if p is None: # u is the seed_node; this means the tree runs out of all but one side
                 t.seed_node = v
+#                print(t.seed_node.diameter)
+#                print(t1.seed_node.diameter)
                 return t,t1
             l_u = u.edge_length
             p.remove_child(u)
@@ -76,6 +81,9 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
 
         t.annotated = True
         t1.annotated = True
+
+#        print(t.seed_node.diameter)
+#        print(t1.seed_node.diameter)
         return t,t1
 
     def __clean_up__(t):
@@ -161,10 +169,18 @@ def midpoint_bisect(a_tree,min_size=0,strategy='midpoint'):
             raise Exception("strategy not valid: %s" %strategy)
 
     print("Starting midpoint bisect ...")
-    if not a_tree.annotated: 
+    if not a_tree.annotated:
         __ini_record__()
         a_tree.annotated = True
 #    max_size = min(max_size,a_tree.seed_node.nleaf)
 #    max_diam = max_diam if max_diam else a_tree.seed_node.diameter
     e = __break(a_tree)
+    if e is None:
+        return None,None
     return __bisect__(a_tree,e)
+
+#t = Tree.get_from_path(argv[1],"newick")
+#t.annotated = False
+#t1,t2 = midpoint_bisect(t,strategy="midpoint")
+#t1.write_to_path(argv[2],"newick")
+#t2.write_to_path(argv[3],"newick")

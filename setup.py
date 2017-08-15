@@ -203,6 +203,8 @@ if platform.system() != "Windows":
 		tar.extractall(searchDir)
 		tar.close()
     
-    ginsiDir = os.path.join(tools_bin_srcdir, 'mafft')
-    create_symlink(ginsiDir, "ginsi")
+    mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
+    ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')
+    os.symlink(mafftDir, ginsiDir)
+
 setup(**param)

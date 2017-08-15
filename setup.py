@@ -198,8 +198,8 @@ if platform.system() != "Windows":
     searchDir = os.path.join(tools_bin_srcdir, 'databases')
     for files in os.listdir(searchDir):
 	fullPath = os.path.join(searchDir, files)
-	if tar.endswith("tar.gz"):
-		tar = tarfiles.open(files, r:gz)
+	if fullPath.endswith("tar.gz"):
+		tar = tarfile.open(fullPath, "r:gz")
 		tar.extractall(searchDir)
 		tar.close()
 

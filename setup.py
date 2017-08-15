@@ -187,6 +187,7 @@ if platform.system() != "Windows":
     for subdir in tools_bin_subdirs:
         if subdir:
             tdir = os.path.join(tools_bin_srcdir, subdir)
+	    #print 'tdir' + str(tdir)
         else:
             tdir = tools_bin_srcdir
         for fpath in os.listdir(tdir):
@@ -201,6 +202,7 @@ if platform.system() != "Windows":
 		tar = tarfile.open(fullPath, "r:gz")
 		tar.extractall(searchDir)
 		tar.close()
+    
     ginsiDir = os.path.join(tools_bin_srcdir, 'mafft')
     create_symlink(ginsiDir, "ginsi")
 setup(**param)

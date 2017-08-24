@@ -56,7 +56,7 @@ You have three options for installing PASTA.
 
 
 ### 2. From Source Code
-Current version of PASTA has been developed and tested entirely on Linux and MAC. 
+The current version of PASTA has been developed and tested entirely on Linux and MAC. 
 Windows won't work currently (future versions may or may not support Windows). 
 
 You need to have:
@@ -83,8 +83,8 @@ Or you can directly download these as zip files for
 and decompress them in your target directory (e.g. `pasta-code`).
 Note that the tools directory and the PASTA code directory should be under the same parent directory. 
 Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. 
-You need to rename thse directories and remove the `-master` part.
-Finally, those with 32-bit Linux machines need to be aware that the master branch has 64bit binaries.
+You need to rename these directories and remove the `-master` part.
+Finally, those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries.
 32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
@@ -95,18 +95,18 @@ Finally, those with 32-bit Linux machines need to be aware that the master branc
  sudo python setup.py develop 
 ```
  
-If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternativley, you can `--prefix` to install in a different location, but that different location needs to be part of your `PYTHONPATH` environmental variable. 
+If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternatively, you can use `--prefix` to install it in a different location, but that different location needs to be part of your `PYTHONPATH` environmental variable. 
 
 **Common Problems:**
 
  * `Could not find SATe tools bundle directory:`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
- * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get and error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
+ * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
 (but note there are other ways of installing setuptools as well).
 
 
 ### 3. From Virtual Machine (VM)
 
-VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version. 
+VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (if your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version. 
 
 Email `pasta-users@googlegroups.com` for installation issues. 
 
@@ -142,17 +142,17 @@ on some machines you may need to use `pythonw run_pasta_gui.py` instead.
 
 Options
 ------
-PASTA estimates alignments and ML trees from unaligned sequences using an iterative approach. In each iteration, 
+PASTA estimates alignments and maximum likelihood (ML) trees from unaligned sequences using an iterative approach. In each iteration, 
 it first estimates a multiple sequence alignment and then a ML tree is estimated on (a masked version of) the alignment. 
 By default PASTA performs 3 iterations, but a host of options enable changing that behavior. 
 In each iteration, a divide-and-conquer strategy is used for estimating the alignment. 
 The set of sequences is divided into smaller subsets, each of which is aligned using an external
-alignment tool (default is MAFFT). These subset alignments are then pairwise merged (by default using Opal)
+alignment tool (the default is MAFFT-L-ins-i). These subset alignments are then pairwise merged (by default using Opal)
 and finally the pairwise merged alignments are merged into a final alignment using transitivity merge. The division
 of the dataset into smaller subsets and selecting which alignments should be pairwise merged is guided by the tree
 from the previous iteration. The first step therefore needs an initial tree. 
 
-When GUI is used, a limited set of important options can be adjusted on the GUI.
+When GUI is used, a limited set of important options can be adjusted.
 The command line also allows you to alter the behavior of the algorithm,
 and provides a larger sets of options that can be adjusted.
 
@@ -171,12 +171,12 @@ file called ``[jobname]_temp_pasta_config.txt`` in your output directory.
 
 Multiple configuration files can be provided. Configuration files are read in 
 the order they occur as arguments (with values in later files replacing previously 
-read values). Options specified in the command line are read last. Thus these values
+read values). Options specified in the command line are read last. Thus, these values
 "overwrite" any settings from the configuration files. 
 
 *Note*: the use of --auto option can overwrite some of the other options provided by
 commandline or through configuration files. 
-The use of this option is generally not suggested (a legacy option from SATe).
+The use of this option is generally not suggested (it is a legacy option from SATe).
 
 
 The following is a list of important options used by PASTA. 
@@ -184,7 +184,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
 
    * Initial tree: 
      If a starting tree is provided using the `-t` option, then that tree is used.
-     If the input sequence file is already aligned and `--aligned` option is provided, then PASTA computes a ML tree on the input alignment and uses that as the starting tree. 
+     If the input sequence file is already aligned and `--aligned` option is provided, then PASTA computes an ML tree on the input alignment and uses that as the starting tree. 
      If the input sequences are not aligned (or if they are aligned and `--aligned` is not given), PASTA uses the procedure described below for estimating the starting alignment and tree.
 	1. randomly selects a subset of 100 sequences.
 	2. estimates an alignment on the subset using the subset alignment tool (default MAFFT-l-insi).
@@ -207,7 +207,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
 
    * Number of iterations: the simplest option that can be used to set the number of iterations is `--iter-limit`. 
     You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached,
-    and then continues to run until the current iteration is finished, and then stops. 
+    then continues to run until the current iteration is finished, and then stops. 
     If both values are set, PASTA stops after the first limit is reached. 
     The remaining options for setting iteration limits are legacies of SATe and are not recommended. 
    
@@ -227,7 +227,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
     `-k` (to keep temporaries) and `--keepalignmenttemps` (to keep even more temporaries) options. 
     Note that PASTA also creates a bunch of temporary files in the output directory and never deletes them, 
     because these temporary files are potentially useful for the users. These files are all of the form
-    `[jobname]_temp_*`. Some of the important files created are alignments and tree produced in individual 
+    `[jobname]_temp_*`. Some of the important files created are alignments and trees produced in individual 
     steps (alignments are saved both in masked and unmasked versions). These intermediate files all have 
     internal PASTA sequence names, which are slightly different from your actual sequence names.
     The mapping between PASTA and real names are given also as a temporary file: `[jobname]_temp_name_translation.txt`.

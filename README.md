@@ -246,7 +246,7 @@ PASTA outputs an alignment and a tree, in addition to a host of other files. The
 
 Debug
 -------
-To show debug information, set the following environmental variables: 
+To show debugging information, set the following environmental variables: 
 ```
 export PASTA_DEBUG=TRUE
 export PASTA_LOGGING_LEVEL=DEBUG

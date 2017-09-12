@@ -30,7 +30,7 @@ def midpoint_bisect(a_tree,min_size=0,strategy='centroid'):
     
     def __find_centroid_edge__(t):
         u = t.seed_node
-        product = 0
+        product = -1
         acc_nleaf = 0
 
         while not u.is_leaf():
@@ -42,7 +42,7 @@ def midpoint_bisect(a_tree,min_size=0,strategy='centroid'):
                     max_child = ch
             acc_nleaf += (u.nleaf-max_child.nleaf)
             new_product = max_child.nleaf * acc_nleaf
-            if new_product <= product:
+            if new_product < product:
                 break
             product = new_product
             u = max_child

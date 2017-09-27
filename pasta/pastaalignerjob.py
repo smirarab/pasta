@@ -249,7 +249,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
         # added by uym2 on August 1st 2017
         #subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
-        if ( (self.expected_number_of_taxa > self.max_subproblem_size) or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) ):
+        if (self.expected_number_of_taxa > self.max_subproblem_size): # or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) ):
             subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
             if subjob1 is not None and subjob2 is not None:
                 _LOG.debug("%s...Recursing" % prefix)

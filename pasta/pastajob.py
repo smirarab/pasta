@@ -41,6 +41,8 @@ from pasta.scheduler import jobq
 from pasta.filemgr import  TempFS
 from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
+# uym2 added: for minimum subsets tree
+from Kruskal_MST import build_groups_MST
 
 
 class PastaTeam (object):
@@ -101,7 +103,8 @@ class PastaJob (TreeHolder):
                             'keep_realignment_temporaries' : False,
                             'keep_iteration_temporaries' : False,
                             'return_final_tree_and_alignment' : False,
-                            'mask_gappy_sites' : 1
+                            'mask_gappy_sites' : 1,
+                            'build_MST' : False
                         }
     def configuration(self):
         d = {}
@@ -315,7 +318,37 @@ class PastaJob (TreeHolder):
         self.best_tree_tmp_filename = self.curr_iter_tree_tmp_filename
         self.best_alignment_tmp_filename = self.curr_iter_align_tmp_filename
 
-    def build_subsets_tree(self, curr_tmp_dir_par):
+
+    #def build_subsets_tree(self, curr_tmp_dir_par):
+    def build_subsets_tree(self, curr_tmp_dir_par,build_min_tree=True):
+    # uym2 added: add option for MST
+        if build_min_tree:
+            _LOG.debug("START building MST")
+            grouping = {}
+            groupName2jobName = {}
+            
+            for node in self.tree._tree.leaf_node_iter():
+                groupName = self.pasta_team.subsets[node.taxon.label].tmp_dir_par[len(curr_tmp_dir_par)+1:]
+                grouping[node.taxon.label] = groupName
+                groupName2jobName[groupName] = self.pasta_team.subsets[node.taxon.label]
+           
+            subsets_tree = build_groups_MST(self.tree._tree,grouping)
+
+            if len(subsets_tree.seed_node.child_nodes()) > 2:
+                for c in subsets_tree.seed_node.child_nodes():
+                    if c.edge.is_internal():
+                        break
+                subsets_tree.is_rooted = True
+                subsets_tree.reroot_at_edge(c.edge,length1=c.edge.length/2., 
+                                                  length2=c.edge.length/2., suppress_unifurcations=False)                        
+           
+            self.pasta_team.subsets = groupName2jobName
+            
+            return PhylogeneticTree(subsets_tree)
+    ###################################
+
+
+
         translate={}
         t2 = {}
         for node in self.tree._tree.leaf_node_iter():
@@ -411,6 +444,11 @@ class PastaJob (TreeHolder):
                    (item for item, count in 
                     collections.Counter(labels).items() if count > 1))
            
+        subsets_tree._tree.write_to_path("pasta_ST.tre","newick")    
+
+        print("pasta_team.subsets: ")
+        print(self.pasta_team.subsets)
+
         return subsets_tree
         
     def run(self, tmp_dir_par, pasta_products=None):
@@ -486,7 +524,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                          context_str=context_str)                
                 if self.pastamerge:
                     _LOG.debug("Build PASTA merge jobs")
-                    subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
+                    subsets_tree = self.build_subsets_tree(curr_tmp_dir_par,self.build_MST)
                     if len(self.pasta_team.subsets) == 1:
                         # can happen if there are no decompositions
                         for job in self.pasta_team.alignmentjobs:

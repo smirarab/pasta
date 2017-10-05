@@ -333,18 +333,11 @@ class PastaJob (TreeHolder):
                 groupName2jobName[groupName] = self.pasta_team.subsets[node.taxon.label]
            
             subsets_tree = build_groups_MST(self.tree._tree,grouping)
-
-            if len(subsets_tree.seed_node.child_nodes()) > 2:
-                for c in subsets_tree.seed_node.child_nodes():
-                    if c.edge.is_internal():
-                        break
-                subsets_tree.is_rooted = True
-                subsets_tree.reroot_at_edge(c.edge,length1=c.edge.length/2., 
-                                                  length2=c.edge.length/2., suppress_unifurcations=False)                        
-           
+ 
             self.pasta_team.subsets = groupName2jobName
-            
-            return PhylogeneticTree(subsets_tree)
+            MST = PhylogeneticTree(subsets_tree) 
+            _LOG.debug("Spanning tree is:\n %s" %MST)
+            return MST
     ###################################
 
 
@@ -445,11 +438,6 @@ class PastaJob (TreeHolder):
                    (item for item, count in 
                     collections.Counter(labels).items() if count > 1))
            
-        subsets_tree._tree.write_to_path("pasta_ST.tre","newick")    
-
-        print("pasta_team.subsets: ")
-        print(self.pasta_team.subsets)
-
         return subsets_tree
         
     def run(self, tmp_dir_par, pasta_products=None):

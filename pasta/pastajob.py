@@ -323,7 +323,7 @@ class PastaJob (TreeHolder):
     def build_subsets_tree(self, curr_tmp_dir_par,build_min_tree=True):
     # uym2 added: add option for MST
         if build_min_tree:
-            _LOG.debug("START building MST")
+            _LOG.debug("START building Minimum Spanning Tree")
             grouping = {}
             groupName2jobName = {}
             
@@ -348,6 +348,7 @@ class PastaJob (TreeHolder):
     ###################################
 
 
+        _LOG.debug("START building heuristic spanning tree")
 
         translate={}
         t2 = {}

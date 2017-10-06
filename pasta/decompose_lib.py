@@ -336,8 +336,10 @@ def place_group_onto_tree(a_tree,grouping):
             node = edge.head_node
             node.marked = True
             if node.name in treeMap:
-                print(treeMap[node.name].parent_node.name)
+                print(node.name)
                 print(node.parent_node.name)
+                print(treeMap[node.name].parent_node.name)
+                print("\n")
             treeMap[node.name] = node			
     
     # compute nleaf    
@@ -374,7 +376,7 @@ def compute_group_distance_matrix(a_tree,treeMap):
                     continue
                 node.sumIn += (ch.nleaf*ch.edge_length + ch.sumIn)
 
-    def __compute_ingroup_distance(node):
+    def __compute_ingroup_distance(node,treeMap=None):
     # Compute the average distance from a node to all the leaves in its group
     # Assume that sumIn was computed for each of the nodes
         v = node
@@ -391,6 +393,9 @@ def compute_group_distance_matrix(a_tree,treeMap):
             SUM += s        
             v = u
 
+        #if v.nleaf == 0:
+        #print(v is treeMap[v.name])
+
         return SUM/v.nleaf
 
     def __preprocess():
@@ -399,9 +404,28 @@ def compute_group_distance_matrix(a_tree,treeMap):
             v = treeMap[name]
             u = v.parent_node
                 
+
             if u is not None:
-                u.distance = __compute_ingroup_distance(u)
-            v.distance = __compute_ingroup_distance(v)
+                
+                if u.nleaf == 0:
+                    print("v:")
+                    print(v.name)
+                    print(v.nleaf)
+                    
+                    print("u:")
+                    print(u.name)
+                    print(u.nleaf)
+                    print(u.marked)
+                    
+                    print("Children of u:")
+                    for ch in u.child_node_iter():
+                        print(ch.name)
+                        print(ch.nleaf)
+                        
+            #    print(u.name)
+            #    print(u.nleaf)
+                u.distance = __compute_ingroup_distance(u,treeMap)
+            v.distance = __compute_ingroup_distance(v,treeMap)
 
     def __compute_group_distance(A,B):
         if A == B:

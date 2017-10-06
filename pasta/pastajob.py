@@ -329,11 +329,16 @@ class PastaJob (TreeHolder):
             
             for node in self.tree._tree.leaf_node_iter():
                 groupName = self.pasta_team.subsets[node.taxon.label].tmp_dir_par[len(curr_tmp_dir_par)+1:]
-                grouping[node.taxon.label] = groupName
+                grouping[node.taxon.label] = groupName.replace("/","")
                 groupName2jobName[groupName] = self.pasta_team.subsets[node.taxon.label]
-           
+            
             subsets_tree = build_groups_MST(self.tree._tree,grouping)
  
+            for node in subsets_tree.postorder_node_iter():
+               if node.is_leaf():
+                   node.taxon.label = node.taxon.label.replace("d","/d")
+               node.label = node.label.replace("d","/d") 
+
             self.pasta_team.subsets = groupName2jobName
             MST = PhylogeneticTree(subsets_tree) 
             _LOG.debug("Spanning tree is:\n %s" %MST)

@@ -328,6 +328,7 @@ def place_group_onto_tree(a_tree,grouping):
             if len(ch.groups & node.groups) > 0:
                 ch.groups = ch.groups & node.groups
             ch.name = list(ch.groups)[0]
+            ch.groups = set([ch.name])
 	  
     count = 0  
     for edge in a_tree.preorder_edge_iter():
@@ -335,11 +336,13 @@ def place_group_onto_tree(a_tree,grouping):
             count += 1
             node = edge.head_node
             node.marked = True
+            '''
             if node.name in treeMap:
                 print(node.name)
                 print(node.parent_node.name)
                 print(treeMap[node.name].parent_node.name)
                 print("\n")
+            '''    
             treeMap[node.name] = node			
     
     # compute nleaf    

@@ -15,7 +15,26 @@ from sys import argv
 
 #_LOG = get_logger(__name__)
 
-def min_cluster_bisect(a_tree,max_diam):
+def min_cluster_size_bisect(a_tree,max_size):
+    for node in a_tree.postorder_node_iter():
+        if node.is_leaf():
+            node.nleaf = 1
+        else:
+            node.nleaf = 0
+            max_child = None
+            max_nleaf = 0
+            for ch in node.child_node_iter():
+                   node.nleaf += ch.nleaf
+                   if ch.nleaf > max_nleaf:
+                       max_nleaf = ch.nleaf
+                       max_child = ch
+        if node.nleaf > max_size:
+            node.remove_child(max_child)
+            t1 = Tree(seed_node = max_child)
+            return a_tree,t1
+    return a_tree,None            
+
+def min_cluster_diam_bisect(a_tree,max_diam):
     for node in a_tree.postorder_node_iter():
         if node.is_leaf():
             node.maxdepth = 0

@@ -15,6 +15,30 @@ from sys import argv
 
 #_LOG = get_logger(__name__)
 
+def min_cluster_bisect(a_tree,max_diam):
+    for node in a_tree.postorder_node_iter():
+        if node.is_leaf():
+            node.maxdepth = 0
+            continue
+        d1 = -1
+        d2 = -1
+        max_child = None
+        for ch in node.child_node_iter():
+               d = ch.maxdepth + ch.edge_length
+               if d > d1:
+                   d2 = d1
+                   d1 = d
+                   max_child = ch
+               elif d > d2:
+                   d2 = d
+        node.maxdepth = d1
+        if d1+d2 > max_diam:
+            node.remove_child(max_child)
+            t1 = Tree(seed_node = max_child)
+            return a_tree,t1
+    return a_tree,None            
+
+
 def midpoint_bisect(a_tree,min_size=0,strategy='centroid'):
     def __ini_record__():
         for node in a_tree.postorder_node_iter():

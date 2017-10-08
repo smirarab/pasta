@@ -33,18 +33,18 @@ from pasta.scheduler import jobq, new_merge_event
 from pasta.scheduler import TickableJob
 
 # will do #
-from new_decomposition import midpoint_bisect
+from new_decomposition import midpoint_bisect, min_cluster_bisect
 ###########
 
 #def bisect_tree(tree, breaking_edge_style='centroid'):
 # uym2 modified: add min_size option
-def bisect_tree(tree, breaking_edge_style='centroid',min_size=0):
+def bisect_tree(tree, breaking_edge_style='centroid',min_size=0,max_size=None,max_diam=None):
     """Partition 'tree' into two parts
     """
-    # uym2: added for new decomposition --> in progress #
-    print("bisecting tree...")
+    _LOG.debug("bisecting tree...")
+    # uym2: midpoint decomposition (not in used for now)
     if breaking_edge_style == 'midpoint':
-        print("breaking by midpoint")
+        _LOG.debug("breaking by midpoint")
         t1,t2 = midpoint_bisect(tree._tree,min_size=min_size)	
         if t1 is None or t2 is None:
             return None,None
@@ -53,7 +53,16 @@ def bisect_tree(tree, breaking_edge_style='centroid',min_size=0):
         return tree1,tree2
     ###############
 
-    print("breaking by centroid")
+    # uym2: min_cluster decomposition
+    if breaking_edge_style == 'mincluster':
+        _LOG.debug("breaking usiing min-cluster strategy")
+        t1,t2 = min_cluster_bisect(tree._tree,max_diam)
+        tree1 = PhylogeneticTree(t1) if t1 else None
+        tree2 = PhylogeneticTree(t2) if t2 else None
+        return tree1,tree2
+    ###############
+
+    _LOG.debug("breaking by centroid")
     e = tree.get_breaking_edge(breaking_edge_style)
     _LOG.debug("breaking_edge length = %s, %s" % (e.length, breaking_edge_style) )
     snl = tree.n_leaves
@@ -394,7 +403,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
 
 #        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
 # uym2 modified: add min_size option
-        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size)
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size,max_size=self.max_subproblem_size,max_diam=self.max_subtree_diameter)
         if tree1 is None or tree2 is None:
             return [None,None]
         assert tree1.n_leaves > 0

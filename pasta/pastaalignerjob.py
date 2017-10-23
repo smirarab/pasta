@@ -38,7 +38,7 @@ from new_decomposition import midpoint_bisect, min_cluster_size_bisect
 
 #def bisect_tree(tree, breaking_edge_style='centroid'):
 # uym2 modified: add min_size option
-def bisect_tree(tree, breaking_edge_style='centroid',min_size=0,max_size=None,max_diam=None):
+def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,max_diam=None):
     """Partition 'tree' into two parts
     """
     _LOG.debug("bisecting tree...")
@@ -85,7 +85,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
             - Merging the resulting alignments with the merger tool (e.g. Opal).
             
     """
-    BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['centroid']) ,
+    BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['mincluster']) ,
                             'max_subproblem_size' : 50,
             			    'max_subtree_diameter': 1.0,
                             'min_subproblem_size': 0,

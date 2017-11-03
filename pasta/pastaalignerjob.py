@@ -33,7 +33,7 @@ from pasta.scheduler import jobq, new_merge_event
 from pasta.scheduler import TickableJob
 
 # will do #
-from new_decomposition import midpoint_bisect, min_cluster_size_bisect
+from new_decomposition import midpoint_bisect, min_cluster_size_bisect,min_cluster_diam_bisect
 ###########
 
 #def bisect_tree(tree, breaking_edge_style='centroid'):
@@ -55,8 +55,10 @@ def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,
 
     # uym2: min_cluster decomposition
     if breaking_edge_style == 'mincluster':
-        _LOG.debug("breaking usiing min-cluster strategy")
-        t1,t2 = min_cluster_size_bisect(tree._tree,max_size)
+        _LOG.debug("breaking using min-cluster strategy")
+        t1,t2 = min_cluster_diam_bisect(tree._tree,max_diam)
+        if t1 is None or t2 is None:
+            t1,t2 = min_cluster_size_bisect(tree._tree,max_size)
         tree1 = PhylogeneticTree(t1) if t1 else None
         tree2 = PhylogeneticTree(t2) if t2 else None
         return tree1,tree2
@@ -87,7 +89,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     """
     BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['mincluster']) ,
                             'max_subproblem_size' : 50,
-            			    'max_subtree_diameter': 1.0,
+            			    'max_subtree_diameter': 2.5,
                             'min_subproblem_size': 0,
                             'delete_temps' : True}
     RECURSION_INDEX = 0
@@ -258,7 +260,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
         # added by uym2 on August 1st 2017
         #subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
-        if (self.expected_number_of_taxa > self.max_subproblem_size): # or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) ):
+        if (self.expected_number_of_taxa > self.max_subproblem_size): #or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) :
             subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
             if subjob1 is not None and subjob2 is not None:
                 _LOG.debug("%s...Recursing" % prefix)

@@ -1,3 +1,7 @@
+- Version 1.8.0: This is a major change (by Uyen Mai). 
+	- Default decomposition is changed to minimize the number of subsets given constraints
+	- A new way of building the spanning tree is added as an option (MST)
+        - Several other new options for decomposition are added
 - Version 1.7.8:
         - ** Bug Fix **: run_pasta_gui.py should work with python2 now
 

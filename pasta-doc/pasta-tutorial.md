@@ -39,22 +39,26 @@ You have three options for installing PASTA.
 **Common Problems:**
   
   1. In some cases, your python installation might be in a location different from
-     where PASTA is hoping to find it. In these caes, you get the following error
-      message: 
-      > PASTA has encoutered a fatal error, and will now terminate.
+     where PASTA is hoping to find it. In these cases, you get the following error
+     message:
+      
+      ```text
+        PASTA has encoutered a fatal error, and will now terminate.
         A Python runtime could not be located. 
         You may need to install a framework build of Python,
-        or edit the PyRuntimeLocations array in this application's info.plist file. 
+        or edit the PyRuntimeLocations array in this application's info.plist file.
+      ```
 
-    If you get this message, make sure you have python 2.7 installed. Then, run
-    `python -c 'import sys; print sys.prefix'`. This will tell you where your python
-    is located. Now click on the PASTA app and select `Show Package Content`. 
-    Navigate to `Contents` and open `Info.plist` with the text editor. 
-    Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
-    with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
-    Try running the App again and see if it works. 
-  2. If the agove solution does not work, or if you get other errors, try first
-    installing PASTA from the source code (see below) and then run 
+     If you get this message, make sure you have python 2.7 installed. Then, run
+     `python -c 'import sys; print sys.prefix'`. This will tell you where your python
+     is located. Now click on the PASTA app and select `Show Package Content`. 
+     Navigate to `Contents` and open `Info.plist` with the text editor. 
+     Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
+     with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
+     Try running the App again and see if it works.
+
+  2. If the above solution does not work, or if you get other errors, try first
+    installing PASTA from the source code (see below) and then running 
     `./make-app.sh` from the pasta directory. This will create an app under
     `dist` directory, which you should be able to run and copy to any other location. 
 

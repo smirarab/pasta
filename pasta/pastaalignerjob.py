@@ -34,7 +34,6 @@ from pasta.scheduler import TickableJob
 
 from new_decomposition import midpoint_bisect, min_cluster_size_bisect
 
-#def bisect_tree(tree, breaking_edge_style='centroid'):
 # uym2 modified: add min_size option
 def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,max_diam=None):
     """Partition 'tree' into two parts
@@ -85,7 +84,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     """
     BEHAVIOUR_DEFAULTS = {  'break_strategy' : tuple(['mincluster']) ,
                             'max_subproblem_size' : 50,
-            			    'max_subtree_diameter': 1.0,
+            			    'max_subtree_diameter': 2.5,
                             'min_subproblem_size': 0,
                             'delete_temps' : True}
     RECURSION_INDEX = 0
@@ -214,7 +213,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     def _get_subjob_dir(self, num):
         '''Creates a numbered directory d1, d2, etc within tmp_dir_par.
         
-        ize=0alled in bipartition_by_tree, and the directories are cleaned up
+        Called in bipartition_by_tree, and the directories are cleaned up
         at the end of _start_merger.
         '''
         assert(self.tmp_base_dir)
@@ -254,60 +253,57 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         if self.context_str is None:
             self.context_str = ''
         _LOG.debug("Comparing expected_number_of_taxa=%d and max_subproblem_size=%d\n" % (self.expected_number_of_taxa,  self.max_subproblem_size))
-        # added by uym2 on August 1st 2017
-        #subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
-        if (self.expected_number_of_taxa > self.max_subproblem_size): # or (self.tree._tree.seed_node.diameter > self.max_subtree_diameter) ):
-            subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
-            if subjob1 is not None and subjob2 is not None:
-                _LOG.debug("%s...Recursing" % prefix)
-                # create the subjobs
-                # the next line was modified by uym2 (August 1st 2017)
-                #self.subjob1, self.subjob2 = self.bipartition_by_tree(break_strategy)
-                self.subjob1 = subjob1
-                self.subjob2 = subjob2
-                # store this dir so we can use it in the merger
+
+        if self.expected_number_of_taxa <= self.max_subproblem_size:
+            _LOG.debug("%s...Calling Aligner" % prefix)
+            aj_list = []
+            for index, single_locus_sd in enumerate(self.multilocus_dataset):
+                aj = self.pasta_team.aligner.create_job(single_locus_sd,
+                                                       tmp_dir_par=self.tmp_dir_par,
+                                                       delete_temps=self.delete_temps,
+                                                       context_str=self.context_str + " align" + str(index))
+                aj.add_parent_tickable_job(self)
+                self.add_child(aj)
+                
+                aj_list.append(aj)
                 if self.killed:
                     raise RuntimeError("PastaAligner Job killed")
-
-                self.subjob1.add_parent(self)
-                self.subjob2.add_parent(self)
-                self.add_child(self.subjob1)
-                self.add_child(self.subjob2)
-
-                self.subjob1.launch_alignment(break_strategy=break_strategy)
-                if self.killed:
-                    raise RuntimeError("PastaAligner Job killed")
-                self.subjob2.launch_alignment(break_strategy=break_strategy)
-                if self.killed:
-                    raise RuntimeError("PastaAligner Job killed")
-                return
-
-        _LOG.debug("%s...Calling Aligner" % prefix)
-    #print(self.tree._tree.seed_node.diameter)
-        aj_list = []
-        for index, single_locus_sd in enumerate(self.multilocus_dataset):
-            aj = self.pasta_team.aligner.create_job(single_locus_sd,
-                                                   tmp_dir_par=self.tmp_dir_par,
-                                                   delete_temps=self.delete_temps,
-                                                   context_str=self.context_str + " align" + str(index))
-            aj.add_parent_tickable_job(self)
-            self.add_child(aj)
+                
+                self.pasta_team.alignmentjobs.append(aj)
             
-            aj_list.append(aj)
+            self.align_job_list = aj_list
+            
+            if self.skip_merge:
+                for taxa in self.tree.leaf_node_names():
+                    self.pasta_team.subsets[taxa]=self
+            else:
+                for aj in aj_list:
+                    jobq.put(aj)
+        else:
+            # added by uym2 on August 1st 2017
+            subjob1, subjob2 = self.bipartition_by_tree(break_strategy)
+            if subjob1 is None or subjob2 is None:
+                return
+            _LOG.debug("%s...Recursing" % prefix)
+            # create the subjobs
+            # the next line was modified by uym2 (August 1st 2017)
+            self.subjob1 = subjob1
+            self.subjob2 = subjob2
+            # store this dir so we can use it in the merger
             if self.killed:
                 raise RuntimeError("PastaAligner Job killed")
-            
-            self.pasta_team.alignmentjobs.append(aj)
-        
-        self.align_job_list = aj_list
-        
-        if self.skip_merge:
-            for taxa in self.tree.leaf_node_names():
-                self.pasta_team.subsets[taxa]=self
-        else:
-            for aj in aj_list:
-                jobq.put(aj)
-        return
+
+            self.subjob1.add_parent(self)
+            self.subjob2.add_parent(self)
+            self.add_child(self.subjob1)
+            self.add_child(self.subjob2)
+
+            self.subjob1.launch_alignment(break_strategy=break_strategy)
+            if self.killed:
+                raise RuntimeError("PastaAligner Job killed")
+            self.subjob2.launch_alignment(break_strategy=break_strategy)
+            if self.killed:
+                raise RuntimeError("PastaAligner Job killed")
 
     # We lock the job objects because kill might be called from another thread
     def get_subjob1(self):
@@ -399,9 +395,8 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
     def bipartition_by_tree(self, option):
         _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
 
-#        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option)
 # uym2 modified: add min_size option
-        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size,max_size=self.max_subproblem_size,max_diam=self.max_subtree_diameter)
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size,max_size=self.max_subproblem_size)
         if tree1 is None or tree2 is None:
             return [None,None]
         assert tree1.n_leaves > 0

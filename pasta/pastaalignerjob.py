@@ -32,7 +32,7 @@ from pasta.treeholder import TreeHolder
 from pasta.scheduler import jobq, new_merge_event
 from pasta.scheduler import TickableJob
 
-from new_decomposition import midpoint_bisect, min_cluster_size_bisect,min_cluster_diam_bisect
+from new_decomposition import midpoint_bisect, min_cluster_size_bisect
 
 # uym2 modified: add min_size option
 def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,max_diam=None):
@@ -53,9 +53,7 @@ def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,
     # uym2: min_cluster decomposition
     if breaking_edge_style == 'mincluster':
         _LOG.debug("breaking using min-cluster strategy")
-        t1,t2 = min_cluster_diam_bisect(tree._tree,max_diam)
-        if t1 is None or t2 is None:
-            t1,t2 = min_cluster_size_bisect(tree._tree,max_size)
+        t1,t2 = min_cluster_size_bisect(tree._tree,max_size)
         tree1 = PhylogeneticTree(t1) if t1 else None
         tree2 = PhylogeneticTree(t2) if t2 else None
         return tree1,tree2
@@ -398,7 +396,7 @@ class PASTAAlignerJob(TreeHolder, TickableJob):
         _LOG.debug("tree before bipartition by %s = %s ..." % (option, self.tree.compose_newick()[0:200]))
 
 # uym2 modified: add min_size option
-        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size,max_size=self.max_subproblem_size,max_diam=self.max_subtree_diameter)
+        tree1, tree2 = bisect_tree(self.tree, breaking_edge_style=option,min_size=self.min_subproblem_size,max_size=self.max_subproblem_size)
         if tree1 is None or tree2 is None:
             return [None,None]
         assert tree1.n_leaves > 0

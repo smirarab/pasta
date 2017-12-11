@@ -68,7 +68,7 @@ def graph2tree(G,root=0,names=[]):
 def build_MST(distance_mtrx,n,names=[]):
     print(names)
     MST = [[] for i in range(n)]
-    sorted_d = sorted(distance_mtrx.items(), key=operator.itemgetter(1))
+    sorted_d = sorted(list(distance_mtrx.items()), key=operator.itemgetter(1))
     #print(sorted_d)
     DS = DisjointSets(n)
  
@@ -77,7 +77,7 @@ def build_MST(distance_mtrx,n,names=[]):
             p,q = edge
             if DS.find(p) is not DS.find(q):
                 DS.join(p,q)
-                print(p,q,length)
+                print((p,q,length))
                 MST[p].append((q,length))
                 MST[q].append((p,length))
 
@@ -92,7 +92,7 @@ def build_groups_MST(tree,grouping):
     D = compute_group_distance_matrix(tree,treeMap)
     #print(D)
     #print("Constructing MST ... ")
-    MST_tree = build_MST(D,len(treeMap),names=treeMap.keys())
+    MST_tree = build_MST(D,len(treeMap),names=list(treeMap.keys()))
 
     return MST_tree
 

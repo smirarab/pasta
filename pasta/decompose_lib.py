@@ -7,7 +7,7 @@ from dendropy import Tree, Node
 try:
     from queue import Queue # python 3
 except:
-    from queue import Queue # python 2
+    from Queue import Queue # python 2
 #from tree import PhylogeneticTree
 
 

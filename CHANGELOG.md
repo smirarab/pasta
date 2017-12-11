@@ -1,3 +1,9 @@
+- Version 1.8.2:
+	- python 3 was broken in 1.8.0. Fixed
+
+- Version 1.8.1:
+	- Bug fixes
+
 - Version 1.8.0: This is a major change (by Uyen Mai). 
 	- Default decomposition is changed to minimize the number of subsets given constraints
 	- A new way of building the spanning tree is added as an option (MST)

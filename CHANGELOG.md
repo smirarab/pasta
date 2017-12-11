@@ -1,30 +1,31 @@
 - Version 1.8.2:
-    - **Bug fixe**: python 3 was broken in 1.8.0. Fixed
+    - **Bug fix**: python 3 was broken in 1.8.0. Fixed
 
 - Version 1.8.1:
-    - **Bug fixe**: Version 1.8.0 had a spurious commit 
+    - **Bug fix**: Version 1.8.0 had a spurious commit 
 
 - Version 1.8.0: This is a major change (by Uyen Mai). 
     - Default decomposition is changed to minimize the number of subsets given constraints
     - A new way of building the spanning tree is added as an option (MST)
     - Several other new options for decomposition are added
+    
 - Version 1.7.8:
-    - **Bug Fix **: run_pasta_gui.py should work with python2 now
+    - **Bug Fix**: run_pasta_gui.py should work with python2 now
 
 - Version 1.7.7:
-    - **Bug Fix **: a second attempt at fixing troubles with new dendropy rooting
+    - **Bug Fix**: a second attempt at fixing troubles with new dendropy rooting
 
 - Version 1.7.6: 
-    - **Bug Fix **: PASTA used to sometimes fail due to troubles with new dendropy rooting
+    - **Bug Fix**: PASTA used to sometimes fail due to troubles with new dendropy rooting
 
 - Version 1.7.4:
-    - **Bug Fix **: fixed a bug that eliminated one sequence 
+    - **Bug Fix**: fixed a bug that eliminated one sequence 
 
 - Versions 1.7.1 -- 1.7.3:
-    - **Bug Fix: ** several bug fixes related to the import to python 3
+    - **Bug Fix:** several bug fixes related to the import to python 3
 
 - Version 1.7.0:
-    - **Change **: Moved to Dendropy 4 and now support python 3
+    - **Change:** Moved to Dendropy 4 and now support python 3
 
 - Version 1.6.4:
     - **Change:** Fix the copyright year to 2013-2016 

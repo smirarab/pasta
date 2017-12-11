@@ -5,6 +5,7 @@ This is an implementation of the PASTA (Practical Alignment using Sate and TrAns
 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
+The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](github.com/uym2). 
 
 **Acknowledgment**: 
 

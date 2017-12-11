@@ -42,7 +42,7 @@ from pasta.filemgr import  TempFS
 from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
 # uym2 added: for minimum subsets tree
-from Kruskal_MST import build_groups_MST
+from pasta.Kruskal_MST import build_groups_MST
 
 
 class PastaTeam (object):

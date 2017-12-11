@@ -7,7 +7,7 @@ from dendropy import Tree, Node
 try:
     from queue import Queue # python 3
 except:
-    from Queue import Queue # python 2
+    from queue import Queue # python 2
 #from tree import PhylogeneticTree
 
 
@@ -324,12 +324,12 @@ def place_group_onto_tree(a_tree,grouping):
 
     # Top down: resolve groups and mark bridged nodes
     for node in a_tree.preorder_node_iter():
-    	for ch in node.child_node_iter():
+        for ch in node.child_node_iter():
             if len(ch.groups & node.groups) > 0:
                 ch.groups = ch.groups & node.groups
             ch.name = list(ch.groups)[0]
             ch.groups = set([ch.name])
-	  
+      
     count = 0  
     for edge in a_tree.preorder_edge_iter():
         if (edge.tail_node is not None) and (edge.tail_node.name != edge.head_node.name):
@@ -343,13 +343,13 @@ def place_group_onto_tree(a_tree,grouping):
                 print(treeMap[node.name].parent_node.name)
                 print("\n")
             '''    
-            treeMap[node.name] = node			
+            treeMap[node.name] = node
     
     # compute nleaf    
     for node in a_tree.postorder_node_iter():
-	if node.is_leaf():
-	    node.nleaf = 1
-	    continue
+        if node.is_leaf():
+            node.nleaf = 1
+            continue
         node.nleaf = 0
         for ch in node.child_node_iter():
             if ch.marked:
@@ -412,18 +412,18 @@ def compute_group_distance_matrix(a_tree,treeMap):
                 
                 if u.nleaf == 0:
                     print("v:")
-                    print(v.name)
-                    print(v.nleaf)
+                    print((v.name))
+                    print((v.nleaf))
                     
                     print("u:")
-                    print(u.name)
-                    print(u.nleaf)
-                    print(u.marked)
+                    print((u.name))
+                    print((u.nleaf))
+                    print((u.marked))
                     
                     print("Children of u:")
                     for ch in u.child_node_iter():
-                        print(ch.name)
-                        print(ch.nleaf)
+                        print((ch.name))
+                        print((ch.nleaf))
                         
             #    print(u.name)
             #    print(u.nleaf)
@@ -476,7 +476,7 @@ def compute_group_distance_matrix(a_tree,treeMap):
     __preprocess()   
     D = {}
     # Main part: compute distances for all pairs of groups
-    groups = treeMap.keys()
+    groups = list(treeMap.keys())
     for i in range(len(groups)-1):
        for j in range(i+1,len(groups)):
            D[(i,j)] = __compute_group_distance(groups[i],groups[j])

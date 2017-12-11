@@ -1,8 +1,8 @@
-from DisjointSets_ADT import DisjointSets
+from pasta.DisjointSets_ADT import DisjointSets
 import operator
 from dendropy import Tree, Node
 from sys import stdout
-from decompose_lib import compute_group_distance_matrix, place_group_onto_tree
+from pasta.decompose_lib import compute_group_distance_matrix, place_group_onto_tree
 
 
 def tree_as_newick(tree,outfile=None,append=False):

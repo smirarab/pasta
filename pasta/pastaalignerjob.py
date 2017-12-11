@@ -32,7 +32,7 @@ from pasta.treeholder import TreeHolder
 from pasta.scheduler import jobq, new_merge_event
 from pasta.scheduler import TickableJob
 
-from new_decomposition import midpoint_bisect, min_cluster_size_bisect
+from pasta.new_decomposition import midpoint_bisect, min_cluster_size_bisect
 
 # uym2 modified: add min_size option
 def bisect_tree(tree, breaking_edge_style='mincluster',min_size=0,max_size=None,max_diam=None):

@@ -5,12 +5,12 @@ This is an implementation of the PASTA (Practical Alignment using Sate and TrAns
 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
-The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](github.com/uym2). 
+The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
 
 **Acknowledgment**: 
 
 * The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
-* [Niema Moshiri](github.com/niemasd) has contributed to the import to dendropy 4 and python 3
+* [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3
 
 **Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
 

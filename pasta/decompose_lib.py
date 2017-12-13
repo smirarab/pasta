@@ -172,10 +172,7 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
     def __break_by_MP_centroid__(seed_node):
         e = __get_breaking_edge__(seed_node,'midpoint')
         if e is None:
-#            print("Midpoint failed. Trying centroid decomposition...")
             e = __get_breaking_edge__(seed_node,'centroid')
-#        else:
-#            print("Successfully splitted by midpoint")
         return e
 
     #def __break(t):
@@ -209,7 +206,6 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
     treeMap = {} 
     e.head_node.marked = True
     u = e.head_node.parent_node
-    #print(a_tree.seed_node.nleaf)
     
     while u is not None:
         __updateNode__(u)
@@ -217,14 +213,11 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
             break
         u = u.parent_node
     
-    #print(a_tree.seed_node.nleaf)
-    #print(e.head_node.nleaf)
      
     #t1,t2 = __bisect__(a_tree,e)
     e1 = __break(a_tree.seed_node)
     e2 = __break(e.head_node)
     
-    #print(e1.head_node is a_tree.seed_node)
      
 
     if e1 is None:
@@ -253,7 +246,6 @@ def decompose_by_diameter(a_tree,strategy,max_size=None,min_size=None,max_diam=N
     while len(tstk):
         #t,e = tstk.pop()
         node,e = tstk.pop()
-        #print(node is a_tree.seed_node)
         e.head_node.marked = True
         u = e.tail_node
         while u is not None:
@@ -336,13 +328,6 @@ def place_group_onto_tree(a_tree,grouping):
             count += 1
             node = edge.head_node
             node.marked = True
-            '''
-            if node.name in treeMap:
-                print(node.name)
-                print(node.parent_node.name)
-                print(treeMap[node.name].parent_node.name)
-                print("\n")
-            '''    
             treeMap[node.name] = node
     
     # compute nleaf    
@@ -396,8 +381,6 @@ def compute_group_distance_matrix(a_tree,treeMap):
             SUM += s        
             v = u
 
-        #if v.nleaf == 0:
-        #print(v is treeMap[v.name])
 
         return SUM/v.nleaf
 
@@ -408,25 +391,7 @@ def compute_group_distance_matrix(a_tree,treeMap):
             u = v.parent_node
                 
 
-            if u is not None:
-                
-                if u.nleaf == 0:
-                    print("v:")
-                    print((v.name))
-                    print((v.nleaf))
-                    
-                    print("u:")
-                    print((u.name))
-                    print((u.nleaf))
-                    print((u.marked))
-                    
-                    print("Children of u:")
-                    for ch in u.child_node_iter():
-                        print((ch.name))
-                        print((ch.nleaf))
-                        
-            #    print(u.name)
-            #    print(u.nleaf)
+            if u is not None: 
                 u.distance = __compute_ingroup_distance(u,treeMap)
             v.distance = __compute_ingroup_distance(v,treeMap)
 

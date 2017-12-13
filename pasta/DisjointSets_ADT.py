@@ -39,12 +39,3 @@ class DisjointSets:
     def is_single(self):
         return self.n_groups == 1
 
-'''
-D = DisjointSets(2)
-print(D.groupings[0].elements)
-print(D.is_single())
-
-D.join(0,1)
-print(D.groupings[0].elements)
-print(D.is_single())
-'''

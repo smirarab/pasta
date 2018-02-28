@@ -19,7 +19,7 @@ import os
 import platform
 import sys
 import pasta
-
+import tarfile
 script_name = 'run_pasta.py' 
 gui_script_name = 'run_pasta_gui.py'
 
@@ -187,13 +187,24 @@ if platform.system() != "Windows":
     for subdir in tools_bin_subdirs:
         if subdir:
             tdir = os.path.join(tools_bin_srcdir, subdir)
+	    #print 'tdir' + str(tdir)
         else:
             tdir = tools_bin_srcdir
         for fpath in os.listdir(tdir):
             src_path = os.path.join(tdir, fpath)
             if os.path.isfile(src_path) and not src_path.endswith('.txt'):
                 create_symlink(src_path, subdir)
-                
-
+    #databases in sate-tools-linux holds the swissprot* files for mafft-homologs. They compressed to appease git so we have to extract them to use them.
+    searchDir = os.path.join(tools_bin_srcdir, 'databases')
+    for files in os.listdir(searchDir):
+	fullPath = os.path.join(searchDir, files)
+	if fullPath.endswith("tar.gz"):
+		tar = tarfile.open(fullPath, "r:gz")
+		tar.extractall(searchDir)
+		tar.close()
+    
+    mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
+    ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')
+    os.symlink(mafftDir, ginsiDir)
 
 setup(**param)

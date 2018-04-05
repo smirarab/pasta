@@ -103,10 +103,10 @@ If you don't have root access, remove the `sudo` part and instead  use  `--user`
  * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get and error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
 (but note there are other ways of installing setuptools as well).
 
-6. Pasta now includes additional aligners for Linux users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable CONTRALIGN_DIR=/dir/to/sate-tools-linux. 
+6. Pasta now includes additional aligners for Linux and MAC users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable CONTRALIGN_DIR=/dir/to/sate-tools-linux. 
 
 A simple step-by-step for this is as following:
-	a. change your directory to sate-tools-linux, type `pwd` in the command line, and copying the output
+	a. change your directory to sate-tools-linux (or sate-tools-mac), type `pwd` in the command line, and copy the output
 	b. `vim ~/.bashrc`, press i and then type CONTRALIGN_DIR=(paste the copied output/directory) at the bottom of the text file, the press ESC followed by :wq
 	c. then in the command line type `source ~/.bashrc`
 

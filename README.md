@@ -87,6 +87,11 @@ You need to rename thse directories and remove the `-master` part.
 Finally, those with 32-bit Linux machines need to be aware that the master branch has 64bit binaries.
 32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
+*If you want to use MAFFT-Homologs within PASTA*
+`cd sate-tools-linux` or `cd sate-tools-mac`
+Use `git https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
+*Be sure to leave this directory `cd ..` before starting the next step*
+
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
 5. Then run:

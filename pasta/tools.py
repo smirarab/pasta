@@ -257,6 +257,79 @@ class MafftAligner(Aligner):
                 delete_temps=kwargs.get('delete_temps', self.delete_temps),
                 stdout=alignedfn)
 
+class GinsiAligner(Aligner):
+    section_name = 'ginsi aligner'
+    #url = 'http://align.bmr.kyushu-u.ac.jp/mafft/software'
+    is_bundled = False
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'ginsi', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_ginsi'
+        if alignment.get_num_taxa() == 0:
+            return FakeJob(alignment, context_str=job_id)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
+
+        invoc = []
+        if platform.system() == "Windows":
+            invoc.append(self.exe)
+        else:
+            invoc.extend([self.exe])
+        invoc.extend(['--globalpair', '--maxiterate', '1000'])
+        if '--ep' not in self.user_opts:
+            invoc.extend(['--ep', '0.123'])
+        invoc.extend(['--quiet'])
+        invoc.extend(self.user_opts)
+        invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
+        invoc.append(seqfn)
+
+        # The MAFFT job creation is slightly different from the other
+        #   aligners because we redirect and read standard output.
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                datatype=alignment.datatype,
+                invoc=invoc,
+                scratch_dir=scratch_dir,
+                job_id=job_id,
+                delete_temps=kwargs.get('delete_temps', self.delete_temps),
+                stdout=alignedfn)
+
+class HomologsAligner(Aligner):
+    section_name = 'homologs aligner'
+    #url = 'http://align.bmr.kyushu-u.ac.jp/mafft/software'
+    is_bundled_tool = False
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'homologs', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_homologs'
+        if alignment.get_num_taxa() == 0:
+            return FakeJob(alignment, context_str=job_id)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
+
+        invoc = [self.exe, '-l', seqfn]
+        invoc.extend(['--thread', str(kwargs.get('num_cpus', 1))])
+        invoc.extend(self.user_opts)
+
+        # The probcons job creation is slightly different from the other
+        #   aligners because we redirect and read standard output.
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                datatype=alignment.datatype,
+                invoc=invoc,
+                scratch_dir=scratch_dir,
+                job_id=job_id,
+                delete_temps=kwargs.get('delete_temps', self.delete_temps),
+                stdout=alignedfn)
+
 
 class OpalAligner(Aligner):
     section_name = 'opal aligner'
@@ -317,6 +390,37 @@ class Clustalw2Aligner(Aligner):
                                         scratch_dir=scratch_dir,
                                         job_id=job_id,
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
+
+class ContralignAligner(Aligner):
+    section_name = 'contralign aligner'
+    url = 'http://contra.stanford.edu/contralign/'
+    is_bundled_tool = False
+
+    def __init__(self, temp_fs, **kwargs):
+        Aligner.__init__(self, 'contralign', temp_fs, **kwargs)
+
+    def create_job(self, alignment, guide_tree=None, **kwargs):
+        job_id = kwargs.get('context_str', '') + '_contralign'
+        if alignment.get_num_taxa() == 0:
+            return FakeJob(alignment, context_str=job_id)
+        new_alignment = alignment.unaligned()
+        if new_alignment.get_num_taxa() < 2:
+            return FakeJob(new_alignment, context_str=job_id)
+        scratch_dir, seqfn, alignedfn = self._prepare_input(new_alignment, **kwargs)
+
+        invoc = [self.exe, seqfn]
+        invoc.extend(self.user_opts)
+
+        # The probcons job creation is slightly different from the other
+        #   aligners because we redirect and read standard output.
+
+        return self._finish_standard_job(alignedfn=alignedfn,
+                datatype=alignment.datatype,
+                invoc=invoc,
+                scratch_dir=scratch_dir,
+                job_id=job_id,
+                delete_temps=kwargs.get('delete_temps', self.delete_temps),
+                stdout=alignedfn)
 
 class MuscleAligner(Aligner):
     section_name = 'muscle aligner'
@@ -970,11 +1074,11 @@ class HMMERAlignAligner(Aligner):
                                         delete_temps=kwargs.get('delete_temps', self.delete_temps))
 
 if GLOBAL_DEBUG:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner, ProbconsAligner)
+    AlignerClasses = (GinsiAligner, HomologsAligner, ContralignAligner, ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner, ProbconsAligner)
     MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
 else:
-    AlignerClasses = (ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, MuscleAligner, CustomAligner, HMMERAlignAligner)
+    AlignerClasses = (GinsiAligner, HomologsAligner, ContralignAligner, ProbconsAligner, ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, MuscleAligner, CustomAligner, HMMERAlignAligner)
     MergerClasses = (MuscleMerger, OpalMerger, CustomMerger)
     TreeEstimatorClasses = (Raxml, FastTree, CustomTreeEstimator)
 

@@ -88,6 +88,11 @@ You need to rename these directories and remove the `-master` part.
 Finally, those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries.
 32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
+*If you want to use MAFFT-Homologs within PASTA*
+`cd sate-tools-linux` or `cd sate-tools-mac`
+Use `git https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
+*Be sure to leave this directory `cd ..` before starting the next step*
+
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
 5. Then run:
@@ -104,6 +109,14 @@ If you don't have root access, remove the `sudo` part and instead  use  `--user`
  * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
 (but note there are other ways of installing setuptools as well).
 
+6. Pasta now includes additional aligners for Linux and MAC users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable CONTRALIGN_DIR=/dir/to/sate-tools-linux. 
+
+A simple step-by-step for this is as following:
+	a. change your directory to sate-tools-linux (or sate-tools-mac), type `pwd` in the command line, and copy the output
+	b. `vim ~/.bashrc`, press i and then type CONTRALIGN_DIR=(paste the copied output/directory) at the bottom of the text file, the press ESC followed by :wq
+	c. then in the command line type `source ~/.bashrc`
+
+To use these aligners, add the following to your pasta execution --aligner=NAME_OF_ALIGNER, where NAME_OF_ALIGNER now includes (ginsi, homologs, contralign, and probcons)
 
 ### 3. From Virtual Machine (VM)
 

@@ -90,7 +90,7 @@ Finally, those with 32-bit Linux machines need to be aware that the master branc
 
 *If you want to use MAFFT-Homologs within PASTA*
 `cd sate-tools-linux` or `cd sate-tools-mac`
-Use `git https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
+Use `git clone https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
 *Be sure to leave this directory `cd ..` before starting the next step*
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)

@@ -195,10 +195,11 @@ if platform.system() != "Windows":
             if os.path.isfile(src_path) and not src_path.endswith('.txt'):
                 create_symlink(src_path, subdir)
     #databases in sate-tools-linux holds the swissprot* files for mafft-homologs. They compressed to appease git so we have to extract them to use them.
-    searchDir = os.path.join(tools_bin_srcdir, 'databases')
-    for files in os.listdir(searchDir):
-	fullPath = os.path.join(searchDir, files)
-	if fullPath.endswith("tar.gz"):
+    if os.path.exists(os.path.join(tools_bin_srcdir, 'pasta-databases')):
+        searchDir = os.path.join(tools_bin_srcdir, 'pasta-databases')
+        for files in os.listdir(searchDir):
+	    fullPath = os.path.join(searchDir, files)
+	    if fullPath.endswith("tar.gz"):
 		tar = tarfile.open(fullPath, "r:gz")
 		tar.extractall(searchDir)
 		tar.close()

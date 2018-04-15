@@ -197,12 +197,12 @@ if platform.system() != "Windows":
     #databases in sate-tools-linux holds the swissprot* files for mafft-homologs. They compressed to appease git so we have to extract them to use them.
     searchDir = os.path.join(tools_bin_srcdir, 'databases')
     for files in os.listdir(searchDir):
-	fullPath = os.path.join(searchDir, files)
-	if fullPath.endswith("tar.gz"):
-		tar = tarfile.open(fullPath, "r:gz")
-		tar.extractall(searchDir)
-		tar.close()
-    
+        fullPath = os.path.join(searchDir, files)
+        if fullPath.endswith("tar.gz"):
+            tar = tarfile.open(fullPath, "r:gz")
+            tar.extractall(searchDir)
+            tar.close()
+
     mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
     ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')
     os.symlink(mafftDir, ginsiDir)

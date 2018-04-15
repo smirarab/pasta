@@ -198,11 +198,11 @@ if platform.system() != "Windows":
     if os.path.exists(os.path.join(tools_bin_srcdir, 'pasta-databases')):
         searchDir = os.path.join(tools_bin_srcdir, 'pasta-databases')
         for files in os.listdir(searchDir):
-	    fullPath = os.path.join(searchDir, files)
-	    if fullPath.endswith("tar.gz"):
-		tar = tarfile.open(fullPath, "r:gz")
-		tar.extractall(searchDir)
-		tar.close()
+            fullPath = os.path.join(searchDir, files)
+            if fullPath.endswith("tar.gz"):
+                tar = tarfile.open(fullPath, "r:gz")
+                tar.extractall(searchDir)
+                tar.close()
     
     mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
     ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')

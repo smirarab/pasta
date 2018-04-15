@@ -206,6 +206,7 @@ if platform.system() != "Windows":
     
     mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
     ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')
-    os.symlink(mafftDir, ginsiDir)
+    if os.path.islink(ginsiDir) is False:
+        os.symlink(mafftDir, ginsiDir)
 
 setup(**param)

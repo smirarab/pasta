@@ -14,3 +14,5 @@ ENV CONTRALIGN_DIR /usr/local/bin/sate-tools-linux
 
 RUN mkdir /data
 WORKDIR /data
+
+RUN echo 'alias python="python3"' >> ~/.bashrc

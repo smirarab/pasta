@@ -11,3 +11,6 @@ RUN git clone https://github.com/smirarab/sate-tools-linux.git
 RUN cd pasta && python3 setup.py develop
 RUN rm /usr/local/bin/run_pasta_gui.py
 ENV CONTRALIGN_DIR /usr/local/bin/sate-tools-linux
+
+RUN mkdir /data
+WORKDIR /data

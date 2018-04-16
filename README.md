@@ -10,23 +10,18 @@ The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, wi
 **Acknowledgment**: 
 
 * The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
-* [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3
+* [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3 and to the Docker image. 
 
 **Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
 
 INSTALLATION
 ===
 
-**Dependencies**: 
+You have four options for installing PASTA. 
 
-1. You need to have python 2.7 or later (including python 3).
-2. You need to have java installed (required for Opal, which is by the default used in PASTA for merging small alignments).
-
-You have three options for installing PASTA. 
-
- - **Windows:** If you have a Windows machine, currently using the Virtual Machine (VM) image we provide is your only option. 
- - **Linux:** If you have Linux (or other \*nix systems), you can still use VM, but downloading the code from github and installing it is what we strongly recommend. 
- - **MAC:** We have three options for MAC: VM, installing from the code, and downloading .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code).
+ - **Windows:** If you have a Windows machine, currently using the Docker image or the Virtual Machine (VM) image we provide is your only option. Among those two options, Docker is the preferred method. 
+ - **Linux:** If you have Linux (or other \*nix systems), you can still use Docker or VM, but downloading the code from github and installing it is what we recommend. 
+ - **MAC:** We have four options for MAC: VM, Docker, installing from the code, and downloading the .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code). Otherwise, we reocmmend either Docker or the code. 
 
 
 ### 1. From pre-build MAC image file
@@ -118,7 +113,22 @@ A simple step-by-step for this is as following:
 
 To use these aligners, add the following to your pasta execution --aligner=NAME_OF_ALIGNER, where NAME_OF_ALIGNER now includes (ginsi, homologs, contralign, and probcons)
 
-### 3. From Virtual Machine (VM)
+### 3. From Docker
+
+1. Make sure you have Docker installed 
+
+2. Run
+    ~~~bash
+    docker pull smirarab/docker
+    ~~~
+    
+You are done. You can test using 
+
+~~~bash
+ docker run smirarab/pasta run_pasta.py -h
+~~~
+
+### 4. From Virtual Machine (VM)
 
 VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (if your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version. 
 
@@ -132,6 +142,13 @@ To run PASTA using the command-line:
 ```
 python run_pasta.py -i input_fasta [-t starting_tree] 
 ```
+
+To run it using Docker, run
+
+~~~bash
+docker run -v `pwd`/:/data run_pasta.py -i input_fasta [-t starting_tree] 
+~~~
+
 
 PASTA by default picks the appropriate configurations automatically for you. 
 The starting tree is optional. If not provided, PASTA estimates a starting tree. 

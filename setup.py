@@ -203,7 +203,6 @@ if platform.system() != "Windows":
                 tar = tarfile.open(fullPath, "r:gz")
                 tar.extractall(searchDir)
                 tar.close()
-    
     mafftDir = os.path.join(tools_bin_srcdir, 'mafft')
     ginsiDir = os.path.join(DEST_DIR_ROOT, 'ginsi')
     if os.path.islink(ginsiDir) is False:

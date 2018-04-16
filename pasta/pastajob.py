@@ -41,6 +41,8 @@ from pasta.scheduler import jobq
 from pasta.filemgr import  TempFS
 from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
 
+# uym2 added: for minimum subsets tree
+from pasta.Kruskal_MST import build_groups_MST
 
 
 class PastaTeam (object):
@@ -95,12 +97,14 @@ class PastaJob (TreeHolder):
                             'move_to_blind_on_worse_score' : False,
                             'blind_mode_is_final' : True,
                             'max_subproblem_size' : 200,
+			    'max_subtree_diameter': 1.3,	
                             'max_subproblem_frac' : 0.2,
                             'start_tree_search_from_current' : False,
                             'keep_realignment_temporaries' : False,
                             'keep_iteration_temporaries' : False,
                             'return_final_tree_and_alignment' : False,
-                            'mask_gappy_sites' : 1
+                            'mask_gappy_sites' : 1,
+                            'build_MST' : False
                         }
     def configuration(self):
         d = {}
@@ -314,7 +318,36 @@ class PastaJob (TreeHolder):
         self.best_tree_tmp_filename = self.curr_iter_tree_tmp_filename
         self.best_alignment_tmp_filename = self.curr_iter_align_tmp_filename
 
-    def build_subsets_tree(self, curr_tmp_dir_par):
+
+    #def build_subsets_tree(self, curr_tmp_dir_par):
+    def build_subsets_tree(self, curr_tmp_dir_par,build_min_tree=True):
+    # uym2 added: add option for MST
+        if build_min_tree:
+            _LOG.debug("START building Minimum Spanning Tree")
+            grouping = {}
+            groupName2jobName = {}
+            
+            for node in self.tree._tree.leaf_node_iter():
+                groupName = self.pasta_team.subsets[node.taxon.label].tmp_dir_par[len(curr_tmp_dir_par)+1:]
+                grouping[node.taxon.label] = groupName.replace("/","")
+                groupName2jobName[groupName] = self.pasta_team.subsets[node.taxon.label]
+            
+            subsets_tree = build_groups_MST(self.tree._tree,grouping)
+ 
+            for node in subsets_tree.postorder_node_iter():
+               if node.is_leaf():
+                   node.taxon.label = node.taxon.label.replace("d","/d")
+               node.label = node.label.replace("d","/d") 
+
+            self.pasta_team.subsets = groupName2jobName
+            MST = PhylogeneticTree(subsets_tree) 
+            _LOG.debug("Spanning tree is:\n %s" %MST)
+            return MST
+    ###################################
+
+
+        _LOG.debug("START building heuristic spanning tree")
+
         translate={}
         t2 = {}
         for node in self.tree._tree.leaf_node_iter():
@@ -485,7 +518,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                                          context_str=context_str)                
                 if self.pastamerge:
                     _LOG.debug("Build PASTA merge jobs")
-                    subsets_tree = self.build_subsets_tree(curr_tmp_dir_par)
+                    subsets_tree = self.build_subsets_tree(curr_tmp_dir_par,self.build_MST)
                     if len(self.pasta_team.subsets) == 1:
                         # can happen if there are no decompositions
                         for job in self.pasta_team.alignmentjobs:

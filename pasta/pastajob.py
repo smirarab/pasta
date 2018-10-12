@@ -67,6 +67,7 @@ class PastaTeam (object):
             self.raxml_tree_estimator = config.create_tree_estimator(name='Raxml', temp_fs=self._temp_fs)
             self.subsets = {} # needed for pastamerger
             self.alignmentjobs = [] # needed for pastamerger
+            self.treeshrink_wrapper = config.create_treeshrink_wrapper(temp_fs=self._temp_fs)
         except AttributeError:
             raise
             raise ValueError("config cannot be None unless all of the tools are passed in.")
@@ -104,7 +105,8 @@ class PastaJob (TreeHolder):
                             'keep_iteration_temporaries' : False,
                             'return_final_tree_and_alignment' : False,
                             'mask_gappy_sites' : 1,
-                            'build_MST' : False
+                            'build_MST' : False,
+                            'treeshrink_filter': False
                         }
     def configuration(self):
         d = {}
@@ -555,6 +557,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 del aligner
 
                 record_timestamp(os.path.join(curr_tmp_dir_par, 'start_treeinference_timestamp.txt'))
+                
                 # Tree inference
                 if self.start_tree_search_from_current:
                     start_from = self.tree
@@ -563,6 +566,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 self.status('Step %d. Alignment obtained. Tree inference beginning...' % (self.current_iteration))
                 if self.killed:
                     raise RuntimeError("PASTA Job killed")                             
+           
             
                 tbj = self.pasta_team.tree_estimator.create_job(new_multilocus_dataset,
                                                                starting_tree=start_from,
@@ -588,39 +592,69 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
 
                 record_timestamp(os.path.join(curr_tmp_dir_par, 'end_treeinference_timestamp.txt'))
                 curr_timestamp = time.time()
-                accept_iteration = False
+
+                                
+                _LOG.debug("Tree obtained. Checking for acceptance.")
+
+                this_iter_score_improved = ( self.best_score is None ) or ( new_score > self.best_score )
+
+                accept_iteration =  ( this_iter_score_improved or 
+                                      self._get_accept_mode(new_score=new_score, break_strategy_index=break_strategy_index) == AcceptMode.BLIND_MODE )
 
                 if self.score is None:
                     self.score = new_score
 
-                if self.best_score is None or new_score > self.best_score:
-                    self.store_optimum_results(new_multilocus_dataset,
-                            new_tree_str,
-                            new_score,
-                            curr_timestamp)
-                    this_iter_score_improved = True
-                    accept_iteration = True
-
-                if self._get_accept_mode(new_score=new_score, break_strategy_index=break_strategy_index) == AcceptMode.BLIND_MODE:
-                    if self.blind_mode_is_final:
-                        self.is_stuck_in_blind = True
-                        if self.switch_to_blind_timestamp is None:
-                            if self._blindmode_trigger:
-                                _LOG.debug("Blind runmode trigger = %s" % self._blindmode_trigger)
-                            self.switch_to_blind_iter = self.current_iteration
-                            self.switch_to_blind_timestamp = curr_timestamp
-                    accept_iteration = True
 
                 if accept_iteration:
-                    self.score = new_score
-                    self.multilocus_dataset = new_multilocus_dataset
-                    self.tree_str = new_tree_str
                     if this_iter_score_improved:
                         self.status('realignment accepted and score improved.')
                     else:
-                        self.status('realignment accepted and despite the score not improving.')
-                    # we do not want to continue to try different breaking strategies for this iteration so we break
+                        self.status('realignment accepted despite the score not improving.')
+
                     self.status('current score: %s, best score: %s' % (self.score, self.best_score) )
+                     
+                    
+                    _LOG.debug("Realignment and tree are accepted. Start treeshrink filtering.")
+                   
+                    if self.treeshrink_filter:
+                        self.status("TreeShrink option has been turned on! IMPLEMENTATION IN PROGRESS!")
+                        aln_fn = self.curr_iter_align_tmp_filename
+                        tree_fn = self.curr_iter_tree_tmp_filename
+                        tsj = self.pasta_team.treeshrink_wrapper.create_job(aln_fn,
+                                                                       new_multilocus_dataset[0].datatype,
+                                                                       tree_fn,
+                                                                       context_str=context_str + " treeshrink",
+                                                                       tmp_dir_par=curr_tmp_dir_par,
+                                                                       delete_temps=delete_iteration_temps,
+                                                                       pasta_products=pasta_products,
+                                                                       step_num=self.current_iteration)
+                        jobq.put(tsj) 
+                        shrunk_aln,shrunk_tree_str = tsj.get_results()
+                        new_multilocus_dataset = shrunk_aln
+                        new_tree_str = shrunk_tree_str
+                    else:
+                        self.status("TreeShrink option has been turned off!")
+                    
+                    self.score = new_score
+                    self.multilocus_dataset = new_multilocus_dataset
+                    self.tree_str = new_tree_str
+                    
+                    if this_iter_score_improved:
+                        self.store_optimum_results(new_multilocus_dataset,
+                                new_tree_str,
+                                new_score,
+                                curr_timestamp)
+
+                    if self._get_accept_mode(new_score=new_score, break_strategy_index=break_strategy_index) == AcceptMode.BLIND_MODE:
+                        if self.blind_mode_is_final:
+                            self.is_stuck_in_blind = True
+                            if self.switch_to_blind_timestamp is None:
+                                if self._blindmode_trigger:
+                                    _LOG.debug("Blind runmode trigger = %s" % self._blindmode_trigger)
+                                self.switch_to_blind_iter = self.current_iteration
+                                self.switch_to_blind_timestamp = curr_timestamp
+        
+                    # we do not want to continue to try different breaking strategies for this iteration so we break
                     break
                 else:
                     self.status('realignment NOT accepted.')
@@ -633,6 +667,8 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                 
             if not this_iter_score_improved:
                 self.num_iter_since_imp += 1
+        
+                
             self.current_iteration += 1
 
         if self._termination_trigger:
@@ -650,6 +686,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
             assert self.multilocus_dataset is not None
             assert self.tree_str is not None
             assert self.score is not None
+        print("PASSED!")    
 
     def status(self, message):
         if self._status_message_func:

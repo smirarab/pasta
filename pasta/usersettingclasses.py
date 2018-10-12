@@ -379,6 +379,11 @@ class UserSettingsContainer(object):
                 return c(temp_fs=temp_fs, **d)
         return CustomAligner(name, temp_fs=temp_fs, **d)
 
+    def create_treeshrink_wrapper(self, temp_fs):
+        from pasta.tools import TreeShrink
+        d = self.treeshrink.dict()
+        return TreeShrink(temp_fs=temp_fs, **d)
+
     def create_merger(self, temp_fs, name=None):
         sate = self.sate
         if name is None:

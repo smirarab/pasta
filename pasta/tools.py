@@ -33,7 +33,7 @@ from pasta.filemgr import open_with_intermediates
 from pasta.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
     TickingDispatchableJob
 
-from .alignment import Alignment
+from .alignment import Alignment, MultiLocusDataset
 import copy
 
 _LOG = get_logger(__name__)
@@ -126,6 +126,29 @@ def read_fasttree_results(dir, fasttree_restults_file, log, delete_dir=False, pa
         copy_temp_tree(fasttree_restults_file, pasta_products, step_num)
         return score, tree_str
 
+def read_treeshrink_results(shrunk_aln_fn,
+                            datatype,
+                            shrunk_tree_fn,
+                            file_format='FASTA',
+                            dirs_to_delete=(),
+                            temp_fs=None):
+    alignment = MultiLocusDataset()
+    alignment.read_files([shrunk_aln_fn], datatype, file_format=file_format)
+    alignment.relabel_for_pasta()    
+    with open(shrunk_tree_fn,'r') as f:
+        tree_str = f.read()
+
+    if len(alignment) >= 1:
+        if dirs_to_delete:
+            assert(temp_fs)
+            for d in dirs_to_delete:
+                time.sleep(.1) #TODO: not sure why this is here!
+                temp_fs.remove_dir(d)
+        return alignment, tree_str
+    else:
+        raise ValueError("The alignment file %s has no sequences. PASTA quits." % fn)
+
+
 class ExternalTool (object):
 
     is_bundled_tool = False
@@ -160,6 +183,53 @@ class ExternalTool (object):
 
     def create_job(self, *args, **kwargs):
         raise NotImplementedError('Abstract ExternalTool class cannot spawn jobs.')
+
+class TreeShrink(ExternalTool):
+    section_name = 'treeshrink'
+    is_bundled_tool = True
+    
+    def __init__(self, temp_fs, **kwargs):
+        ExternalTool.__init__(self, 'TreeShrink', temp_fs, **kwargs)
+        self.user_opts = kwargs.get('args', ' ').split()
+
+    def _prepare_input(self,**kwargs):
+        scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
+        shrunk_aln_fn = os.path.join(scratch_dir,"shrunk_0.05.fasta")
+        shrunk_tree_fn = os.path.join(scratch_dir,"shrunk_0.05.tre")
+        return scratch_dir, shrunk_aln_fn, shrunk_tree_fn
+
+    def create_job(self, alignment_fn, datatype,tree_fn, **kwargs):
+        scratch_dir,shrunk_aln_fn,shrunk_tree_fn = self._prepare_input(**kwargs)
+        
+        
+        delete_temps=kwargs.get('delete_temps', self.delete_temps)
+        
+        dirs_to_delete = []
+        if delete_temps:
+            dirs_to_delete = [scratch_dir]
+        
+        rpc = lambda : read_treeshrink_results(shrunk_aln_fn,
+                                               datatype,
+                                               shrunk_tree_fn,
+                                               file_format='FASTA',
+                                               dirs_to_delete=dirs_to_delete,
+                                               temp_fs=self.temp_fs)
+        job_id = kwargs.get('context_str', '') + '_treeshrink'
+
+        invoc = []
+        if platform.system() == "Windows":
+            invoc.append(self.exe)
+        else:
+            invoc.extend([self.exe])
+        invoc.extend([alignment_fn,tree_fn])
+        invoc.extend(self.user_opts)
+        job = TickingDispatchableJob(invoc,
+                              result_processor=rpc,
+                              cwd=scratch_dir,
+                              context_str=job_id)
+    
+        return job
+
 
 class Aligner(ExternalTool):
     def __init__(self, name, temp_fs, **kwargs):
@@ -1077,10 +1147,12 @@ if GLOBAL_DEBUG:
     AlignerClasses = (GinsiAligner, HomologsAligner, ContralignAligner, ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, PadAligner, FakeAligner, CustomAligner, HMMERAlignAligner, ProbconsAligner)
     MergerClasses = (MuscleMerger, OpalMerger)
     TreeEstimatorClasses = (FastTree, Randtree, Raxml, FakeTreeEstimator, CustomTreeEstimator)
+    FilteringClasses = (TreeShrink,)
 else:
     AlignerClasses = (GinsiAligner, HomologsAligner, ContralignAligner, ProbconsAligner, ProbalignAligner, Clustalw2Aligner, MafftAligner, PrankAligner, OpalAligner, MuscleAligner, CustomAligner, HMMERAlignAligner)
     MergerClasses = (MuscleMerger, OpalMerger, CustomMerger)
     TreeEstimatorClasses = (Raxml, FastTree, CustomTreeEstimator)
+    FilteringClasses = (TreeShrink,)
 
 def get_aligner_classes():
     classes = list(AlignerClasses)
@@ -1101,6 +1173,7 @@ def get_external_tool_classes():
     classes = list(AlignerClasses)
     classes.extend(list(MergerClasses))
     classes.extend(list(TreeEstimatorClasses))
+    classes.extend(list(FilteringClasses))
     ret = [i for i in classes if not i.section_name.startswith('custom')]
     return ret
 

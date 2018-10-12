@@ -617,7 +617,7 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                     _LOG.debug("Realignment and tree are accepted. Start treeshrink filtering.")
                    
                     if self.treeshrink_filter:
-                        self.status("TreeShrink option has been turned on! IMPLEMENTATION IN PROGRESS!")
+                        self.status("Running TreeShrink on the estimated tree")
                         aln_fn = self.curr_iter_align_tmp_filename
                         tree_fn = self.curr_iter_tree_tmp_filename
                         tsj = self.pasta_team.treeshrink_wrapper.create_job(aln_fn,

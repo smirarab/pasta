@@ -1,0 +1,14 @@
+#! /bin/bash
+
+aln_fn=$1
+tree_fn=$2
+
+cp $aln_fn  "input.fasta"
+cp $tree_fn "input.tre"
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+python $DIR/tree_shrink/treeshrink.py -i input.tre
+cp input_treeshrink/input_shrunk_0.05.tre "shrunk_0.05.tre"
+
+python $DIR/utils/sample_from_subtree.py input.fasta shrunk_0.05.tre shrunk_0.05.fasta 

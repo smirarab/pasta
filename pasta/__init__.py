@@ -42,7 +42,9 @@ Configuration files are read in the order they occur as arguments (with values i
 
 TEMP_SEQ_ALIGNMENT_TAG = "seq_alignment.txt"
 TEMP_SEQ_UNMASKED_ALIGNMENT_TAG = "seq_unmasked_alignment.gz"
+TEMP_SHRUNK_ALIGNMENT_TAG = "shrunk_alignment.txt"
 TEMP_TREE_TAG = "tree.tre"
+TEMP_SHRUNK_TREE_TAG = "shrunk_tree.tre"
 __all__ = []
 
 import os

@@ -39,7 +39,7 @@ from pasta import get_logger
 from pasta.utility import record_timestamp
 from pasta.scheduler import jobq
 from pasta.filemgr import  TempFS
-from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER
+from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, MESSENGER, TEMP_SHRUNK_ALIGNMENT_TAG, TEMP_SHRUNK_TREE_TAG
 
 # uym2 added: for minimum subsets tree
 from pasta.Kruskal_MST import build_groups_MST
@@ -632,6 +632,8 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
                         shrunk_aln,shrunk_tree_str = tsj.get_results()
                         new_multilocus_dataset = shrunk_aln
                         new_tree_str = shrunk_tree_str
+                        self.curr_iter_align_tmp_filename = pasta_products.get_abs_path_for_iter_output(self.current_iteration, TEMP_SHRUNK_ALIGNMENT_TAG, allow_existing=True)
+                        self.curr_iter_tree_tmp_filename = pasta_products.get_abs_path_for_iter_output(self.current_iteration, TEMP_SHRUNK_TREE_TAG, allow_existing=True)
                     else:
                         self.status("TreeShrink option has been turned off!")
                     

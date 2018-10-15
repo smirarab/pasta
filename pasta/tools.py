@@ -28,7 +28,7 @@ import shutil
 
 from pasta import get_logger, GLOBAL_DEBUG, PASTA_SYSTEM_PATHS_CFGFILE, DEFAULT_MAX_MB,\
     TEMP_SEQ_UNMASKED_ALIGNMENT_TAG
-from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG
+from pasta import TEMP_SEQ_ALIGNMENT_TAG, TEMP_TREE_TAG, TEMP_SHRUNK_TREE_TAG, TEMP_SHRUNK_ALIGNMENT_TAG
 from pasta.filemgr import open_with_intermediates
 from pasta.scheduler import jobq, start_worker, DispatchableJob, FakeJob,\
     TickingDispatchableJob
@@ -131,22 +131,36 @@ def read_treeshrink_results(shrunk_aln_fn,
                             shrunk_tree_fn,
                             file_format='FASTA',
                             dirs_to_delete=(),
-                            temp_fs=None):
+                            temp_fs=None,
+                            step_num=None,
+                            pasta_products=None):
     alignment = MultiLocusDataset()
     alignment.read_files([shrunk_aln_fn], datatype, file_format=file_format)
     alignment.relabel_for_pasta()    
     with open(shrunk_tree_fn,'r') as f:
         tree_str = f.read()
+    
+    if (pasta_products is not None) and (step_num is not None):
+        dest_treef = pasta_products.get_abs_path_for_iter_output(step_num, TEMP_SHRUNK_TREE_TAG)
+        dest_alnf = pasta_products.get_abs_path_for_iter_output(step_num, TEMP_SHRUNK_ALIGNMENT_TAG) 
+        if dest_treef and os.path.exists(shrunk_tree_fn):
+            if os.path.exists(dest_treef):
+                _LOG.warn('File "%s" exists. It will not be overwritten' % dest_treef)
+            else:
+                shutil.copy2(shrunk_tree_fn, dest_treef)
+        
+        if dest_alnf and os.path.exists(shrunk_aln_fn):
+            if os.path.exists(dest_alnf):
+                _LOG.warn('File "%s" exists. It will not be overwritten' % dest_alnf)
+            else:
+                shutil.copy2(shrunk_aln_fn, dest_alnf)
 
-    if len(alignment) >= 1:
-        if dirs_to_delete:
-            assert(temp_fs)
-            for d in dirs_to_delete:
-                time.sleep(.1) #TODO: not sure why this is here!
-                temp_fs.remove_dir(d)
-        return alignment, tree_str
-    else:
-        raise ValueError("The alignment file %s has no sequences. PASTA quits." % fn)
+    if dirs_to_delete:
+        assert(temp_fs)
+        for d in dirs_to_delete:
+            time.sleep(.1) #TODO: not sure why this is here!
+            temp_fs.remove_dir(d)
+    return alignment, tree_str
 
 
 class ExternalTool (object):
@@ -194,12 +208,14 @@ class TreeShrink(ExternalTool):
 
     def _prepare_input(self,**kwargs):
         scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
+        step_num = kwargs.get('step_num')
+        pasta_products = kwargs.get('pasta_products')
         shrunk_aln_fn = os.path.join(scratch_dir,"shrunk_0.05.fasta")
         shrunk_tree_fn = os.path.join(scratch_dir,"shrunk_0.05.tre")
-        return scratch_dir, shrunk_aln_fn, shrunk_tree_fn
+        return scratch_dir, shrunk_aln_fn, shrunk_tree_fn, step_num, pasta_products
 
-    def create_job(self, alignment_fn, datatype,tree_fn, **kwargs):
-        scratch_dir,shrunk_aln_fn,shrunk_tree_fn = self._prepare_input(**kwargs)
+    def create_job(self, alignment_fn, datatype, tree_fn, **kwargs):
+        scratch_dir,shrunk_aln_fn,shrunk_tree_fn, step_num, pasta_products = self._prepare_input(**kwargs)
         
         
         delete_temps=kwargs.get('delete_temps', self.delete_temps)
@@ -213,7 +229,9 @@ class TreeShrink(ExternalTool):
                                                shrunk_tree_fn,
                                                file_format='FASTA',
                                                dirs_to_delete=dirs_to_delete,
-                                               temp_fs=self.temp_fs)
+                                               temp_fs=self.temp_fs,
+                                               step_num=step_num,
+                                               pasta_products=pasta_products)
         job_id = kwargs.get('context_str', '') + '_treeshrink'
 
         invoc = []

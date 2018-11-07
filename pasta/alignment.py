@@ -577,8 +577,8 @@ class FastaCustomReader(FastaReader):
         symbol_state_map = char_matrix.default_state_alphabet.full_symbol_state_map
 
         if self.simple_rows:
-            legal_chars = "".join(sorted(str(x) for x in itertools.chain(char_matrix.default_state_alphabet.multistate_symbol_iter(),
-								char_matrix.default_state_alphabet.fundamental_symbol_iter())))
+            legal_chars = "".join(sorted(['U','u'] + [str(x) for x in itertools.chain(char_matrix.default_state_alphabet.multistate_symbol_iter(),
+								char_matrix.default_state_alphabet.fundamental_symbol_iter())]))
             _LOG.debug("Legal characters are: %s" %legal_chars)
             re_ilegal = re.compile(r"[^%s]" %legal_chars);
             
@@ -760,7 +760,7 @@ class SequenceDataset(object):
                 elif dup == "RNA":
                     pattern = re.compile(r"([^-ACUGN?RYMKSWHBVD])", re.I)
                 elif dup == "PROTEIN":
-                    pattern = re.compile(r"([^-ABCDEFGHIKLMNPQRSTVWY?XZ])", re.I)
+                    pattern = re.compile(r"([^-ABCDEFGHIKLMNPQRSTVWY?XZU])", re.I)
                 taxa_block = self.dataset.taxon_namespaces[0]
                 char_block = self.dataset.char_matrices[0]
                 for taxon in taxa_block:

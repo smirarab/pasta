@@ -38,6 +38,8 @@ import copy
 
 _LOG = get_logger(__name__)
 
+from sequence_lib import read_fasta, write_fasta, replace, replace_back, merge_rep_locations
+
 def is_file_checker(p):
     if not p:
         return False, "Expecting the path to an executable, got an empty string"
@@ -332,6 +334,7 @@ class MafftAligner(Aligner):
         invoc.extend(['--quiet'])
         invoc.extend(self.user_opts)
         invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
+        invoc.extend(['--anysymbol'])
         invoc.append(seqfn)
 
         # The MAFFT job creation is slightly different from the other
@@ -780,18 +783,73 @@ class OpalMerger (Merger):
         Merger.__init__(self, 'opal', temp_fs, **kwargs)
         self.max_mem_mb = kwargs.get("max_mem_mb", DEFAULT_MAX_MB)
 
+    def __replace_U_with_X__(self,from_seqfn,to_seqfn):
+        seqname,aln = read_fasta(from_seqfn)
+        new_aln,rep_locations = replace('U','X',aln)
+        write_fasta(to_seqfn,seqname,new_aln)
+        return rep_locations 
+
+    def _prepare_input(self, alignment1, alignment2, **kwargs):
+        scratch_dir = self.make_temp_workdir(tmp_dir_par=kwargs['tmp_dir_par'])
+        seqfn1 = os.path.join(scratch_dir, "1.fasta")
+        seqfn2 = os.path.join(scratch_dir, "2.fasta")
+        alignment1.write_filepath(seqfn1, 'FASTA')
+        alignment2.write_filepath(seqfn2, 'FASTA')
+        outfn = os.path.join(scratch_dir, 'out.fasta')
+        
+        rep_locations1 = []
+        rep_locations2 = []
+
+        if alignment1.datatype.lower() == 'protein':
+            seqfn1_rep = os.path.join(scratch_dir, "1_U2X.fasta")
+            rep_locations1 = self.__replace_U_with_X__(seqfn1,seqfn1_rep)
+            seqfn1 = seqfn1_rep
+            outfn = os.path.join(scratch_dir, 'out_rep.fasta')
+
+        if alignment2.datatype.lower() == 'protein':
+            seqfn2_rep = os.path.join(scratch_dir, "2_U2X.fasta")
+            rep_locations2 = self.__replace_U_with_X__(seqfn2,seqfn2_rep)
+            seqfn2 = seqfn2_rep
+            outfn = os.path.join(scratch_dir, 'out_rep.fasta')
+        
+        rep_locations = merge_rep_locations(rep_locations1,alignment1.get_num_taxa(),rep_locations2)
+
+        return scratch_dir, seqfn1, seqfn2, outfn, rep_locations
+    
+    def _finish_standard_job(self, rep_locations, datatype, invoc, scratch_dir, job_id, delete_temps):
+        dirs_to_delete = []
+        if delete_temps:
+            dirs_to_delete = [scratch_dir]
+        fn = os.path.join(scratch_dir, 'out_rep.fasta') if datatype.lower() == 'protein' else None
+        rep_fn = os.path.join(scratch_dir, 'out.fasta')
+        # create a results processor to read the alignment file
+        rpc = lambda : self.__read_opal_alignment__(fn, rep_fn, rep_locations,
+                                               datatype,
+                                               dirs_to_delete,
+                                               self.temp_fs)
+        job = TickingDispatchableJob(invoc, result_processor=rpc,  cwd=scratch_dir, context_str=job_id)
+        return job
+    
+    def __read_opal_alignment__(self,fn,rep_fn,rep_locations,datatype,dirs_to_delete,temp_fs):
+        if datatype.lower() == 'protein':
+            seqNames,aln = read_fasta(fn)
+            replace_back('U',aln,rep_locations)
+            write_fasta(rep_fn,seqNames,aln)
+        return read_internal_alignment(rep_fn,datatype=datatype,dirs_to_delete=dirs_to_delete,temp_fs=temp_fs)
+
+
     def create_job(self, alignment1, alignment2, **kwargs):
         job_id = kwargs.get('context_str', '') + '_opal'
         if (alignment1.get_num_taxa() < 1) or (alignment2.get_num_taxa() < 1):
             alignment1.update(alignment2)
             return FakeJob(alignment1, context_str=job_id)
-        scratch_dir, seqfn1, seqfn2, outfn = self._prepare_input(alignment1, alignment2, **kwargs)
+        scratch_dir, seqfn1, seqfn2, outfn, rep_locations = self._prepare_input(alignment1, alignment2, **kwargs)
         assert(alignment1.datatype == alignment2.datatype)
 
         invoc = ['java', '-Xmx%dm' % self.max_mem_mb, '-jar', self.exe, '--in', seqfn1, '--in2', seqfn2, '--out', outfn, '--align_method', 'profile']
         invoc.extend(self.user_opts)
         
-        return self._finish_standard_job(alignedfn=outfn,
+        return self._finish_standard_job(rep_locations,
                                          datatype=alignment1.datatype,
                                          invoc=invoc,
                                          scratch_dir=scratch_dir,

@@ -298,12 +298,15 @@ class PastaProducts(object):
         for fidx, f in enumerate(self._original_input_files):
             safe_fn = get_safe_filename(os.path.basename(f))
             trunc_fn = fasta_extension_pattern.sub("", safe_fn)
-            fn_stem = "marker%03d.%s" % (fidx+1, trunc_fn)
-            suffix = "." + fn_stem + ".aln"
-            sidx = 1
-            while suffix in self._output_alignment_suffixes:
-                suffix = "." + fn_stem + "-" + str(sidx) + ".aln"
-                sidx += 1
+            if self.pasta_user_settings.commandline.alignmentsuffix:
+                suffix = "." + self.pasta_user_settings.commandline.alignmentsuffix
+            else:
+                fn_stem = "marker%03d.%s" % (fidx+1, trunc_fn)
+                suffix = "." + fn_stem + ".aln"
+                sidx = 1
+                while suffix in self._output_alignment_suffixes:
+                    suffix = "." + fn_stem + "-" + str(sidx) + ".aln"
+                    sidx += 1
             self._output_alignment_suffixes.append(suffix)
             self._input_fpath_alignment_suffix_map[f] = suffix
             self._alignment_suffix_input_fpath_map[suffix] = f

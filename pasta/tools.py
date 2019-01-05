@@ -38,7 +38,7 @@ import copy
 
 _LOG = get_logger(__name__)
 
-from sequence_lib import read_fasta, write_fasta, replace, replace_back, merge_rep_locations
+from pasta.sequence_lib import read_fasta, write_fasta, replace, replace_back, merge_rep_locations
 
 def is_file_checker(p):
     if not p:

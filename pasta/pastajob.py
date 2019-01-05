@@ -688,7 +688,6 @@ WARNING: you have specified a max subproblem ({0}) that is equal to or greater
             assert self.multilocus_dataset is not None
             assert self.tree_str is not None
             assert self.score is not None
-        print("PASSED!")    
 
     def status(self, message):
         if self._status_message_func:

@@ -1,3 +1,7 @@
+- Version 1.8.3:
+    - **Bug fix**: an import was broken. Fixed
+    - Add a new `--alignment-suffix` option
+
 - Version 1.8.2:
     - **Bug fix**: python 3 was broken in 1.8.0. Fixed
 

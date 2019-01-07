@@ -118,6 +118,7 @@ To use these aligners, add the following to your pasta execution --aligner=NAME_
 1. Make sure you have Docker installed 
 
 2. Run
+
     ~~~bash
     docker pull smirarab/docker
     ~~~

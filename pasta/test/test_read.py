@@ -5,7 +5,7 @@ import datetime
 import logging
 import os, sys
 
-from cStringIO import StringIO
+from io import StringIO
 from pasta import get_logger
 from pasta.alignment import summary_stats_from_parse
 from pasta.test import data_source_path
@@ -18,7 +18,7 @@ _LOG = get_logger(__name__)
 class DiagnoseDatatypeTest(unittest.TestCase):
     def testDiagnoseDNA(self):
         fp = data_source_path('small.fasta')
-        print fp
+        print(fp)
         s = summary_stats_from_parse([fp], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
         self.assertEqual(s[0], "DNA")
         self.assertEqual(s[1], [(32, 1650)])
@@ -33,7 +33,7 @@ class DiagnoseDatatypeTest(unittest.TestCase):
         self.assertRaises(Exception, summary_stats_from_parse, [fp], ["RNA"], careful_parse=True)
     def testDiagnoseRNA(self):
         fp = data_source_path('smallrna.fasta')
-        print fp
+        print(fp)
         s = summary_stats_from_parse([fp], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
         self.assertEqual(s[0], "RNA")
         self.assertEqual(s[1], [(32, 1650)])
@@ -49,7 +49,7 @@ class DiagnoseDatatypeTest(unittest.TestCase):
         #self.assertRaises(Exception, summary_stats_from_parse, [fp], ["DNA", "PROTEIN"], careful_parse=True)
     def testDiagnoseProt(self):
         fp = data_source_path('caenophidia_mos.fasta')
-        print fp
+        print(fp)
         s = summary_stats_from_parse([fp], ["DNA", "RNA", "PROTEIN"], careful_parse=False)
         self.assertEqual(s[0], "PROTEIN")
         self.assertEqual(s[1], [(114, 189)])

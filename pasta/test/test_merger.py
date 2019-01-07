@@ -67,7 +67,7 @@ your installation is not configured to run this tool.
         reference_fn = data_source_path('merger_result.fasta')
         reference_aln = Alignment()
         reference_aln.read_filepath(reference_fn, 'FASTA')
-        self.assertEquals(reference_aln, a)
+        self.assertEqual(reference_aln, a)
 
 if __name__ == "__main__":
     unittest.main()

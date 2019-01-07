@@ -82,7 +82,7 @@ def get_testing_configuration():
 
     for sect in c._categories:
         g = getattr(c, sect)
-        to_del = [opt for opt in g.options.keys() if opt != 'path']
+        to_del = [opt for opt in list(g.options.keys()) if opt != 'path']
         for d in to_del:
             g.remove_option(d)
     return c

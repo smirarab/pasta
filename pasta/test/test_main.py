@@ -74,7 +74,7 @@ class TestUnicodePathCharacters(SateTestCase):
     def setUp(self):
         self.set_up()
         data_file = data_source_path('tiny.fasta')
-        unicode_name = u'm\xe9ss\xfdp\xe4th'
+        unicode_name = 'm\xe9ss\xfdp\xe4th'
         self.tmp_sub_dir = self.get_subdir(unicode_name)
         self.data_path = self.get_path(
                 name=unicode_name + '.fasta',

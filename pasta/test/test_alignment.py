@@ -5,7 +5,7 @@ import datetime
 import logging
 import os
 
-from cStringIO import StringIO
+from io import StringIO
 from pasta import get_logger
 from pasta.alignment import Alignment, SequenceDataset, MultiLocusDataset,\
     merge_in
@@ -29,7 +29,7 @@ class AlignmentTest(unittest.TestCase):
         self.assertEqual(num_taxa, 32)
         alignment.write_filepath(filename+'.phy', 'PHYLIP')
         alignment.write_unaligned_fasta(filename+'.raw')
-        alignment.sub_alignment( alignment.keys()[0:2] ).write_unaligned_fasta(filename+'.partial.raw')
+        alignment.sub_alignment( list(alignment.keys())[0:2] ).write_unaligned_fasta(filename+'.partial.raw')
 
     def testConcatenateAlignments(self):
         filename1 = data_source_path('small.fasta')
@@ -155,7 +155,7 @@ class MultiLocusDatasetTest(SateTestCase):
 
     def _parse_seq_dataset(self, sd):
         d = {}
-        for taxon, char_vec in sd.dataset.char_matrices[0].iteritems():
+        for taxon, char_vec in list(sd.dataset.char_matrices[0].items()):
             d[taxon.label] = ''.join([i for i in char_vec])
         return d
 
@@ -173,7 +173,7 @@ class MultiLocusDatasetTest(SateTestCase):
         self.assertSameDataSet([seqs, self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_rna_to_dna()
         seqs = self.convert_rna_to_dna(seqs)
-        for k, v in seqs.iteritems():
+        for k, v in list(seqs.items()):
             self.assertTrue('T' in v)
         self.assertSameDataSet([seqs,
                 self._parse_seq_dataset(self.mlds[0])])
@@ -182,13 +182,13 @@ class MultiLocusDatasetTest(SateTestCase):
                 self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_dna_to_rna()
         seqs = self.convert_rna_to_dna(seqs, reverse=True)
-        for k, v in seqs.iteritems():
+        for k, v in list(seqs.items()):
             self.assertFalse('T' in v)
         self.assertSameDataSet([seqs,
                 self._parse_seq_dataset(self.mlds[0])])
         self.mlds.convert_rna_to_dna()
         seqs = self.convert_rna_to_dna(seqs)
-        for k, v in seqs.iteritems():
+        for k, v in list(seqs.items()):
             self.assertTrue('T' in v)
         self.assertSameDataSet([seqs,
                 self._parse_seq_dataset(self.mlds[0])])

@@ -36,9 +36,9 @@ class SateProductsTest(unittest.TestCase):
         return src_paths
 
     def generate_random_result(self):
-        return "%d%d%d\n" % (random.randint(0, sys.maxint),
-                random.randint(0, sys.maxint),
-                random.randint(0, sys.maxint))
+        return "%d%d%d\n" % (random.randint(0, sys.maxsize),
+                random.randint(0, sys.maxsize),
+                random.randint(0, sys.maxsize))
 
     def create_and_verify(self,
             job_name="satejob",
@@ -82,13 +82,13 @@ class SateProductsTest(unittest.TestCase):
         self.assertTrue(hasattr(sp, "tree_stream"))
         self.assertTrue(hasattr(sp, "run_log_stream"))
         self.assertTrue(hasattr(sp, "err_log_stream"))
-        for stream_name, product_extension in filemgr.PastaProducts.meta_product_types.items():
+        for stream_name, product_extension in list(filemgr.PastaProducts.meta_product_types.items()):
             expected_fn = output_prefix + product_extension
             self.assertTrue(os.path.exists(expected_fn))
             stream_attr_name = stream_name + "_stream"
             self.assertTrue(hasattr(sp, stream_attr_name))
             stream = getattr(sp, stream_attr_name)
-            self.assertEquals(
+            self.assertEqual(
                     os.path.abspath(stream.name),
                     os.path.abspath(expected_fn))
             random_result = self.generate_random_result()
@@ -98,7 +98,7 @@ class SateProductsTest(unittest.TestCase):
             stream.close()
 
         ## final alignment files
-        self.assertEquals(len(sp.alignment_streams), len(input_seq_filepaths))
+        self.assertEqual(len(sp.alignment_streams), len(input_seq_filepaths))
         align_fnames = []
         for alignment_stream in sp.alignment_streams:
             fn = os.path.abspath(alignment_stream.name)

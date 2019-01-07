@@ -21,7 +21,7 @@ class TempFSTest(unittest.TestCase):
         self.assertRaises(ValueError, self.ts.create_subdir, 'bogus')
         cur_parent = os.path.abspath(os.curdir)
         self.assertRaises(ValueError, self.ts.create_temp_subdir, prefix='bogus', parent=cur_parent)
-        self.assertEquals(self.ts.get_remaining_directories(), set())
+        self.assertEqual(self.ts.get_remaining_directories(), set())
 
     def testBadParForTop(self):
         fn = 'THANKS.txt'
@@ -38,9 +38,9 @@ class TempFSTest(unittest.TestCase):
     def testTop(self):
 
         d = self.ts.create_top_level_temp(prefix='bogus 4 testing', parent=os.curdir)
-        self.assertEquals(os.path.realpath(d), d)
-        self.assertEquals(self.ts.top_level_temp, d)
-        self.assertEquals(os.path.abspath(d), d)
+        self.assertEqual(os.path.realpath(d), d)
+        self.assertEqual(self.ts.top_level_temp, d)
+        self.assertEqual(os.path.abspath(d), d)
         self.assertTrue(os.path.exists(d))
         self.assertTrue(os.path.isdir(d))
         self.assertTrue(d in self.ts.get_remaining_directories())
@@ -56,7 +56,7 @@ class TempFSTest(unittest.TestCase):
         # but  be created inside
         ssd = os.path.join(d, 'bogussd')
         sd = self.ts.create_subdir(ssd)
-        self.assertEquals(sd, ssd)
+        self.assertEqual(sd, ssd)
         self.assertTrue(sd in self.ts.get_remaining_directories())
         self.assertTrue(d in self.ts.get_remaining_directories())
         self.assertTrue(os.path.exists(sd))
@@ -64,27 +64,27 @@ class TempFSTest(unittest.TestCase):
 
         nssd = os.path.join(ssd, 'nested')
         nsd = self.ts.create_subdir(nssd)
-        self.assertEquals(nsd, nssd)
+        self.assertEqual(nsd, nssd)
         self.assertTrue(nsd in self.ts.get_remaining_directories())
         self.assertTrue(d in self.ts.get_remaining_directories())
         self.assertTrue(os.path.exists(nsd))
         self.assertTrue(os.path.isdir(nsd))
 
         tsd = self.ts.create_temp_subdir(prefix='bogus', parent=d)
-        self.assertEquals(os.path.realpath(tsd), tsd)
-        self.assertEquals(os.path.abspath(tsd), tsd)
+        self.assertEqual(os.path.realpath(tsd), tsd)
+        self.assertEqual(os.path.abspath(tsd), tsd)
         self.assertTrue(os.path.exists(tsd))
         self.assertTrue(os.path.isdir(tsd))
         self.assertTrue(tsd in self.ts.get_remaining_directories())
 
         self.assertTrue(sd in self.ts.get_remaining_directories())
         self.assertTrue(d in self.ts.get_remaining_directories())
-        self.assertEquals(len(self.ts.get_remaining_directories()), 4)
+        self.assertEqual(len(self.ts.get_remaining_directories()), 4)
 
         # create tempdir in nested
         tnsd = self.ts.create_temp_subdir(prefix='tempinnested', parent=nsd)
-        self.assertEquals(os.path.realpath(tnsd), tnsd)
-        self.assertEquals(os.path.abspath(tnsd), tnsd)
+        self.assertEqual(os.path.realpath(tnsd), tnsd)
+        self.assertEqual(os.path.abspath(tnsd), tnsd)
         self.assertTrue(os.path.exists(tnsd))
         self.assertTrue(os.path.isdir(tnsd))
         self.assertTrue(tnsd in self.ts.get_remaining_directories())
@@ -92,7 +92,7 @@ class TempFSTest(unittest.TestCase):
         # subdirectories within create_temp_subdir should work...
         innermost = os.path.join(tnsd, 'innermost')
         innermostsd = self.ts.create_subdir(innermost)
-        self.assertEquals(innermostsd, innermost)
+        self.assertEqual(innermostsd, innermost)
         self.assertTrue(innermostsd in self.ts.get_remaining_directories())
         self.assertTrue(d in self.ts.get_remaining_directories())
         self.assertTrue(os.path.exists(innermostsd))
@@ -101,7 +101,7 @@ class TempFSTest(unittest.TestCase):
 
         self.assertRaises(ValueError, self.ts.remove_dir, 'THANKS.txt')
 
-        self.assertEquals(self.ts.remove_dir(sd), True)
+        self.assertEqual(self.ts.remove_dir(sd), True)
         self.assertFalse(os.path.exists(sd))
         self.assertFalse(os.path.exists(innermostsd))
         # removing sd will remove nsd (because it is inside sd), so
@@ -109,7 +109,7 @@ class TempFSTest(unittest.TestCase):
         self.assertRaises(OSError, self.ts.create_temp_subdir, prefix='tempinnested', parent=nsd)
         self.assertTrue(not os.path.exists(sd))
         self.assertTrue(os.path.exists(tsd))
-        self.assertEquals(self.ts.remove_dir(d), True)
+        self.assertEqual(self.ts.remove_dir(d), True)
         self.assertFalse(os.path.exists(tsd))
         self.assertRaises(ValueError, self.ts.remove_dir, tsd)
         self.assertRaises(ValueError, self.ts.remove_dir, d)

@@ -8,7 +8,7 @@ import re
 import subprocess
 import random
 import string
-from cStringIO import StringIO
+from io import StringIO
 
 import dendropy
 
@@ -49,12 +49,12 @@ class SateTestCase(unittest.TestCase):
                         rc))
                 _LOG.error("here is the stdout:\n%s" % o)
                 _LOG.error("here is the stderr:\n%s" % e)
-            self.assertEquals(r, rc)
+            self.assertEqual(r, rc)
             if stderr is not None:
-                self.assertEquals(e, stderr)
+                self.assertEqual(e, stderr)
             if stdout is not None:
-                self.assertEquals(o, stdout)
-        except Exception, v:
+                self.assertEqual(o, stdout)
+        except Exception as v:
             #self.assertEquals(str(v), 5)
             raise
 
@@ -75,11 +75,11 @@ class SateTestCase(unittest.TestCase):
                     rc))
             _LOG.error("here is the stdout:\n%s" % o)
             _LOG.error("here is the stderr:\n%s" % e)
-        self.assertEquals(exit_code, rc)
+        self.assertEqual(exit_code, rc)
         if stdout != None:
-            self.assertEquals(o, stdout)
+            self.assertEqual(o, stdout)
         if stderr != None:
-            self.assertEquals(e, stderr)
+            self.assertEqual(e, stderr)
 
     def _exe(self, args):
         return pasta_main(args)
@@ -184,7 +184,7 @@ class SateTestCase(unittest.TestCase):
     def remove_gaps(self, sequence_dict):
         sd = self.parseSequenceArg(sequence_dict)
         new_sd = {}
-        for name, seq in sd.iteritems():
+        for name, seq in list(sd.items()):
             new_seq = re.sub(r'[-?]', '', seq)
             if new_seq != '':
                 new_sd[name] = new_seq
@@ -195,7 +195,7 @@ class SateTestCase(unittest.TestCase):
         data_sets = []
         for f in seq_data_list:
             seqs = self.parseSequenceArg(f)
-            taxa.update(seqs.keys())
+            taxa.update(list(seqs.keys()))
             data_sets.append(seqs)
         data = {}
         for t in taxa:
@@ -231,7 +231,7 @@ class SateTestCase(unittest.TestCase):
             sd2 = self.remove_gaps(seqs2)
             self.assertSameTaxa([sd1, sd2])
             self.assertSameSequences([sd1, sd2])
-            for name, seq in sd1.iteritems():
+            for name, seq in list(sd1.items()):
                 self.assertEqual(seq, sd2[name])
 
     def assertSameFiles(self, files):
@@ -271,17 +271,17 @@ class SateTestCase(unittest.TestCase):
         for seq_data in seq_data_list:
             sd = self.parseSequenceArg(seq_data)
             columns_to_taxa = {}
-            for name, seq in sd.iteritems():
+            for name, seq in list(sd.items()):
                 for column_index, residue in enumerate(seq):
                     if residue == '-':
-                        if column_index not in columns_to_taxa.keys():
+                        if column_index not in list(columns_to_taxa.keys()):
                             columns_to_taxa[column_index] = [name]
                         else:
                             columns_to_taxa[column_index].append(name)
-            self.assertEqual(len(columns_to_taxa.keys()), len(set(columns_to_taxa.keys())))
-            for col, name_list in columns_to_taxa.iteritems():
+            self.assertEqual(len(list(columns_to_taxa.keys())), len(set(columns_to_taxa.keys())))
+            for col, name_list in list(columns_to_taxa.items()):
                 self.assertEqual(len(name_list), len(set(name_list)))
-                self.assertNotEqual(len(name_list), len(sd.keys()))
+                self.assertNotEqual(len(name_list), len(list(sd.keys())))
 
     def random_id(self, length=8,
             char_pool=string.ascii_letters + string.digits):
@@ -361,7 +361,7 @@ class SateTestCase(unittest.TestCase):
     def convert_rna_to_dna(self, seqs, reverse=False):
         seq_dict = self.parseSequenceArg(seqs)
         d = {}
-        for taxon, seq in seq_dict.iteritems():
+        for taxon, seq in list(seq_dict.items()):
             if reverse:
                 d[taxon] = seq.replace('T', 'U')
             else:
@@ -372,7 +372,7 @@ class SateTestCase(unittest.TestCase):
         seq_dict = self.parseSequenceArg(seqs)
         has_u = False
         has_t = False
-        for taxon, seq in seq_dict.iteritems():
+        for taxon, seq in list(seq_dict.items()):
             if 'U' in seq:
                 has_u = True
             if 'T' in seq:

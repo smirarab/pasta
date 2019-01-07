@@ -3,9 +3,9 @@ package:
   version: 1.8.3
 
 source:
-  - path: ../../
-    #git_url: https://github.com/smirarab/pasta
-    #git_rev: master
+  - #path: ../../
+    git_url: https://github.com/smirarab/pasta
+    git_rev: conda
     folder: pasta
   
   - git_url: https://github.com/smirarab/sate-tools-mac.git

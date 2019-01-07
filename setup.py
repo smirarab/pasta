@@ -40,7 +40,7 @@ param = {
     'test_suite': "pasta.test",
     'include_package_data': True,
     'install_requires': ['dendropy>=4.00'],
-    'scripts' : [script_name,gui_script_name,'run_seqtools.py','bin/fasttree'],
+    'scripts' : [script_name,gui_script_name,'run_seqtools.py'],
     'zip_safe': True,
     'keywords': 'Phylogenetics Evolution Biology',
     'long_description': """A Python implementation of the Practical Alignment using SATe and Transitivity. 

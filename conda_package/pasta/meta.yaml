@@ -23,8 +23,8 @@ requirements:
   host:
     - python
     - setuptools
-
   run:
+    - dendropy>=4.00
     - python
 
 test:

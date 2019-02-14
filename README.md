@@ -26,7 +26,7 @@ You have four options for installing PASTA.
 
 ### 1. From pre-build MAC image file
 
-1. Download the MAC application .dmg file [here](http://www.cs.utexas.edu/~phylo/software/pasta/pasta_1.6.4_20Feb2016.dmg) or from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
+1. Download the MAC application .dmg file [here](https://sites.google.com/eng.ucsd.edu/datasets/alignment/pastaupp).
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
 

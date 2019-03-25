@@ -120,7 +120,7 @@ To use these aligners, add the following to your pasta execution --aligner=NAME_
 2. Run
 
     ~~~bash
-    docker pull smirarab/docker
+    docker pull smirarab/pasta
     ~~~
     
 You are done. You can test using 

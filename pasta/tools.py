@@ -376,6 +376,7 @@ class GinsiAligner(Aligner):
         invoc.extend(['--quiet'])
         invoc.extend(self.user_opts)
         invoc.extend(['--thread',str(kwargs.get('num_cpus', 1))])
+        invoc.extend(['--anysymbol'])
         invoc.append(seqfn)
 
         # The MAFFT job creation is slightly different from the other
@@ -408,6 +409,7 @@ class HomologsAligner(Aligner):
 
         invoc = [self.exe, '-l', seqfn]
         invoc.extend(['--thread', str(kwargs.get('num_cpus', 1))])
+        invoc.extend(['--anysymbol'])
         invoc.extend(self.user_opts)
 
         # The probcons job creation is slightly different from the other

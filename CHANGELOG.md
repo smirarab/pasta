@@ -1,3 +1,6 @@
+- Version 1.8.5:
+	-  **Bug fix**: handling of U in protein when used with Ginsi is fixed 
+
 - Version 1.8.4:
 	-  **Bug fix**: handling of U in protein had a bug where U was repeated multiple times if preceded by -. 
 	

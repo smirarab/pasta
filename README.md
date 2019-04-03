@@ -144,12 +144,6 @@ To run PASTA using the command-line:
 python run_pasta.py -i input_fasta [-t starting_tree] 
 ```
 
-To run it using Docker, run
-
-~~~bash
-docker run -v `pwd`/:/data run_pasta.py -i input_fasta [-t starting_tree] 
-~~~
-
 
 PASTA by default picks the appropriate configurations automatically for you. 
 The starting tree is optional. If not provided, PASTA estimates a starting tree. 
@@ -171,6 +165,15 @@ To run the GUI version,
 ```
 
 on some machines you may need to use `pythonw run_pasta_gui.py` instead. 
+
+To run PASTA using Docker, run
+
+~~~bash
+docker run -v [path to the directory with your input files]:/data smirarab/pasta run_pasta.py -i input_fasta [-t starting_tree] 
+~~~
+
+On Windows, you may have to enable drive sharing; see [Shared Drives on this page](https://docs.docker.com/docker-for-windows/).
+
 
 Options
 ------

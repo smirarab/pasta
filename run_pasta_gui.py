@@ -248,6 +248,8 @@ class PastaFrame(wx.Frame):
                     tool_path = getattr(cfg, tool_attr_name).path
                     if os.path.exists(tool_path):
                         active_tool_name_list.append(tool_attr_name.upper())
+                    else:
+                        print("WARNING: tool %s not found at %s" %(tool,tool_path))
                 except :
                     raise
             combobox = wx.ComboBox(self, -1, defaults[item], (-1,-1), (-1,-1), active_tool_name_list, wx.CB_READONLY)
@@ -390,8 +392,8 @@ class PastaFrame(wx.Frame):
                            self.text_stop2,
                            ])
 
-        strategy_list = ["Centroid", "Longest"]
-        self.cb_decomp = wx.ComboBox(self, -1, "Centroid", choices=strategy_list, style=wx.CB_READONLY)
+        strategy_list = ["MinCluster","Centroid", "Longest"]
+        self.cb_decomp = wx.ComboBox(self, -1, "MinCluster", choices=strategy_list, style=wx.CB_READONLY)
 
         self.ctrls.append(self.cb_decomp)
         self.pasta_settings_ctrl_list = []
@@ -730,7 +732,8 @@ class PastaFrame(wx.Frame):
                     self.cb_maxsub2.Enable()
                     
                     bs = auto_pasta_opts["break_strategy"]
-                    bs = bs[0].upper() + bs[1:].lower()
+                    bs = {"mincluster":"MinCluster","centroid":"Centroid", "longest":"Longest"}[bs]
+                    #bs = bs[0].upper() + bs[1:].lower()
                     self.cb_decomp.SetValue(bs)
 
 
@@ -895,8 +898,6 @@ class PastaFrame(wx.Frame):
                 wx.MessageBox("Job name cannot be empty, it is REQUIRED by PASTA!", "WARNING", wx.OK|wx.ICON_WARNING)
                 self._remove_config_file()
                 return
-
-            print(type(input_filename))
             command.extend(["-i", filemgr.quoted_file_path(input_filename)])
             if treefilename and os.path.isfile(treefilename):
                 command.extend(["-t", filemgr.quoted_file_path(treefilename)])
@@ -918,6 +919,7 @@ class PastaFrame(wx.Frame):
                 self._remove_config_file()
                 self.statusbar.SetStatusText("\n\nRun emulated!\n\n")
             else:
+                print("running %s" %" ".join(command))
                 self.process = wx.Process(self)
                 self.process.Redirect()
                 self.pid = wx.Execute( " ".join(command), wx.EXEC_ASYNC, self.process)

@@ -24,6 +24,10 @@
 if __name__ == "__main__":
     import os
     import sys
+    import pasta
+    if pasta.pasta_is_frozen() and '-i' not in sys.argv:
+        exec(open(os.path.join(pasta.pasta_home_dir(), 'run_pasta_gui.py')).read())
+        sys.exit(1)
     from pasta.mainpasta import pasta_main
     from pasta import MESSENGER
     sys.setrecursionlimit(100000)

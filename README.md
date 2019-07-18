@@ -3,11 +3,17 @@ This is an implementation of the PASTA (Practical Alignment using Sate and TrAns
 * Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
 * Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. [doi:10.1089/cmb.2014.0156](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156).
 
+The latest version includes a new decomposition technique described here:
+
+* Balaban, Metin, Niema Moshiri, Uyen Mai, and Siavash Mirarab. “TreeCluster : Clustering Biological Sequences Using Phylogenetic Trees.” BioRxiv, 2019, 591388. doi:10.1101/591388.
+
+#### Contact: 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
-The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
+#### Developers
 
-**Acknowledgment**: 
+* The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
+
 
 * The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
 * [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3 and to the Docker image. 
@@ -26,7 +32,9 @@ You have four options for installing PASTA.
 
 ### 1. From pre-build MAC image file
 
-1. Download the MAC application .dmg file [here](https://drive.google.com/open?id=1JOo4nUCESUGJtt_WK2j0RRTu3MGKybCA).
+
+1. Download the MAC application `.dmg` file from [here](https://sites.google.com/eng.ucsd.edu/datasets/alignment/pastaupp). Use the lastest version available
+
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
 
@@ -123,7 +131,7 @@ Use `git clone https://github.com/kodicollins/pasta-databases` or download direc
 2. Run
 
     ~~~bash
-    docker pull smirarab/docker
+    docker pull smirarab/pasta
     ~~~
     
 You are done. You can test using 

@@ -6,7 +6,7 @@ import logging
 import os
 from optparse import OptionGroup
 from optparse import OptionParser
-from cStringIO import StringIO
+from io import StringIO
 
 from pasta import get_logger
 from pasta.tree import PhylogeneticTree

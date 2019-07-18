@@ -65,11 +65,11 @@ your installation is not configured to run this tool.
                     reference_aln.read_filepath(nrfn, 'FASTA')
                     _LOG.debug('Checking results from %s against %s' % (name, nrfn))
                     if reference_aln == a:
-                        self.assertEquals(reference_aln, a)
+                        self.assertEqual(reference_aln, a)
                         return True
                     i += 1
                 else:
-                    self.assertEquals(reference_aln, a)
+                    self.assertEqual(reference_aln, a)
 
 
     def testClustalW2(self):

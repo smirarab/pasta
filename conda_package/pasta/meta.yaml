@@ -1,0 +1,37 @@
+package:
+  name: pasta
+  version: 1.8.5
+
+source:
+  - #path: ../../
+    git_url: https://github.com/smirarab/pasta
+    git_rev: conda
+    folder: pasta
+  
+  - git_url: https://github.com/smirarab/sate-tools-mac.git
+    git_rev: master
+    folder:  sate-tools-mac
+  
+extra:
+  sources:
+    sate-tools-linux:
+      git_url: https://github.com/smirarab/sate-tools-linux.git
+      git_rev: master
+
+
+requirements:
+  host:
+    - python
+    - setuptools
+  run:
+    - dendropy>=4.00
+    - python
+
+test:
+  imports:
+    - pasta
+
+about:
+  home: https://github.com/smirarab/pasta
+  license: GNU GENERAL PUBLIC LICENSE
+  license_file: LICENSE

@@ -6,7 +6,7 @@ import logging
 import os, sys
 import dendropy
 
-from cStringIO import StringIO
+from io import StringIO
 from pasta.test import data_source_path
 from pasta import treeholder
 from pasta.errors import TaxaLabelsMismatchError

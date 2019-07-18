@@ -3,11 +3,17 @@ This is an implementation of the PASTA (Practical Alignment using Sate and TrAns
 * Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
 * Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. [doi:10.1089/cmb.2014.0156](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156).
 
+The latest version includes a new decomposition technique described here:
+
+* Balaban, Metin, Niema Moshiri, Uyen Mai, and Siavash Mirarab. “TreeCluster : Clustering Biological Sequences Using Phylogenetic Trees.” BioRxiv, 2019, 591388. doi:10.1101/591388.
+
+#### Contact: 
 All questions and inquires should be addressed to our user email group: `pasta-users@googlegroups.com`. Please check our [Tutorial](pasta-doc/pasta-tutorial.md) and [previous posts](https://groups.google.com/forum/#!forum/pasta-users) before sending new requests.
 
-The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
+#### Developers
 
-**Acknowledgment**: 
+* The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
+
 
 * The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
 * [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3 and to the Docker image. 
@@ -26,26 +32,15 @@ You have four options for installing PASTA.
 
 ### 1. From pre-build MAC image file
 
-1. Download the MAC application .dmg file [here](https://sites.google.com/eng.ucsd.edu/datasets/alignment/pastaupp).
+
+1. Download the MAC application `.dmg` file from [here](https://sites.google.com/eng.ucsd.edu/datasets/alignment/pastaupp). Use the lastest version available
+
 2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
 3. Simply run the PASTA app from where you copied it.
 
-**Common Problems:**
-  * In some cases, your python installation might be in a location different from where PASTA is hoping to find it. In these cases, you get the following error message:        
 
-      > PASTA has encoutered a fatal error, and will now terminate.
-        A Python runtime could not be located. 
-        You may need to install a framework build of Python,
-        or edit the PyRuntimeLocations array in this application's info.plist file.
-
-   If you get this message, make sure you have python 2.7 installed. Then, run
-    `python -c 'import sys; print sys.prefix'`. This will tell you where your python
-    is located. Now click on the PASTA app and select `Show Package Content`. 
-    Navigate to `Contents` and open `Info.plist` with the text editor. 
-    Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
-    with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
-    Try running the App again and see if it works. 
-  * If the above solution does not work, or if you get other errors, try first
+If the APP does not work, let us know. We will try to fix issues. 
+But you can also try first
     installing PASTA from the source code (see below) and then run 
     `./make-app.sh` from the pasta directory. This will create an app under
     `dist` directory, which you should be able to run and copy to any other location. 
@@ -60,58 +55,74 @@ You need to have:
 - Python (version 2.7 or later, including python 3)
 - [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
 - Java (only required for using OPAL)
-- [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
+- [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI. The setup script does not automatically install this. 
 
 **Installation steps**:
 
-1. Open a terminal and create a directory where you want to keep PASTA. e.g. `mkdir ~/pasta-code`. Go to this directory. e.g. `cd ~/pasta-code`.
+1. Open a terminal and create a directory where you want to keep PASTA and  go to this directory. For example:
 
-2. Clone the PASTA code repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
-If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
+   ```bash 
+   mkdir ~/pasta-code
+   cd ~/pasta-code`
+   ```
+
+2. Clone the PASTA code repository from our [github repository](https://github.com/smirarab/pasta). For example you can use: 
+
+   ```bash
+   git clone https://github.com/smirarab/pasta.git
+   ```
+   
+   If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
 and decompress it into your desired directory. 
 
 3.  Clone the relevant "tools" directory (these are also forked from the SATe project).
 There are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) 
 and [MAC](https://github.com/smirarab/sate-tools-mac).
-You can use `git clone https://github.com/smirarab/sate-tools-linux.git` for Linux or `git clone https://github.com/smirarab/sate-tools-mac.git` for MAC. 
-Or you can directly download these as zip files for 
+You can use 
+
+	```bash
+	git clone https://github.com/smirarab/sate-tools-linux.git #for MAC
+	``` 
+	or
+	
+	```bash
+	git clone https://github.com/smirarab/sate-tools-mac.git. #for Linux
+	``` 
+	Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
 and decompress them in your target directory (e.g. `pasta-code`).
-Note that the tools directory and the PASTA code directory should be under the same parent directory. 
-Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. 
+	* Note that the tools directory and the PASTA code directory should be under the same parent directory. 
+	* When you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`. 
 You need to rename these directories and remove the `-master` part.
-Finally, those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries.
-32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
+	* Those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries. 32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
-*If you want to use MAFFT-Homologs within PASTA*
+3. (Optional) Only if you want to use MAFFT-Homologs within PASTA:
 `cd sate-tools-linux` or `cd sate-tools-mac`
 Use `git clone https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
-*Be sure to leave this directory `cd ..` before starting the next step*
+	* Be sure to leave this directory `cd ..` before starting the next step
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
 
 5. Then run:
 
-```
- sudo python setup.py develop 
-```
+	``` bash
+	 sudo python setup.py develop 
+	```
  
-If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternatively, you can use `--prefix` to install it in a different location, but that different location needs to be part of your `PYTHONPATH` environmental variable. 
+	If you don't have root access, use:
+	
+	``` bash
+	python setup.py develop  --user
+	```
 
-**Common Problems:**
+	**Common Problems:**
+	
+	 * `Could not find SATe tools bundle directory:`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
+	 * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
+	(but note there are other ways of installing setuptools as well).
 
- * `Could not find SATe tools bundle directory:`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
- * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
-(but note there are other ways of installing setuptools as well).
-
-6. Pasta now includes additional aligners for Linux and MAC users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable CONTRALIGN_DIR=/dir/to/sate-tools-linux. 
-
-A simple step-by-step for this is as following:
-	a. change your directory to sate-tools-linux (or sate-tools-mac), type `pwd` in the command line, and copy the output
-	b. `vim ~/.bashrc`, press i and then type CONTRALIGN_DIR=(paste the copied output/directory) at the bottom of the text file, the press ESC followed by :wq
-	c. then in the command line type `source ~/.bashrc`
-
-To use these aligners, add the following to your pasta execution --aligner=NAME_OF_ALIGNER, where NAME_OF_ALIGNER now includes (ginsi, homologs, contralign, and probcons)
+6. Pasta now includes additional aligners for Linux and MAC users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable `CONTRALIGN_DIR=/dir/to/sate-tools-linux`. You can use `export CONTRALIGN_DIR=/dir/to/sate-tools-linux` or just edit `~/.bashrc` to have `CONTRALIGN_DIR=dir/to/sate-tools-linux`.
+	* To use these aligners, add the following to your pasta execution `--aligner=NAME_OF_ALIGNER`, where` NAME_OF_ALIGNER` now includes (`ginsi`, `homologs`, `contralign`, and `probcons`)
 
 ### 3. From Docker
 
@@ -131,24 +142,24 @@ You are done. You can test using
 
 ### 4. From Virtual Machine (VM)
 
-VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (if your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version. 
+VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (if your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version.
+ 
+- **Note:** the VM is not maintained anymore and so is using an old version of PASTA. 
 
-Email `pasta-users@googlegroups.com` for installation issues. 
+
+
+
+**Email** `pasta-users@googlegroups.com` for installation issues. 
+
 
 
 EXECUTION
 ====
 To run PASTA using the command-line:
 
-```
+```bash
 python run_pasta.py -i input_fasta [-t starting_tree] 
 ```
-
-To run it using Docker, run
-
-~~~bash
-docker run -v `pwd`/:/data run_pasta.py -i input_fasta [-t starting_tree] 
-~~~
 
 
 PASTA by default picks the appropriate configurations automatically for you. 
@@ -156,21 +167,35 @@ The starting tree is optional. If not provided, PASTA estimates a starting tree.
 
 Run
 
-```
+```bash
 python run_pasta.py --help
 ``` 
 
 to see PASTA's various options and description of how they work. 
 
 To run the GUI version, 
+
 * if you have used the MAC .dmg file, you can simply click on your application file to run PASTA. 
 * if you have installed from the source code, cd into your installation directory and run 
 
-```
-    python run_pasta_gui.py
+```bash
+python run_pasta_gui.py
 ```
 
-on some machines you may need to use `pythonw run_pasta_gui.py` instead. 
+on some machines  you may instead need to use 
+
+```bash
+pythonw run_pasta_gui.py
+``` 
+
+To run PASTA using Docker, run
+
+```bash
+docker run -v [path to the directory with your input files]:/data smirarab/pasta run_pasta.py -i input_fasta [-t starting_tree] 
+```
+
+On Windows, you may have to enable drive sharing; see [Shared Drives on this page](https://docs.docker.com/docker-for-windows/).
+
 
 Options
 ------

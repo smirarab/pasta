@@ -243,7 +243,7 @@ def replace_back(letter, aln, locations):
     for i,j_nongap in locations:
         new_s = ''
         for x in aln[i]:
-            if j_nongap == 0:
+            if j_nongap == 0 and (x != '-'):
                 new_s += letter
             else:
                 new_s += x    

@@ -46,8 +46,9 @@ def get_invoke_run_pasta_command():
         if platform.system() == 'Windows':
             return ['run_pasta.exe']
         elif platform.system() == 'Darwin':
-            return [filemgr.quoted_file_path(sys.executable),
-                    filemgr.quoted_file_path(os.path.join(pasta.pasta_home_dir(), 'run_pasta.py'))]
+            return [filemgr.quoted_file_path(sys.executable)
+                    #filemgr.quoted_file_path(os.path.join(pasta.pasta_home_dir(), 'run_pasta.py'))
+                    ]
         else:
             raise OSError('PASTA is not frozen for %s' % platform.system())
     else:

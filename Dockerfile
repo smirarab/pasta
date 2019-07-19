@@ -3,7 +3,7 @@ MAINTAINER Niema Moshiri <niemamoshiri@gmail.com>
 RUN apt-get update && apt-get -y upgrade
 
 # set up PASTA
-RUN apt-get install -y python3 python3-setuptools openjdk-8-jre git libgomp1
+RUN apt-get install -y python3 python3-setuptools default-jre git libgomp1
 RUN ln -s $(which python3) /usr/local/bin/python
 RUN cd /usr/local/bin
 RUN git clone https://github.com/smirarab/pasta.git

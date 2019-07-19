@@ -1,7 +1,6 @@
 FROM debian:latest
 MAINTAINER Niema Moshiri <niemamoshiri@gmail.com>
 RUN apt-get update && apt-get -y upgrade
-RUN apt-get update
 
 # set up PASTA
 RUN apt-get install -y python3 python3-setuptools default-jre git libgomp1

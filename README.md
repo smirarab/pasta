@@ -98,7 +98,7 @@ You need to rename these directories and remove the `-master` part.
 
 3. (Optional) Only if you want to use MAFFT-Homologs within PASTA:
 `cd sate-tools-linux` or `cd sate-tools-mac`
-Use `git clone https://github.com/kodicollins/pasta-databases` or download directly at `https://github.com/kodicollins/pasta-databases.git`
+Use `git clone https://github.com/koditaraszka/pasta-databases` or download directly at `https://github.com/koditaraszka/pasta-databases.git`
 	* Be sure to leave this directory `cd ..` before starting the next step
 
 4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)

@@ -1,4 +1,4 @@
-This is an implementation of the PASTA (Practical Alignment using Sate and TrAnsitivity) algorithm published in [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#) and JCB:
+This is an implementation of the PASTA (Practical Alignment using Saté and TrAnsitivity) algorithm published in [RECOMB-2014](http://link.springer.com/chapter/10.1007%2F978-3-319-05269-4_15#) and JCB:
 
 * Mirarab S, Nguyen N, Warnow T. PASTA: ultra-large multiple sequence alignment. Sharan R, ed. Res Comput Mol Biol. 2014:177-191.
 * Mirarab S, Nguyen N, Guo S, Wang L-S, Kim J, Warnow T. PASTA: Ultra-Large Multiple Sequence Alignment for Nucleotide and Amino-Acid Sequences. J Comput Biol. 2015;22(5):377-386. [doi:10.1089/cmb.2014.0156](http://online.liebertpub.com/doi/abs/10.1089/cmb.2014.0156).
@@ -15,7 +15,7 @@ All questions and inquires should be addressed to our user email group: `pasta-u
 * The code and the algorithm are developed by Siavash Mirarab and Tandy Warnow, with help from Nam Nguyen. The latest version of the code includes a new code decomposition designed and implemented by [Uyen Mai](https://github.com/uym2). 
 
 
-* The current PASTA code is heavily based on the [SATe code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATe code, including the list of authors, license, etc. 
+* The current PASTA code is heavily based on the [SATé code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATé code, including the list of authors, license, etc. 
 * [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3 and to the Docker image. 
 
 **Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
@@ -52,9 +52,9 @@ Windows won't work currently (future versions may or may not support Windows).
 
 You need to have:
 
-- Python (version 2.7 or later, including python 3)
+- [Python](https://www.python.org) (version 2.7 or later, including python 3)
 - [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
-- Java (only required for using OPAL)
+- [Java](https://www.java.com) (only required for using OPAL)
 - [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI. The setup script does not automatically install this. 
 
 **Installation steps**:
@@ -75,18 +75,18 @@ You need to have:
    If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
 and decompress it into your desired directory. 
 
-3.  Clone the relevant "tools" directory (these are also forked from the SATe project).
+3.  A. Clone the relevant "tools" directory (these are also forked from the SATé project).
 There are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) 
 and [MAC](https://github.com/smirarab/sate-tools-mac).
 You can use 
 
 	```bash
-	git clone https://github.com/smirarab/sate-tools-linux.git #for MAC
+	git clone https://github.com/smirarab/sate-tools-linux.git #for Linux
 	``` 
 	or
 	
 	```bash
-	git clone https://github.com/smirarab/sate-tools-mac.git. #for Linux
+	git clone https://github.com/smirarab/sate-tools-mac.git. #for MAC
 	``` 
 	Or you can directly download these as zip files for 
 [Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
@@ -96,7 +96,7 @@ and decompress them in your target directory (e.g. `pasta-code`).
 You need to rename these directories and remove the `-master` part.
 	* Those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries. 32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
 
-3. (Optional) Only if you want to use MAFFT-Homologs within PASTA:
+3. B. (Optional) Only if you want to use MAFFT-Homologs within PASTA:
 `cd sate-tools-linux` or `cd sate-tools-mac`
 Use `git clone https://github.com/koditaraszka/pasta-databases` or download directly at `https://github.com/koditaraszka/pasta-databases.git`
 	* Be sure to leave this directory `cd ..` before starting the next step
@@ -117,7 +117,7 @@ Use `git clone https://github.com/koditaraszka/pasta-databases` or download dire
 
 	**Common Problems:**
 	
-	 * `Could not find SATe tools bundle directory:`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
+	 * `Could not find SATé tools bundle directory`: this means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where pasta code is? Most likely, you used the zip files and forgot to remove teh `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
 	 * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` 
 	(but note there are other ways of installing setuptools as well).
 
@@ -171,7 +171,7 @@ Run
 python run_pasta.py --help
 ``` 
 
-to see PASTA's various options and description of how they work. 
+to see PASTA's various options and descriptions of how they work. 
 
 To run the GUI version, 
 
@@ -233,7 +233,7 @@ read values). Options specified in the command line are read last. Thus, these v
 
 *Note*: the use of --auto option can overwrite some of the other options provided by
 commandline or through configuration files. 
-The use of this option is generally not suggested (it is a legacy option from SATe).
+The use of this option is generally not suggested (it is a legacy option from SATé).
 
 
 The following is a list of important options used by PASTA. 
@@ -266,7 +266,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
     You can also set a time limit using `--time-limit`, in which case, PASTA runs until the time limit is reached,
     then continues to run until the current iteration is finished, and then stops. 
     If both values are set, PASTA stops after the first limit is reached. 
-    The remaining options for setting iteration limits are legacies of SATe and are not recommended. 
+    The remaining options for setting iteration limits are legacies of SATé and are not recommended. 
    
    * Masking: Since PASTA produces very gappy alignments, it is a good idea to remove sites that are almost exclusively gaps before running the ML tree estimation. 
      By default, PASTA removes sites that are more than 99.9% gaps. 
@@ -276,7 +276,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
      The `--max-subproblem-frac` option is a number between 0 and 1 and sets the maximum subset size as a fraction of the entire dataset.
      The `--max-subproblem-size` option sets the maximum size as an absolute number.
      When both numbers are provided (in either configuration file or the command line), the *LARGER* number is used. 
-     This is an unfortunate design (legacy of SATe) and can be quite confusing. 
+     This is an unfortunate design (legacy of SATé) and can be quite confusing. 
      Please always double check the actual subset size reported by PASTA and make sure it is the value intended.
 
    * Temporary files: PASTA creates many temporary files, and deletes most at the end.
@@ -295,7 +295,7 @@ Note that by default PASTA picks these parameters for you, and thus you might no
    * CPUs: PASTA tries to use all the available cpus by default. You can use  `num_cpus` to adjust the number of threads used. 
 
 
-The remaining options available in PASTA are mostly legacies from SATe and are generally not useful for PASTA runs. 
+The remaining options available in PASTA are mostly legacies from SATé and are generally not useful for PASTA runs. 
 
 Output
 -------
@@ -313,4 +313,4 @@ export PASTA_LOGGING_FORMAT=RICH
 
 LICENSE
 ===
-PASTA uses the same license as SATe (GNU Public License).
+PASTA uses the same [license](LICENSE) as SATé (GNU General Public License).

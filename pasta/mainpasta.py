@@ -554,6 +554,7 @@ def populate_auto_options(user_config, md, force=False):
         user_config.get('sate').set_values_from_dict(auto_opts['sate'])
         user_config.get('commandline').set_values_from_dict(auto_opts['commandline'])
         user_config.get('fasttree').set_values_from_dict(auto_opts['fasttree'])
+    return summary_stats
 
 
 def parse_user_options(argv, parser, user_config, command_line_group):
@@ -585,6 +586,7 @@ def check_user_options(user_config):
         MESSENGER.send_error(''' You have specified a max subproblem size of 1.
 PASTA requires a max subproblem size of at least 2.  ''')
         sys.exit(1)
+
     
 
 def pasta_main(argv=sys.argv):
@@ -623,16 +625,20 @@ def pasta_main(argv=sys.argv):
             missing=user_config.commandline.missing)
 
     # This is to automatically set the auto default options
-    populate_auto_options(user_config, multilocus_dataset, force = True)
+    summary_stats = populate_auto_options(user_config, multilocus_dataset, force = True)
 
     # This is to actually read the config files and commandline args and overwrite auto value
     parse_user_options(argv, parser, user_config, command_line_group)
         
     # This is now to make sure --auto overwrites user options
     if user_config.commandline.auto or (user_config.commandline.untrusted):
-        populate_auto_options(user_config, multilocus_dataset)
+        summary_stats = populate_auto_options(user_config, multilocus_dataset)
             
     check_user_options(user_config)
+
+    if user_config.sate.mask_gappy_sites < 1:
+        user_config.sate.mask_gappy_sites = int(summary_stats[2] * user_config.sate.mask_gappy_sites)
+    MESSENGER.send_info("Masking alignment sites with less than %d sites before running the tree step" %user_config.sate.mask_gappy_sites)
 
     if user_config.commandline.raxml_search_after:
         if user_config.sate.tree_estimator.upper() != 'FASTTREE':

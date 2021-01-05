@@ -1,3 +1,6 @@
+- Version 1.8.6:
+	- New feature: `--mask-gappy-sites` can now be a number below 1.0 to indicate a percentage
+ 
 - Version 1.8.5:
 	-  **Bug fix**: handling of U in protein when used with Ginsi is fixed 
 

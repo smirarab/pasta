@@ -12,7 +12,7 @@ Functions for configuring a runtime logger for the pasta module.
 PROGRAM_NAME = "PASTA"
 PROGRAM_AUTHOR = ["Siavash Mirarab","Nam Nguyen","Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Jamie Oaks", "Uyen Mai"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "1.8.5"
+PROGRAM_VERSION = "1.8.6"
 PROGRAM_YEAR = "2013-2017"
 PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "http://www.cs.utexas.edu/~phylo/software/pasta/"

@@ -1,3 +1,6 @@
+- Version 1.8.7:
+	- New feature: `run_seqtools.py` can be run with portions now
+
 - Version 1.8.6:
 	- New feature: `--mask-gappy-sites` can now be a number below 1.0 to indicate a percentage
  

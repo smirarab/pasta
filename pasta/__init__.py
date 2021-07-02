@@ -12,11 +12,11 @@ Functions for configuring a runtime logger for the pasta module.
 PROGRAM_NAME = "PASTA"
 PROGRAM_AUTHOR = ["Siavash Mirarab","Nam Nguyen","Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Jamie Oaks", "Uyen Mai"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "1.8.6"
+PROGRAM_VERSION = "1.8.7"
 PROGRAM_YEAR = "2013-2017"
 PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
-PROGRAM_WEBSITE = "http://www.cs.utexas.edu/~phylo/software/pasta/"
-PROGRAM_INSTITUTE = "Department of Computer Science, University of Texas at Austin"
+PROGRAM_WEBSITE = "//github.com/smirarab/pasta.git"
+PROGRAM_INSTITUTE = "University of California, San Diego"
 PROGRAM_LONG_DESCRIPTION = """
 PASTA performs iterative realignment and tree inference, similar to SATe, but uses a very different merge algorithm which improves running time, memory usage, and accuracy. The current code is heavily based on SATe, with lots of modifications, many related to algorithmic differences between PASTA and SATe, but also many scalability improvements (parallelization, tree parsing, defaults, etc.)
 

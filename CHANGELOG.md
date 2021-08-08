@@ -1,3 +1,7 @@
+- Version 1.9.0:
+	- **Important bug fix:** Version 1.8.6 had created a bug where for datasets with  less than 1000 sequences (N),
+          the default mask_gappy_sites was set to N^2/1000 instead of N/1000. 
+
 - Version 1.8.7:
 	- New feature: `run_seqtools.py` can be run with portions now
 

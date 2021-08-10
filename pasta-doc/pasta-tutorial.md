@@ -393,6 +393,30 @@ This reads your final PASTA alignment and masks out columns with at most 20 non-
 
 If there are features that you would like to see implemented `run_seqtools.py`, let us know, and we will try to add them. 
 
+#### Restart PASTA from the previous runs. 
+
+Let us assume you run PASTA and after 1 iteration finished, the job stopped. 
+Now you want to run another iteration. 
+What do you do? 
+
+You can use
+~~~bash
+zcat pastajob_temp_iteration_1_seq_unmasked_alignment.gz |run_seqtools.py -informat COMPACT3  -outformat FASTA -outfile iterate1.fasta -rename pastajob_temp_name_translation.txt 
+~~~
+to get a file called `iterate1.fasta` that you can give as input to PASTA for the next iteration. 
+What is going on here is the following. 
+1. `zcat` will uncompress the unmasked alignment file
+2. The unmasked file in the COMPACT3 format is translated to FASTA output
+3. The internal PASTA names are translated to original names. 
+
+The output file may be very large. 
+For very large input, you may be OK with loosing some very gappy portions of the alignment between the two steps. 
+If so, you can use 
+~~~bash
+zcat pastajob_temp_iteration_1_seq_unmasked_alignment.gz |run_seqtools.py -informat COMPACT3  -outformat FASTA -outfile iterate1.fasta -rename pastajob_temp_name_translation.txt -masksitesp 0.0001
+~~~
+to remove sites that have have (for example) 99.99% or more gaps. 
+
 Step 7: Running PASTA using configuration files
 ---
 As mentioned before, the configurations used for running PASTA are all saved to a configuration file, and also PASTA can be run using a configuration file. These  configuration files are useful for multiple purposes - for example, if you want to reproduce a PASTA run, or if you want to report the exact configurations used. Always make sure to keep the produced configuration files for future reference. Note however, that configuration files can be used as input only using command-line. 

@@ -18,7 +18,9 @@ All questions and inquires should be addressed to our user email group: `pasta-u
 * The current PASTA code is heavily based on the [SATé code](http://phylo.bio.ku.edu/software/sate/sate.html) developed by Mark Holder's group at KU. Refer to sate-doc directory for documentation of the SATé code, including the list of authors, license, etc. 
 * [Niema Moshiri](https://github.com/niemasd) has contributed to the import to dendropy 4 and python 3 and to the Docker image. 
 
-**Documentation**: In addition to this README file, you can consult our [Tutorial](pasta-doc/pasta-tutorial.md).
+# Documentation
+
+In addition to this README file, you can consult this [Tutorial](pasta-doc/pasta-tutorial.md).
 
 INSTALLATION
 ===

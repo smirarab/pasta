@@ -149,12 +149,14 @@ class pworker():
                 raise
         return
 
-_manager = Manager()
-
 class worker():
     
     def __init__(self, i):
         global _manager
+        try:
+            _manager
+        except NameError:
+            _manager = Manager()
         self.i = i
         self.pqueue = _manager.Queue()
         self.err_shared_obj = Value('i', 0)

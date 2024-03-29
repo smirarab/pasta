@@ -28,12 +28,20 @@ from pasta.errors import TaxaLabelsMismatchError
 from pasta import get_logger
 from dendropy import Tree, TreeList
 _LOG = get_logger(__name__)
-from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy as convert_node_to_root_polytomy
+
 
 # Provide a random number generator
 import random
 
 POLYTOMY_RNG = random.Random()
+
+# This is to make sure we are compatible with dendorpy <=4.5.2 and >4.5.2
+def convert_node_to_root_polytomy(node):
+    try:
+        from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy
+        _convert_node_to_root_polytomy(node)
+    except ImportError:
+        node._convert_node_to_root_polytomy()
 
 def resolve_polytomies(tree, update_splits=False, rng=None):
     """

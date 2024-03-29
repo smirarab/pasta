@@ -22,11 +22,17 @@ from dendropy import Tree
 from dendropy import Edge
 from dendropy import Node
 from dendropy import DataSet as Dataset
-from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy as convert_node_to_root_polytomy
 from pasta import get_logger
 
 _LOG = get_logger(__name__)
 
+# This is to make sure we are compatible with dendorpy <=4.5.2 and >4.5.2
+def convert_node_to_root_polytomy(node):
+    try:
+        from dendropy.datamodel.treemodel import _convert_node_to_root_polytomy
+        _convert_node_to_root_polytomy(node)
+    except ImportError:
+        node._convert_node_to_root_polytomy()
 class PhylogeneticTree(object):
     """Data structure to store phylogenetic tree, wrapping dendropy.Tree."""
     def __init__(self, dendropy_tree):

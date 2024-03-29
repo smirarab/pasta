@@ -14,108 +14,6 @@ from the previous iteration. The first step therefore needs an initial tree.
 
 
 ---------
-
-Installation
-===
-
-**Dependencies**: 
-
-1. You need to have python 2.7 or later, including python 3.
-2. You need to have java installed (required for Opal).
-
-You have three options for installing PASTA. 
-
- - **Windows:** If you have a Windows machine, currently using the Virtual Machine (VM) image we provide is your only option. 
- - **Linux:** If you have Linux (or other \*nix systems), you can still use VM, but downloading the code from github and installing it is what we strongly recommend. 
- - **MAC:** We have three options for MAC: VM, installing from the code, and downloading .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code).
-
-
-### 1. From pre-build MAC image file
-
-1. Download the MAC application .dmg file from [the project website](http://www.cs.utexas.edu/~phylo/software/pasta/).
-2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
-3. Simply run the PASTA app from where you copied it.
-
-**Common Problems:**
-  
-  1. In some cases, your python installation might be in a location different from
-     where PASTA is hoping to find it. In these cases, you get the following error
-     message:
-      
-      ```text
-        PASTA has encoutered a fatal error, and will now terminate.
-        A Python runtime could not be located. 
-        You may need to install a framework build of Python,
-        or edit the PyRuntimeLocations array in this application's info.plist file.
-      ```
-
-     If you get this message, make sure you have python 2.7 installed. Then, run
-     `python -c 'import sys; print sys.prefix'`. This will tell you where your python
-     is located. Now click on the PASTA app and select `Show Package Content`. 
-     Navigate to `Contents` and open `Info.plist` with the text editor. 
-     Replace `/System/Library/Frameworks/Python.framework/Versions/2.7/` under `PyRuntimeLocations`
-     with the location of your python installation (likely it is ` /Library/Frameworks/Python.framework/Versions/2.7`). 
-     Try running the App again and see if it works.
-
-  2. If the above solution does not work, or if you get other errors, try first
-    installing PASTA from the source code (see below) and then running 
-    `./make-app.sh` from the pasta directory. This will create an app under
-    `dist` directory, which you should be able to run and copy to any other location. 
-
-### 2. From Source Code
-The current version of PASTA has been developed and tested entirely on Linux and MAC. 
-Windows won't work currently (future versions may or may not support Windows). 
-
-You need to have:
-
-- Python (version 2.7 or later, including python 3)
-- [Dendropy](http://packages.python.org/DendroPy/) (but the setup script should automatically install dendropy for you if you don't have it)  
-- Java (only required for using OPAL)
-- [wxPython](http://www.wxpython.org/) - only required if you want to use the GUI.
-
-**Installation steps**:
-
-1. Open a terminal and create a directory where you want to keep PASTA (e.g., `mkdir ~/pasta-code`). Go to this directory (e.g., `cd ~/pasta-code`).
-
-2. Clone the PASTA code repository from our [github repository](https://github.com/smirarab/pasta). For example you can use `git clone https://github.com/smirarab/pasta.git`.
-If you don't have git, you can directly download a [zip file from the repository](https://github.com/smirarab/pasta/archive/master.zip)
-and decompress it into your desired directory. 
-
-3.  Clone the relevant "tools" directory (these are also forked from the SATe project). 
-There are different repositories for [linux](https://github.com/smirarab/sate-tools-linux) 
-and [MAC](https://github.com/smirarab/sate-tools-mac).
-You can use `git clone https://github.com/smirarab/sate-tools-linux.git` for Linux or `git clone https://github.com/smirarab/sate-tools-mac.git` for MAC. 
-Or you can directly download these as zip files for 
-[Linux](https://github.com/smirarab/sate-tools-linux/archive/master.zip) or [MAC](https://github.com/smirarab/sate-tools-mac/archive/master.zip)
-and decompress them in your target directory (e.g. `pasta-code`). 
-Note that the tools directory and the PASTA code directory should be under the same parent directory.
-Also note that when you use the zip files instead of using `git`, after decompressing the zip file you may get a directory called `sate-tools-mac-master` or `sate-tools-linux-master` instead of `sate-tools-mac` or `sate-tools-linux`.
-You need to rename these directories and remove the `-master` part.
-Finally, those with 32-bit Linux machines need to be aware that the master branch has 64-bit binaries.
-32-bit binaries are provided in the `32bit` branch of `sate-tools-linux` git project (so download [this zip file](https://github.com/smirarab/sate-tools-linux/archive/32bit.zip) instead). 
-
-4. `cd pasta` (or `cd pasta-master` if you used the zip file instead of clonning the git repository)
-
-5. Then run:
-
-```
- sudo python setup.py develop 
-```
- 
-If you don't have root access, remove the `sudo` part and instead  use  `--user` option. Alternatively, you can use `--prefix` to install it in a different location, but note that the different location needs to be part of your `PYTHONPATH` environmental variable. 
-
-**Common Problems:**
- * If you get an error that `Could not find SATe tools bundle directory:`, it means you don't have the right tools directory at the right location. Maybe you downloaded MAC instead of Linux? Or, maybe you didn't put the directory in the parent directory of where the pasta code is? Most likely, you used the zip files and forgot to remove the `-master` from the directory name. Run `mv sate-tools-mac-master sate-tools-mac` on MAC or `mv sate-tools-linux-master sate-tools-linux` to fix this issue. 
- * The `setup.py` script is supposed to install setuptools for you if you don't have it. This sometimes works and sometimes doesn't. If you get an error with a message like ` invalid command 'develop'`, it means that setuptools is not installed. To solve this issue, you can manually install [setup tools](https://pypi.python.org/pypi/setuptools#installation-instructions). For example, on Linux, you can run: `curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python` (but note there are other ways of installing setuptools as well).
-
-
-### 3. From Virtual Machine (VM)
-
-VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the .ova image that you have downloaded (If your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it.
-
-Email `pasta-users@googlegroups.com` for installation issues. 
-
----------
 Using PASTA
 ===
 
@@ -125,8 +23,7 @@ PASTA can be run using command-line or GUI.
 
 
 ### From GUI:
-1. If you have installed PASTA from the .dmg file, to run the PASTA GUI you just click on the application you copied on your machine. 
-2. If you have installed PASTA from the code, you need to open a terminal (sorry!) and run: 
+1. If you have installed PASTA from the code, you need to open a terminal (sorry!) and run: 
 
 ```
 run_pasta_gui.py

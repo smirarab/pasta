@@ -5,7 +5,7 @@ block_cipher = None
 
 a = Analysis(['run_pasta.py'],
              pathex=['/Users/smirarab/workspace/pasta'],
-             binaries=[],
+             binaries=[('bin/','.')],
              datas=[('bin','bin'),('run_pasta_gui.py','.')],
              hiddenimports=['wx'],
              hookspath=[],
@@ -37,5 +37,5 @@ coll = COLLECT(exe,
                name='run_pasta')
 app = BUNDLE(coll,
              name='pasta.app',
-             icon='pasta.icns',
+             icon='pasta.ico',
              bundle_identifier=None)

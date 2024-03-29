@@ -25,32 +25,12 @@ In addition to this README file, you can consult this [Tutorial](pasta-doc/pasta
 INSTALLATION
 ===
 
-You have four options for installing PASTA. 
+You have three options
 
- - **Windows:** If you have a Windows machine, currently using the Docker image or the Virtual Machine (VM) image we provide is your only option. Among those two options, Docker is the preferred method. 
- - **Linux:** If you have Linux (or other \*nix systems), you can still use Docker or VM, but downloading the code from github and installing it is what we recommend. 
- - **MAC:** We have four options for MAC: VM, Docker, installing from the code, and downloading the .dmg file. If you mostly use the GUI, then the MAC .dmg file is a good option (although sometimes it can be behind the latest code). Otherwise, we reocmmend either Docker or the code. 
+### 1. From Source Code
 
-
-### 1. From pre-build MAC image file
-
-
-1. Download the MAC application `.dmg` file from [here](https://sites.google.com/eng.ucsd.edu/datasets/alignment/pastaupp). Use the lastest version available
-
-2. Open the .dmg file and copy its content to your preferred destination (do not run PASTA from the image itself).
-3. Simply run the PASTA app from where you copied it.
-
-
-If the APP does not work, let us know. We will try to fix issues. 
-But you can also try first
-    installing PASTA from the source code (see below) and then run 
-    `./make-app.sh` from the pasta directory. This will create an app under
-    `dist` directory, which you should be able to run and copy to any other location. 
-
-
-### 2. From Source Code
-The current version of PASTA has been developed and tested entirely on Linux and MAC. 
-Windows won't work currently (future versions may or may not support Windows). 
+* The current version of PASTA has been developed and tested entirely on Linux and MAC. 
+* Windows won't work currently (future versions may or may not support Windows). 
 
 You need to have:
 
@@ -126,7 +106,7 @@ Use `git clone https://github.com/koditaraszka/pasta-databases` or download dire
 6. Pasta now includes additional aligners for Linux and MAC users: mafft-ginsi, mafft-homologs, contralign (version 1), and probcons. In order to use mafft-homologs and contralign, the user must set the environment variable `CONTRALIGN_DIR=/dir/to/sate-tools-linux`. You can use `export CONTRALIGN_DIR=/dir/to/sate-tools-linux` or just edit `~/.bashrc` to have `CONTRALIGN_DIR=dir/to/sate-tools-linux`.
 	* To use these aligners, add the following to your pasta execution `--aligner=NAME_OF_ALIGNER`, where` NAME_OF_ALIGNER` now includes (`ginsi`, `homologs`, `contralign`, and `probcons`)
 
-### 3. From Docker
+### 2. From Docker
 
 1. Make sure you have Docker installed 
 
@@ -142,14 +122,17 @@ You are done. You can test using
  docker run smirarab/pasta run_pasta.py -h
 ~~~
 
-### 4. From Virtual Machine (VM)
-
-VM Image (mostly for Windows users) is available for [download](https://drive.google.com/file/d/0B0lcoFFOYQf8U2NZV2Z2RmRaRjQ/view?usp=sharing) (~3 GB). Once the image is downloaded, you need to run it using a VM environment ([VirtualBox](https://www.virtualbox.org/) is a good option). After you install VirtualBox, you just need to use File/import to import the *.ova image that you have downloaded (if your machine has less than 3GB you might want to reduce the memory to something like 512MB). Once VM is imported, you can start it from the Virtualbox. If you are asked to login, the username and passwords are (username: phylolab, password: phylolab). PASTA is already installed on the VM machine, so you can simply proceed by opening a terminal and running it. VM version may be an older version.
- 
-- **Note:** the VM is not maintained anymore and so is using an old version of PASTA. 
 
 
+### 3. Conda:
 
+Please see <https://anaconda.org/bioconda/pasta>
+
+You should be good with:
+
+~~~bash
+conda install bioconda::pasta
+~~~
 
 **Email** `pasta-users@googlegroups.com` for installation issues. 
 
@@ -177,7 +160,6 @@ to see PASTA's various options and descriptions of how they work.
 
 To run the GUI version, 
 
-* if you have used the MAC .dmg file, you can simply click on your application file to run PASTA. 
 * if you have installed from the source code, cd into your installation directory and run 
 
 ```bash

@@ -601,6 +601,7 @@ def pasta_main(argv=sys.argv):
         as an argument (and will NOT be skipped).
     '''
 
+    MESSENGER.send_info("PASTA Version %s" % PROGRAM_VERSION)
     _START_TIME = time.time()
     usage = """usage: %prog [options] <settings_file1> <settings_file2> ..."""
     parser = optparse.OptionParser(usage=usage,

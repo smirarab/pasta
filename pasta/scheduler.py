@@ -20,7 +20,8 @@
 
 # Jiaye Yu and Mark Holder, University of Kansas
 
-import os, traceback
+import os
+import traceback
 from io import StringIO
 from io import BytesIO
 try:
@@ -143,9 +144,9 @@ class pworker():
                 job[3] = plj.error
                 self.q.task_done()
             except:
-                err = BytesIO()
+                err = StringIO()
                 traceback.print_exc(file=err)
-                _LOG.error("Process Worker dying.  Error in job.start = %s" % err.getvalue())
+                _LOG.error("Process Worker dying.  Error in job.start: \n %s" % err.getvalue())
                 raise
         return
 
@@ -207,7 +208,7 @@ class worker():
                     job.postprocess()
 
             except Exception as e:
-                err = BytesIO()
+                err = StringIO()
                 traceback.print_exc(file=err)
                 _LOG.error("Worker dying.  Error in job.start = %s" % err.getvalue())
                 job.error=e

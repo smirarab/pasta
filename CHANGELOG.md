@@ -1,3 +1,8 @@
+- Version 1.9.2:
+	- omit depreciated rU
+	- better exception handling 
+- Version 1.9.1:
+    - Better compatibility with new dendropy versions 
 - Version 1.9.0:
 	- **Important bug fix:** Version 1.8.6 had created a bug where for datasets with  less than 1000 sequences (N),
           the default mask_gappy_sites was set to N^2/1000 instead of N/1000. 

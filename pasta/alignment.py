@@ -867,7 +867,7 @@ class MultiLocusDataset(list):
             try:
                 if os.path.isdir(seq_fn):
                     raise Exception('"%s" is a directory. A path to file was expected.\nMake sure that you are using the multilocus mode when the input source is a directory.\nUse the path to a FASTA file if you are running in single-locus mode.' % seq_fn)
-                fileobj = open(seq_fn, 'rU')
+                fileobj = open(seq_fn, 'r')
                 sd.read(fileobj,
                         file_format=file_format,
                         datatype=datatype,

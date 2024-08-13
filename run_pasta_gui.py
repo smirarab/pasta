@@ -913,7 +913,7 @@ class PastaFrame(wx.Frame):
             if PASTA_GUI_ONLY_PRINTS_CONFIG:
                 self.log.AppendText("Command is:\n  '%s'\n" % "' '".join(command))
                 self.log.AppendText("config_file:\n#############################################################\n")
-                for line in open(self.process_cfg_file, 'rU'):
+                for line in open(self.process_cfg_file, 'r'):
                     self.log.AppendText(line)
                 self.log.AppendText("#############################################################\n")
                 self._remove_config_file()

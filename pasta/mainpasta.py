@@ -193,7 +193,7 @@ def finish_pasta_execution(pasta_team,
     if tree_file:
         if not os.path.exists(tree_file):
             raise Exception('The tree file "%s" does not exist' % tree_file)
-        tree_f = open(tree_file, 'rU')
+        tree_f = open(tree_file, 'r')
         MESSENGER.send_info('Reading starting trees from "%s"...' % tree_file)
         try:
             tree_list = read_and_encode_splits(multilocus_dataset.dataset, tree_f,

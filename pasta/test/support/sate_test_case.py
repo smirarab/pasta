@@ -87,7 +87,7 @@ class SateTestCase(unittest.TestCase):
     def parse_fasta_file(self, file):
         if isinstance(file, str):
             _LOG.info('parsing fasta file {0!r}...'.format(file))
-            file_stream = open(file, 'rU')
+            file_stream = open(file, 'r')
         else:
             file_stream = file
         line_iter = iter(file_stream)
@@ -112,7 +112,7 @@ class SateTestCase(unittest.TestCase):
         file_stream = file_obj
         if isinstance(file_obj, str):
             _LOG.info('parsing score file {0!r}...'.format(file_obj))
-            file_stream = open(file_obj, 'rU')
+            file_stream = open(file_obj, 'r')
         return(float(file_stream.read().strip()))
 
     def parse_score_arg(self, arg):
@@ -129,7 +129,7 @@ class SateTestCase(unittest.TestCase):
         file_stream = file_obj
         if isinstance(file_obj, str):
             _LOG.info('parsing tree file {0!r}...'.format(file_obj))
-            file_stream = open(file_obj, 'rU')
+            file_stream = open(file_obj, 'r')
         t = dendropy.Tree()
         t.read_from_stream(file_stream, schema='newick')
         file_stream.close()
@@ -238,11 +238,11 @@ class SateTestCase(unittest.TestCase):
         all_equal = True
         f1 = files.pop(0)
         if isinstance(f1, str):
-            f1 = open(f1, 'rU')
+            f1 = open(f1, 'r')
         s1 = f1.read()
         for f2 in files:
             if isinstance(f2, str):
-                f2 = open(f2, 'rU')
+                f2 = open(f2, 'r')
             s2 = f2.read()
             if not s1 == s2:
                 all_equal = False

@@ -54,9 +54,9 @@ class SeqDatasetTest(unittest.TestCase):
     #def testTaxonRelabeling(self):
     #    sd = SequenceDataset()
     #    fp = data_source_path('bad_names.fasta')
-    #    sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+    #    sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
     #    fp = data_source_path('bad_names.tree')
-    #    tree_list = read_and_encode_splits(sd.dataset, open(fp, 'rU'))
+    #    tree_list = read_and_encode_splits(sd.dataset, open(fp, 'r'))
     #    self.assertEqual(len(tree_list), 1)
     #    tree = tree_list[0]
 
@@ -85,7 +85,7 @@ class SeqDatasetTest(unittest.TestCase):
     def test100T(self):
         sd = SequenceDataset()
         fp = data_source_path('100T.fasta')
-        sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+        sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
         fp = data_source_path('100T.tree')
         tree_list = read_and_encode_splits(sd.dataset, open(fp, "rU"))
         self.assertEqual(len(tree_list), 1)
@@ -93,7 +93,7 @@ class SeqDatasetTest(unittest.TestCase):
     def test1000T(self):
         sd = SequenceDataset()
         fp = data_source_path('1000T.fasta')
-        sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+        sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
         fp = data_source_path('1000T.tree')
         tree_list = read_and_encode_splits(sd.dataset, open(fp, "rU"))
         self.assertEqual(len(tree_list), 1)
@@ -101,19 +101,19 @@ class SeqDatasetTest(unittest.TestCase):
     def testDNAFasta(self):
         sd = SequenceDataset()
         fp = data_source_path('anolis.fasta')
-        sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+        sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
 
     #def testDeleteMissing(self):
     #    sd = SequenceDataset()
     #    fp = data_source_path('missing.fasta')
-    #    sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+    #    sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
     #    self.assertFalse(sd.sequences_are_valid())
 
     #    self.assertTrue(sd.sequences_are_valid(True, None))
     #    aln = sd.relabel_for_sate()
 
     #    fp = data_source_path('delmissing.fasta')
-    #    sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+    #    sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
     #    del_aln = sd.relabel_for_sate()
     #    for k, v in aln.iteritems():
     #        self.assertEqual(v.upper(), del_aln[k].upper())
@@ -121,14 +121,14 @@ class SeqDatasetTest(unittest.TestCase):
     #def testMissingToAmbig(self):
     #    sd = SequenceDataset()
     #    fp = data_source_path('missing.fasta')
-    #    sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+    #    sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
     #    self.assertFalse(sd.sequences_are_valid())
 
     #    self.assertTrue(sd.sequences_are_valid(True, sd.alphabet.any_residue.symbol))
     #    aln = sd.relabel_for_sate()
 
     #    fp = data_source_path('ambigmissing.fasta')
-    #    sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+    #    sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
     #    ambig_aln = sd.relabel_for_sate()
     #    for k, v in aln.iteritems():
     #        self.assertEqual(v.upper(), ambig_aln[k].upper())

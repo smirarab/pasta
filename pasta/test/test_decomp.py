@@ -21,7 +21,7 @@ class DecompTest(unittest.TestCase):
     def testLongestEdge(self):
         sd = SequenceDataset()
         fp = data_source_path('100T.fasta')
-        sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+        sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
         fp = data_source_path('100T.tree')
         tree_list = read_and_encode_splits(sd.dataset, open(fp, "rU"))
         self.assertEqual(len(tree_list), 1)
@@ -31,7 +31,7 @@ class DecompTest(unittest.TestCase):
     def testCentroidEdge(self):
         sd = SequenceDataset()
         fp = data_source_path('100T.fasta')
-        sd.read(open(fp, 'rU'), file_format='FASTA', datatype='DNA')
+        sd.read(open(fp, 'r'), file_format='FASTA', datatype='DNA')
         fp = data_source_path('100T.tree')
         tree_list = read_and_encode_splits(sd.dataset, open(fp, "rU"))
         self.assertEqual(len(tree_list), 1)

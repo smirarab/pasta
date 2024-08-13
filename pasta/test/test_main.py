@@ -79,7 +79,7 @@ class TestUnicodePathCharacters(SateTestCase):
         self.data_path = self.get_path(
                 name=unicode_name + '.fasta',
                 parent_dir=self.tmp_sub_dir)
-        src = open(data_file, 'rU')
+        src = open(data_file, 'r')
         out = open(self.data_path, 'w')
         for line in src:
             out.write(line)
@@ -107,7 +107,7 @@ class TestSpacesInPath(SateTestCase):
         self.data_path = self.get_path(
                 name=space_name + '.fasta',
                 parent_dir=self.tmp_sub_dir)
-        src = open(data_file, 'rU')
+        src = open(data_file, 'r')
         out = open(self.data_path, 'w')
         for line in src:
             out.write(line)

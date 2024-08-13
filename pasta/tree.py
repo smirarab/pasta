@@ -194,7 +194,7 @@ class PhylogeneticTree(object):
 
     def read_tree_from_file(self, treefile, file_format):
         dataset = Dataset()
-        dataset.read(open(treefile, 'rU'), schema=file_format)
+        dataset.read(open(treefile, 'r'), schema=file_format)
         dendropy_tree = dataset.trees_blocks[0][0]
         self._tree = dendropy_tree
         self.n_leaves = self.count_leaves()

@@ -57,7 +57,7 @@ class PhylogeneticTreeTest(unittest.TestCase):
 
     def phylogeneticTreeFromFile(self, treefile, file_format):
         dataset = Dataset()
-        dataset.read(open(treefile, 'rU'), schema=file_format)
+        dataset.read(open(treefile, 'r'), schema=file_format)
         dendropy_tree = dataset.tree_lists[0][0]
         tree = PhylogeneticTree(dendropy_tree)
         tree.calc_splits()

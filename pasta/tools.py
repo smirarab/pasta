@@ -96,13 +96,13 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs, pasta_products=None, step_n
             id = f.split('.')[1]
             break
     raxml_log = os.path.join(dir, 'RAxML_log.%s' % id)
-    logsc = [x for x in open(raxml_log, 'rU').readlines() if x.find("Final GAMMA-based Score of best tree")!=-1]
+    logsc = [x for x in open(raxml_log, 'r').readlines() if x.find("Final GAMMA-based Score of best tree")!=-1]
     if logsc:
         score = float(logsc[0].split(" ")[-1])
     else:
-        score = float(open(raxml_log, 'rU').readlines()[-1].split()[1])
+        score = float(open(raxml_log, 'r').readlines()[-1].split()[1])
     raxml_result = os.path.join(dir, 'RAxML_result.%s' % id)
-    f = open(raxml_result, 'rU')
+    f = open(raxml_result, 'r')
     tree_str = f.read().strip()
     f.close()
     copy_temp_tree(raxml_result, pasta_products, step_num)
@@ -111,11 +111,11 @@ def read_raxml_results(dir, dirs_to_delete, temp_fs, pasta_products=None, step_n
     return score, tree_str
 
 def read_fasttree_results(dir, fasttree_restults_file, log, delete_dir=False, pasta_products=None, step_num=None):
-        f = open(fasttree_restults_file, 'rU')
+        f = open(fasttree_restults_file, 'r')
         tree_str = f.read().strip()
         f.close()
         score = None
-        for line in reversed(open(log, 'rU').readlines()):
+        for line in reversed(open(log, 'r').readlines()):
             if (line.split()[0] == 'Gamma20LogLk'):
                 score = float(line.split()[1])
                 break
@@ -956,8 +956,8 @@ class Randtree(TreeEstimator):
                                       temp_fs=self.temp_fs,
                                       pasta_products=pasta_products,
                                       step_num=step_num):
-            score = float(open(score_fn, 'rU').read().strip())
-            tree_str = open(fn, 'rU').read().strip()
+            score = float(open(score_fn, 'r').read().strip())
+            tree_str = open(fn, 'r').read().strip()
             copy_temp_tree(fn, pasta_products, step_num)
             for d in dirs_to_delete:
                 temp_fs.remove_dir(d)

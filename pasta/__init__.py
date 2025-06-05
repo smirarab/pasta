@@ -12,7 +12,7 @@ Functions for configuring a runtime logger for the pasta module.
 PROGRAM_NAME = "PASTA"
 PROGRAM_AUTHOR = ["Siavash Mirarab","Nam Nguyen","Jiaye Yu", "Mark T. Holder", "Jeet Sukumaran", "Jamie Oaks", "Uyen Mai"]
 PROGRAM_LICENSE = "GNU General Public License, version 3"
-PROGRAM_VERSION = "1.9.2"
+PROGRAM_VERSION = "1.9.3"
 PROGRAM_YEAR = "2013-2017"
 PROGRAM_DESCRIPTION = "Practical Alignment using SATe and TrAnsitivity"
 PROGRAM_WEBSITE = "//github.com/smirarab/pasta.git"
@@ -217,11 +217,9 @@ class ToolsDirNotFoundError(Exception):
 def pasta_is_frozen():
     """Will return True if PASTA is frozen.
     """
-    import imp
     return (
         hasattr(sys, "frozen")          # new py2exe
         or hasattr(sys, "importers")    # old py2exe
-        or imp.is_frozen("__main__")    # tools/freeze
     )
 
 def pasta_home_dir():

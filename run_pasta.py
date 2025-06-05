@@ -25,6 +25,7 @@ if __name__ == "__main__":
     import os
     import sys
     import pasta
+    print(pasta.pasta_is_frozen())
     if pasta.pasta_is_frozen() and '-i' not in sys.argv:
         exec(open(os.path.join(pasta.pasta_home_dir(), 'run_pasta_gui.py')).read())
         sys.exit(1)
